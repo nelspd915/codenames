@@ -1,7 +1,11 @@
 {
   "name": "codenames",
   "version": "0.0.1",
-  "description": "Stencil Component Starter",
+  "description": "Multiplayer web app for the game Codenames.",
+  "author": {
+    "name": "Nels Danielson",
+    "email": "nelspd915@gmail.com"
+  },
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "es2015": "dist/esm/index.mjs",
@@ -32,7 +36,7 @@
     "@types/jest": "^27.0.3",
     "jest": "^27.4.5",
     "jest-cli": "^27.4.5",
-    "puppeteer": "^10.0.0"
+    "puppeteer": "^15.4.0"
   },
   "license": "MIT"
 }
