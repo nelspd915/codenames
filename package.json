@@ -1,0 +1,9 @@
+{
+  "name": "codenames",
+  "description": "Multiplayer web app for the game Codenames.",
+  "author": {
+    "name": "Nels Danielson"
+  },
+  "packageManager": "yarn@3.2.1",
+  "license": "MIT"
+}
