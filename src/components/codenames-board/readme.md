@@ -7,9 +7,9 @@
 
 ## Properties
 
-| Property       | Attribute | Description                           | Type         | Default     |
-| -------------- | --------- | ------------------------------------- | ------------ | ----------- |
-| `cellDataList` | --        | Data list used to generate the cells. | `CellData[]` | `undefined` |
+| Property   | Attribute | Description                           | Type               | Default     |
+| ---------- | --------- | ------------------------------------- | ------------------ | ----------- |
+| `cellData` | --        | Data list used to generate the cells. | `SingleCellData[]` | `undefined` |
 
 
 ## Dependencies

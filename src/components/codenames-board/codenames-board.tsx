@@ -12,7 +12,7 @@ export class CodenamesBoard {
    * Data list used to generate the cells.
    * @length 25
    */
-  @Prop() cellDataList?: CellData[];
+  @Prop() cellData?: CellData;
 
   /**
    * Stencil lifecycle method `render` for `codenames-board` component.
@@ -20,13 +20,13 @@ export class CodenamesBoard {
   render() {
     return (
       <Host>
-        {this.cellDataList?.map((cellData) => {
+        {this.cellData?.map((eachCellData) => {
           return (
             <codenames-cell
-              word={cellData.word}
-              color={cellData.color}
-              mode={cellData.mode}
-              revealed={cellData.revealed}
+              word={eachCellData.word}
+              color={eachCellData.color}
+              mode={eachCellData.mode}
+              revealed={eachCellData.revealed}
             ></codenames-cell>
           )
         }) ?? null}
