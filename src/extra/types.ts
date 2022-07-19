@@ -1,7 +1,7 @@
 /**
  * Enumerator for possible cell colors.
  */
-enum CellColor {
+export enum CellColor {
   Blue = "blue",
   Red = "red",
   Gray = "gray",
