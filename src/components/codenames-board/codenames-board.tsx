@@ -10,9 +10,13 @@ export class CodenamesBoard {
 
   /**
    * Data list used to generate the cells.
+   * @length 25
    */
   @Prop() cellDataList?: CellData[];
 
+  /**
+   * Stencil lifecycle method `render` for `codenames-board` component.
+   */
   render() {
     return (
       <Host>
