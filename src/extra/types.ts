@@ -1,4 +1,9 @@
 /**
+ * Array of cell data.
+ */
+export type CellData = SingleCellData[];
+
+/**
  * Enumerator for possible cell colors.
  */
 export enum CellColor {
@@ -20,7 +25,7 @@ export enum CellMode {
 /**
  * Data to apply to a cell.
  */
-export interface CellData {
+export interface SingleCellData {
   word: string,
   color: CellColor,
   mode: CellMode,

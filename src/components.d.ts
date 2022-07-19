@@ -12,7 +12,7 @@ export namespace Components {
           * Data list used to generate the cells.
           * @length 25
          */
-        "cellDataList"?: CellData[];
+        "cellData"?: CellData;
     }
     interface CodenamesCell {
         /**
@@ -57,7 +57,7 @@ declare namespace LocalJSX {
           * Data list used to generate the cells.
           * @length 25
          */
-        "cellDataList"?: CellData[];
+        "cellData"?: CellData;
     }
     interface CodenamesCell {
         /**
