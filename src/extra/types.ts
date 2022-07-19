@@ -7,3 +7,11 @@ export enum CellColor {
   Gray = "gray",
   Black = "black"
 }
+
+/**
+ * Data to apply to a cell.
+ */
+export interface CellData {
+  word: string,
+  color: CellColor
+}

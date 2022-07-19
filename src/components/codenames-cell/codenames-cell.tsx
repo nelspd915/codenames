@@ -10,12 +10,12 @@ export class CodenamesCell {
   /**
    * Word shown in cell.
    */
-  @Prop({ reflect: true }) word: string;
+  @Prop() word: string = "";
 
   /**
    * Cell color.
    */
-  @Prop({ reflect: true }) color: CellColor;
+  @Prop() color: CellColor = CellColor.Gray;
 
   render() {
     return <Host class={this.color}>
