@@ -9,9 +9,20 @@ export enum CellColor {
 }
 
 /**
+ * Possible display modes for a cell.
+ */
+export enum CellMode {
+  Normal = "normal",
+  Spymaster = "spymaster",
+  Endgame = "endgame"
+}
+
+/**
  * Data to apply to a cell.
  */
 export interface CellData {
   word: string,
-  color: CellColor
+  color: CellColor,
+  mode: CellMode,
+  revealed: boolean
 }

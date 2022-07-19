@@ -1,0 +1,79 @@
+:host {
+  width: 18%;
+  height: 17%;
+}
+
+div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  font-family: Roboto, verdana, sans-serif;
+  font-size: 15pt;
+  background: #e8e8e8;
+}
+
+.blue {
+  &.spymaster {
+    color: #4183cc;
+    font-weight: bold;
+  }
+
+  &.revealed {
+    background: #4183cc;
+    color: #ffffff;
+  }
+
+  &.endgame {
+    background: #a6c7ee;
+  }
+}
+
+.red {
+  &.spymaster {
+    color: #d13030;
+    font-weight: bold;
+  }
+
+  &.revealed {
+    background: #d13030;
+    color: #ffffff;
+  }
+
+  &.endgame {
+    background: #ecabab;
+  }
+}
+
+.gray {
+  &.spymaster {
+    color: #000000;
+    font-weight: bold;
+  }
+
+  &.revealed {
+    background: #8e8e8e;
+    color: #ffffff;
+  }
+}
+
+.black {
+  &.spymaster {
+    background: #999999;
+    outline: 5px solid #000000;
+    font-weight: bold;
+  }
+
+  &.revealed, &.endgame {
+    background: #000000;
+    color: #ffffff;
+    outline: 0;
+  }
+}
+
+.word {
+  vertical-align: middle;
+  display: inline-block;
+}
