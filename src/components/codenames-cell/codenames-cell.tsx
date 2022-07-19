@@ -10,13 +10,16 @@ export class CodenamesCell {
   /**
    * Word shown in cell.
    */
-  @Prop({ reflect: true }) word: string;
+  @Prop() word: string = "";
 
   /**
    * Cell color.
    */
-  @Prop({ reflect: true }) color: CellColor;
+  @Prop() color: CellColor = CellColor.Gray;
 
+  /**
+   * Stencil lifecycle method `render` for `codenames-cell` component.
+   */
   render() {
     return <Host class={this.color}>
       <span class={"word"}>{this.word.toUpperCase()}</span>

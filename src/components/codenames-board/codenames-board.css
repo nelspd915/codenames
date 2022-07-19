@@ -1,0 +1,7 @@
+:host {
+  display: flex;
+  margin: 50px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  height: 600px;
+}

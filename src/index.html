@@ -9,39 +9,36 @@
     <script nomodule src="/build/codenames.js"></script>
   </head>
   <body>
-    <div style=
-    "
-      display: flex;
-      margin: 50px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      height: 600px;
-    ">
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="ivory" color="blue"></codenames-cell>
-      <codenames-cell word="london" color="red"></codenames-cell>
-      <codenames-cell word="chair" color="gray"></codenames-cell>
-      <codenames-cell word="amazon" color="black"></codenames-cell>
-    </div>
+    <codenames-board id="codeboard"></codenames-board>
+    <script>
+      const codeboard = document.getElementById("codeboard");
+      codeboard.cellDataList = [
+        { word: "beat", color: "blue" },
+        { word: "oil", color: "blue" },
+        { word: "hotel", color: "blue" },
+        { word: "olive", color: "gray" },
+        { word: "port", color: "red" },
+        { word: "bomb", color: "gray" },
+        { word: "yard", color: "gray" },
+        { word: "centaur", color: "blue" },
+        { word: "link", color: "red" },
+        { word: "seal", color: "red" },
+        { word: "pole", color: "black" },
+        { word: "chair", color: "blue" },
+        { word: "princess", color: "gray" },
+        { word: "fair", color: "blue" },
+        { word: "queen", color: "gray" },
+        { word: "grass", color: "red" },
+        { word: "octopus", color: "red" },
+        { word: "glove", color: "gray" },
+        { word: "cross", color: "gray" },
+        { word: "watch", color: "red" },
+        { word: "file", color: "blue" },
+        { word: "nail", color: "blue" },
+        { word: "brush", color: "blue" },
+        { word: "bow", color: "red" },
+        { word: "parachute", color: "red" },
+      ];
+    </script>
   </body>
 </html>
