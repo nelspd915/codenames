@@ -4,7 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
     <title>Stencil Component Starter</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <script type="module" src="/build/codenames.esm.js"></script>
     <script nomodule src="/build/codenames.js"></script>
   </head>
@@ -13,22 +15,22 @@
     <script>
       const codeboard = document.getElementById("codeboard");
       codeboard.cellDataList = [
-        { word: "beat", color: "blue" },
-        { word: "oil", color: "blue" },
-        { word: "hotel", color: "blue" },
-        { word: "olive", color: "gray" },
-        { word: "port", color: "red" },
-        { word: "bomb", color: "gray" },
-        { word: "yard", color: "gray" },
-        { word: "centaur", color: "blue" },
-        { word: "link", color: "red" },
-        { word: "seal", color: "red" },
-        { word: "pole", color: "black" },
-        { word: "chair", color: "blue" },
-        { word: "princess", color: "gray" },
-        { word: "fair", color: "blue" },
-        { word: "queen", color: "gray" },
-        { word: "grass", color: "red" },
+        { word: "beat", color: "black", mode: "spymaster" },
+        { word: "oil", color: "black", mode: "endgame" },
+        { word: "hotel", color: "black", mode: "normal", revealed: true },
+        { word: "olive", color: "blue", mode: "spymaster" },
+        { word: "port", color: "blue", mode: "endgame" },
+        { word: "bomb", color: "blue", mode: "normal", revealed: true },
+        { word: "yard", color: "red", mode: "spymaster" },
+        { word: "centaur", color: "red", mode: "endgame" },
+        { word: "link", color: "red", mode: "normal", revealed: true },
+        { word: "seal", color: "gray", mode: "spymaster" },
+        { word: "pole", color: "gray", mode: "endgame" },
+        { word: "chair", color: "gray", mode: "normal", revealed: true },
+        { word: "princess", color: "gray", mode: "spymaster", revealed: true },
+        { word: "fair", color: "blue", mode: "spymaster", revealed: true },
+        { word: "queen", color: "black", mode: "spymaster", revealed: true },
+        { word: "grass", color: "red", mode: "spymaster", revealed: true },
         { word: "octopus", color: "red" },
         { word: "glove", color: "gray" },
         { word: "cross", color: "gray" },

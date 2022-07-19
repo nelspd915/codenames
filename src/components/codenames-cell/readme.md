@@ -7,11 +7,26 @@
 
 ## Properties
 
-| Property | Attribute | Description         | Type                                                                   | Default     |
-| -------- | --------- | ------------------- | ---------------------------------------------------------------------- | ----------- |
-| `color`  | `color`   | Cell color.         | `CellColor.Black \| CellColor.Blue \| CellColor.Gray \| CellColor.Red` | `undefined` |
-| `word`   | `word`    | Word shown in cell. | `string`                                                               | `undefined` |
+| Property   | Attribute  | Description                   | Type                                                                   | Default           |
+| ---------- | ---------- | ----------------------------- | ---------------------------------------------------------------------- | ----------------- |
+| `color`    | `color`    | Cell color.                   | `CellColor.Black \| CellColor.Blue \| CellColor.Gray \| CellColor.Red` | `CellColor.Gray`  |
+| `mode`     | `mode`     | Cell display mode.            | `CellMode.Endgame \| CellMode.Normal \| CellMode.Spymaster`            | `CellMode.Normal` |
+| `revealed` | `revealed` | Whether the cell is revealed. | `boolean`                                                              | `false`           |
+| `word`     | `word`     | Word shown in cell.           | `string`                                                               | `""`              |
 
+
+## Dependencies
+
+### Used by
+
+ - [codenames-board](../codenames-board)
+
+### Graph
+```mermaid
+graph TD;
+  codenames-board --> codenames-cell
+  style codenames-cell fill:#f9f,stroke:#333,stroke-width:4px
+```
 
 ----------------------------------------------
 

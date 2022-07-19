@@ -3,7 +3,7 @@ import { CellData } from "../../extra/types";
 
 @Component({
   tag: 'codenames-board',
-  styleUrl: 'codenames-board.css',
+  styleUrl: 'codenames-board.scss',
   shadow: true,
 })
 export class CodenamesBoard {
@@ -22,7 +22,12 @@ export class CodenamesBoard {
       <Host>
         {this.cellDataList?.map((cellData) => {
           return (
-            <codenames-cell word={cellData.word} color={cellData.color}></codenames-cell>
+            <codenames-cell
+              word={cellData.word}
+              color={cellData.color}
+              mode={cellData.mode}
+              revealed={cellData.revealed}
+            ></codenames-cell>
           )
         }) ?? null}
       </Host>

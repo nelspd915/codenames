@@ -1,7 +1,7 @@
 {
   "name": "codenames",
   "version": "0.0.1",
-  "description": "Multiplayer web app for the game Codenames.",
+  "description": "Multiplayer web app for the game Codenames. Inspired by https://github.com/jbowens/codenames.",
   "author": {
     "name": "Nels Danielson",
     "email": "nelspd915@gmail.com"
@@ -33,6 +33,7 @@
     "@stencil/core": "^2.13.0"
   },
   "devDependencies": {
+    "@stencil/sass": "^1.5.2",
     "@types/jest": "^27.0.3",
     "jest": "^27.4.5",
     "jest-cli": "^27.4.5",
