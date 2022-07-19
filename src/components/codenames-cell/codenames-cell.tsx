@@ -1,4 +1,5 @@
 import { Component, Prop, h, Host } from "@stencil/core";
+import { CellColor } from "../../extra/types";
 
 @Component({
   tag: "codenames-cell",
@@ -9,12 +10,12 @@ export class CodenamesCell {
   /**
    * Word shown in cell.
    */
-  @Prop() word: string;
+  @Prop({ reflect: true }) word: string;
 
   /**
    * Cell color.
    */
-  @Prop() color: CellColor;
+  @Prop({ reflect: true }) color: CellColor;
 
   render() {
     return <Host class={this.color}>
