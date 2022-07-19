@@ -6,56 +6,48 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
-    interface MyComponent {
+    interface CodenamesCell {
         /**
-          * The first name
+          * Cell color.
          */
-        "first": string;
+        "color": CellColor;
         /**
-          * The last name
+          * Word shown in cell.
          */
-        "last": string;
-        /**
-          * The middle name
-         */
-        "middle": string;
+        "word": string;
     }
 }
 declare global {
-    interface HTMLMyComponentElement extends Components.MyComponent, HTMLStencilElement {
+    interface HTMLCodenamesCellElement extends Components.CodenamesCell, HTMLStencilElement {
     }
-    var HTMLMyComponentElement: {
-        prototype: HTMLMyComponentElement;
-        new (): HTMLMyComponentElement;
+    var HTMLCodenamesCellElement: {
+        prototype: HTMLCodenamesCellElement;
+        new (): HTMLCodenamesCellElement;
     };
     interface HTMLElementTagNameMap {
-        "my-component": HTMLMyComponentElement;
+        "codenames-cell": HTMLCodenamesCellElement;
     }
 }
 declare namespace LocalJSX {
-    interface MyComponent {
+    interface CodenamesCell {
         /**
-          * The first name
+          * Cell color.
          */
-        "first"?: string;
+        "color"?: CellColor;
         /**
-          * The last name
+          * Word shown in cell.
          */
-        "last"?: string;
-        /**
-          * The middle name
-         */
-        "middle"?: string;
+        "word"?: string;
     }
     interface IntrinsicElements {
-        "my-component": MyComponent;
+        "codenames-cell": CodenamesCell;
     }
 }
 export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "my-component": LocalJSX.MyComponent & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
+            "codenames-cell": LocalJSX.CodenamesCell & JSXBase.HTMLAttributes<HTMLCodenamesCellElement>;
         }
     }
 }
