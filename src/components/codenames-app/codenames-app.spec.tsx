@@ -1,5 +1,5 @@
 import { newSpecPage } from '@stencil/core/testing';
-import { CodenamesApp } from '../codenames-app';
+import { CodenamesApp } from './codenames-app';
 
 describe('codenames-app', () => {
   it('renders', async () => {
