@@ -1,24 +1,23 @@
-import { Config } from '@stencil/core';
-import { sass } from '@stencil/sass';
+import { Config } from "@stencil/core";
+import { sass } from "@stencil/sass";
 
 export const config: Config = {
-  namespace: 'codenames',
+  namespace: "codenames",
   sourceMap: true,
   outputTargets: [
     {
-      type: 'dist',
-      esmLoaderPath: '../loader',
+      type: "dist",
+      esmLoaderPath: "../loader",
     },
     {
-      type: 'dist-custom-elements',
+      type: "dist-custom-elements",
     },
     {
-      type: 'docs-readme',
+      type: "docs-readme",
     },
     {
-      type: 'www',
-      serviceWorker: null, // disable service workers
+      type: "www"
     },
   ],
-  plugins: [sass()]
+  plugins: [sass()],
 };

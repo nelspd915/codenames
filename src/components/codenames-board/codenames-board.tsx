@@ -10,7 +10,6 @@ export class CodenamesBoard {
 
   /**
    * Data list used to generate the cells.
-   * @length 25
    */
   @Prop() cellData?: CellData;
 
