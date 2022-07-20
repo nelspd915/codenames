@@ -16,7 +16,8 @@ export const config: Config = {
       type: "docs-readme",
     },
     {
-      type: "www"
+      type: "www",
+      baseUrl: "/codenames"
     },
   ],
   plugins: [sass()],
