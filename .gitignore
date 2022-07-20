@@ -19,7 +19,6 @@ log.txt
 .versions/
 node_modules/
 $RECYCLE.BIN/
-**/components.d.ts
 
 .DS_Store
 Thumbs.db
