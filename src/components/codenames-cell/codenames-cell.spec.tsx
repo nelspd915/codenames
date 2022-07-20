@@ -1,7 +1,7 @@
 import { h } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
-import { CodenamesCell } from '../codenames-cell';
-import { CellColor } from "../../../extra/types";
+import { CodenamesCell } from './codenames-cell';
+import { CellColor } from "../../extra/types";
 
 describe('codenames-cell', () => {
   it('renders', async () => {

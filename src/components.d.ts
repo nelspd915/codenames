@@ -7,10 +7,11 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { CellColor, CellData, CellMode } from "./extra/types";
 export namespace Components {
+    interface CodenamesApp {
+    }
     interface CodenamesBoard {
         /**
           * Data list used to generate the cells.
-          * @length 25
          */
         "cellData"?: CellData;
     }
@@ -34,6 +35,12 @@ export namespace Components {
     }
 }
 declare global {
+    interface HTMLCodenamesAppElement extends Components.CodenamesApp, HTMLStencilElement {
+    }
+    var HTMLCodenamesAppElement: {
+        prototype: HTMLCodenamesAppElement;
+        new (): HTMLCodenamesAppElement;
+    };
     interface HTMLCodenamesBoardElement extends Components.CodenamesBoard, HTMLStencilElement {
     }
     var HTMLCodenamesBoardElement: {
@@ -47,15 +54,17 @@ declare global {
         new (): HTMLCodenamesCellElement;
     };
     interface HTMLElementTagNameMap {
+        "codenames-app": HTMLCodenamesAppElement;
         "codenames-board": HTMLCodenamesBoardElement;
         "codenames-cell": HTMLCodenamesCellElement;
     }
 }
 declare namespace LocalJSX {
+    interface CodenamesApp {
+    }
     interface CodenamesBoard {
         /**
           * Data list used to generate the cells.
-          * @length 25
          */
         "cellData"?: CellData;
     }
@@ -78,6 +87,7 @@ declare namespace LocalJSX {
         "word"?: string;
     }
     interface IntrinsicElements {
+        "codenames-app": CodenamesApp;
         "codenames-board": CodenamesBoard;
         "codenames-cell": CodenamesCell;
     }
@@ -86,6 +96,7 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "codenames-app": LocalJSX.CodenamesApp & JSXBase.HTMLAttributes<HTMLCodenamesAppElement>;
             "codenames-board": LocalJSX.CodenamesBoard & JSXBase.HTMLAttributes<HTMLCodenamesBoardElement>;
             "codenames-cell": LocalJSX.CodenamesCell & JSXBase.HTMLAttributes<HTMLCodenamesCellElement>;
         }

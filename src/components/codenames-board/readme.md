@@ -14,6 +14,10 @@
 
 ## Dependencies
 
+### Used by
+
+ - [codenames-app](../codenames-app)
+
 ### Depends on
 
 - [codenames-cell](../codenames-cell)
@@ -22,6 +26,7 @@
 ```mermaid
 graph TD;
   codenames-board --> codenames-cell
+  codenames-app --> codenames-board
   style codenames-board fill:#f9f,stroke:#333,stroke-width:4px
 ```
 
