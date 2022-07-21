@@ -8,6 +8,7 @@
   "scripts": {
     "build": "turbo run build",
     "serve": "turbo run --filter=*backend* serve",
+    "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "frontend": "turbo run --filter=*frontend*",
