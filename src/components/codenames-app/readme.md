@@ -16,6 +16,7 @@
 graph TD;
   codenames-app --> codenames-board
   codenames-board --> codenames-cell
+  codenames-cell --> codenames-spinner
   style codenames-app fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

@@ -26,6 +26,7 @@
 ```mermaid
 graph TD;
   codenames-board --> codenames-cell
+  codenames-cell --> codenames-spinner
   codenames-app --> codenames-board
   style codenames-board fill:#f9f,stroke:#333,stroke-width:4px
 ```

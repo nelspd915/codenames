@@ -21,9 +21,14 @@
 
  - [codenames-board](../codenames-board)
 
+### Depends on
+
+- [codenames-spinner](../codenames-spinner)
+
 ### Graph
 ```mermaid
 graph TD;
+  codenames-cell --> codenames-spinner
   codenames-board --> codenames-cell
   style codenames-cell fill:#f9f,stroke:#333,stroke-width:4px
 ```
