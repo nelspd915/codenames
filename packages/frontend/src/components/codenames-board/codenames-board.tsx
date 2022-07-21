@@ -1,5 +1,5 @@
 import { Component, Host, h, Prop } from '@stencil/core';
-import { CellData } from "../../extra/types";
+import { BoardData } from "../../extra/types";
 
 @Component({
   tag: 'codenames-board',
@@ -9,9 +9,9 @@ import { CellData } from "../../extra/types";
 export class CodenamesBoard {
 
   /**
-   * Cell data used to generate the cells.
+   * Board data used to generate the cells.
    */
-  @Prop() cellData?: CellData;
+  @Prop() boardData?: BoardData;
 
   /**
    * Stencil lifecycle method `render` for `codenames-board` component.
@@ -19,13 +19,14 @@ export class CodenamesBoard {
   render(): void {
     return (
       <Host>
-        {this.cellData?.map((eachCellData) => {
+        {this.boardData?.map((cellData, i) => {
           return (
             <codenames-cell
-              word={eachCellData.word}
-              color={eachCellData.color}
-              mode={eachCellData.mode}
-              revealed={eachCellData.revealed}
+              index={i}
+              word={cellData.word}
+              color={cellData.color}
+              mode={cellData.mode}
+              revealed={cellData.revealed}
             ></codenames-cell>
           )
         }) ?? null}

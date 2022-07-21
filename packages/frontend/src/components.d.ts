@@ -5,29 +5,33 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { CellColor, CellData, CellMode } from "./extra/types";
+import { BoardData, CellColor, CellMode } from "./extra/types";
 export namespace Components {
     interface CodenamesApp {
     }
     interface CodenamesBoard {
         /**
-          * Cell data used to generate the cells.
+          * Board data used to generate the cells.
          */
-        "cellData"?: CellData;
+        "boardData"?: BoardData;
     }
     interface CodenamesCell {
         /**
           * Cell color.
          */
-        "color": CellColor;
+        "color"?: CellColor;
+        /**
+          * Index of the cell.
+         */
+        "index": number;
         /**
           * Cell display mode.
          */
-        "mode": CellMode;
+        "mode"?: CellMode;
         /**
           * Whether the cell is revealed.
          */
-        "revealed": boolean;
+        "revealed"?: boolean;
         /**
           * Word shown in cell.
          */
@@ -35,6 +39,10 @@ export namespace Components {
     }
     interface CodenamesSpinner {
     }
+}
+export interface CodenamesCellCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLCodenamesCellElement;
 }
 declare global {
     interface HTMLCodenamesAppElement extends Components.CodenamesApp, HTMLStencilElement {
@@ -73,9 +81,9 @@ declare namespace LocalJSX {
     }
     interface CodenamesBoard {
         /**
-          * Cell data used to generate the cells.
+          * Board data used to generate the cells.
          */
-        "cellData"?: CellData;
+        "boardData"?: BoardData;
     }
     interface CodenamesCell {
         /**
@@ -83,9 +91,17 @@ declare namespace LocalJSX {
          */
         "color"?: CellColor;
         /**
+          * Index of the cell.
+         */
+        "index"?: number;
+        /**
           * Cell display mode.
          */
         "mode"?: CellMode;
+        /**
+          * Event fired upon clicking a cell to reveal it.
+         */
+        "onRevealCell"?: (event: CodenamesCellCustomEvent<number>) => void;
         /**
           * Whether the cell is revealed.
          */

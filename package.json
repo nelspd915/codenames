@@ -1,47 +1,27 @@
 {
   "name": "codenames",
-  "version": "0.0.1",
-  "description": "Multiplayer web app for the game Codenames. Inspired by https://github.com/jbowens/codenames.",
-  "author": {
-    "name": "Nels Danielson",
-    "email": "nelspd915@gmail.com"
-  },
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.js",
-  "es2015": "dist/esm/index.mjs",
-  "es2017": "dist/esm/index.mjs",
-  "types": "dist/types/index.d.ts",
-  "collection": "dist/collection/collection-manifest.json",
-  "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/codenames/codenames.esm.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ionic-team/stencil-component-starter.git"
-  },
-  "files": [
-    "dist/",
-    "loader/"
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "stencil build --docs",
-    "start": "stencil build --dev --watch --serve",
-    "test": "stencil test --spec",
-    "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate",
-    "deploy": "npx gh-pages -d www/codenames"
-  },
-  "dependencies": {
-    "@stencil/core": "^2.13.0",
-    "axios": "^0.27.2",
-    "socket.io-client": "^4.5.1"
+    "build": "turbo run build",
+    "serve": "turbo run --filter=*backend* serve",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "frontend": "turbo run --filter=*frontend*",
+    "backend": "turbo run --filter=*backend*"
   },
   "devDependencies": {
-    "@stencil/sass": "^1.5.2",
-    "@types/jest": "^27.0.3",
-    "jest": "^27.4.5",
-    "jest-cli": "^27.4.5",
-    "puppeteer": "^15.4.0",
-    "workbox-build": "^4.3.1"
+    "eslint-config-custom": "*",
+    "prettier": "latest",
+    "turbo": "latest"
   },
-  "license": "MIT"
+  "engines": {
+    "npm": ">=7.0.0",
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "packageManager": "npm@8.13.2"
 }

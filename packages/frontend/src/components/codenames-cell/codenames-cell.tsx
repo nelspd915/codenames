@@ -1,4 +1,4 @@
-import { Component, Prop, h, State } from "@stencil/core";
+import { Component, Prop, h, State, Event, EventEmitter } from "@stencil/core";
 import { CellColor, CellMode } from "../../extra/types";
 
 @Component({
@@ -8,6 +8,11 @@ import { CellColor, CellMode } from "../../extra/types";
 })
 export class CodenamesCell {
   /**
+   * Index of the cell.
+   */
+  @Prop() index: number;
+
+  /**
    * Word shown in cell.
    */
   @Prop() word: string = "";
@@ -15,17 +20,17 @@ export class CodenamesCell {
   /**
    * Cell color.
    */
-  @Prop() color: CellColor = CellColor.Gray;
+  @Prop() color?: CellColor = CellColor.Gray;
 
   /**
    * Cell display mode.
    */
-  @Prop() mode: CellMode = CellMode.Normal;
+  @Prop() mode?: CellMode = CellMode.Normal;
 
   /**
    * Whether the cell is revealed.
    */
-  @Prop() revealed: boolean = false;
+  @Prop() revealed?: boolean = false;
 
   /**
    * Whether to show loading spinner.
@@ -33,13 +38,19 @@ export class CodenamesCell {
   @State() private showSpinner: boolean = false;
 
   /**
+   * Event fired upon clicking a cell to reveal it.
+   */
+  @Event({ bubbles: true }) revealCell: EventEmitter<number>;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
+    this.showSpinner = false;
     return (
       <div
         class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}
-        onClick={this.revealCell}
+        onClick={this.handleRevealCell}
       >
         {this.showSpinner ?
           <codenames-spinner></codenames-spinner> :
@@ -52,14 +63,10 @@ export class CodenamesCell {
   /**
    * Sends request to reveal this cell on the board.
    */
-  private revealCell = async (): Promise<void> => {
+  private handleRevealCell = async (): Promise<void> => {
     if (this.mode === CellMode.Normal && this.revealed === false) {
       this.showSpinner = true;
-      // TODO: emit reveal event instead of setting own prop
-      setTimeout(() => {
-        this.showSpinner = false;
-        this.revealed = true;
-      }, 500);
+      this.revealCell.emit(this.index)
     }
   }
 }
