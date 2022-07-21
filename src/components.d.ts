@@ -33,6 +33,8 @@ export namespace Components {
          */
         "word": string;
     }
+    interface CodenamesSpinner {
+    }
 }
 declare global {
     interface HTMLCodenamesAppElement extends Components.CodenamesApp, HTMLStencilElement {
@@ -53,10 +55,17 @@ declare global {
         prototype: HTMLCodenamesCellElement;
         new (): HTMLCodenamesCellElement;
     };
+    interface HTMLCodenamesSpinnerElement extends Components.CodenamesSpinner, HTMLStencilElement {
+    }
+    var HTMLCodenamesSpinnerElement: {
+        prototype: HTMLCodenamesSpinnerElement;
+        new (): HTMLCodenamesSpinnerElement;
+    };
     interface HTMLElementTagNameMap {
         "codenames-app": HTMLCodenamesAppElement;
         "codenames-board": HTMLCodenamesBoardElement;
         "codenames-cell": HTMLCodenamesCellElement;
+        "codenames-spinner": HTMLCodenamesSpinnerElement;
     }
 }
 declare namespace LocalJSX {
@@ -86,10 +95,13 @@ declare namespace LocalJSX {
          */
         "word"?: string;
     }
+    interface CodenamesSpinner {
+    }
     interface IntrinsicElements {
         "codenames-app": CodenamesApp;
         "codenames-board": CodenamesBoard;
         "codenames-cell": CodenamesCell;
+        "codenames-spinner": CodenamesSpinner;
     }
 }
 export { LocalJSX as JSX };
@@ -99,6 +111,7 @@ declare module "@stencil/core" {
             "codenames-app": LocalJSX.CodenamesApp & JSXBase.HTMLAttributes<HTMLCodenamesAppElement>;
             "codenames-board": LocalJSX.CodenamesBoard & JSXBase.HTMLAttributes<HTMLCodenamesBoardElement>;
             "codenames-cell": LocalJSX.CodenamesCell & JSXBase.HTMLAttributes<HTMLCodenamesCellElement>;
+            "codenames-spinner": LocalJSX.CodenamesSpinner & JSXBase.HTMLAttributes<HTMLCodenamesSpinnerElement>;
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Component, Prop, h } from "@stencil/core";
+import { Component, Prop, h, State } from "@stencil/core";
 import { CellColor, CellMode } from "../../extra/types";
 
 @Component({
@@ -28,6 +28,11 @@ export class CodenamesCell {
   @Prop() revealed: boolean = false;
 
   /**
+   * Whether to show loading spinner.
+   */
+  @State() private showSpinner: boolean = false;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
@@ -36,7 +41,10 @@ export class CodenamesCell {
         class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}
         onClick={this.revealCell}
       >
-        <span class={"word"}>{this.word.toUpperCase()}</span>
+        {this.showSpinner ?
+          <codenames-spinner></codenames-spinner> :
+          <span>{this.word.toUpperCase()}</span>
+        }
       </div>
     );
   }
@@ -44,9 +52,12 @@ export class CodenamesCell {
   /**
    * Sends request to reveal this cell on the board.
    */
-  private revealCell = (): void => {
-    // TODO: enable spinner here
-    // TODO: emit reveal event here
-    console.log(`cell ${this.word} clicked`)
+  private revealCell = async (): Promise<void> => {
+    this.showSpinner = true;
+    // TODO: emit reveal event instead of setting own prop
+    setTimeout(() => {
+      this.showSpinner = false;
+      this.revealed = true;
+    }, 500);
   }
 }
