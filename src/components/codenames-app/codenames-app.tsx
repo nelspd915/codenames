@@ -30,7 +30,7 @@ export class CodenamesApp {
    * Stencil lifecycle method `componentDidRender` for `codenames-app` component.
    */
   componentDidRender() {
-    axios.get("http://127.0.0.1:8000/api/dummyData").then((res) => {
+    axios.get("http://localhost:8080/gameboard").then((res) => {
       this.board.cellData = res.data;
     });
   }
