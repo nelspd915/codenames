@@ -30,7 +30,7 @@ export class CodenamesCell {
   /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
-  render() {
+  render(): void {
     return <div class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}>
       <span class={"word"}>{this.word.toUpperCase()}</span>
     </div>;

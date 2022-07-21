@@ -34,7 +34,7 @@ def getDummyData(request):
     """
 
     # Opening JSON file
-    f = open(str(BASE_DIR) + '/api/utils/data/dummyData.json')
+    f = open(str(BASE_DIR) + '/api/data/dummyData.json')
 
     # returns JSON object as
     # a dictionary

@@ -9,14 +9,14 @@ import { CellData } from "../../extra/types";
 export class CodenamesBoard {
 
   /**
-   * Data list used to generate the cells.
+   * Cell data used to generate the cells.
    */
   @Prop() cellData?: CellData;
 
   /**
    * Stencil lifecycle method `render` for `codenames-board` component.
    */
-  render() {
+  render(): void {
     return (
       <Host>
         {this.cellData?.map((eachCellData) => {

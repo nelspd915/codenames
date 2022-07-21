@@ -11,7 +11,7 @@ export namespace Components {
     }
     interface CodenamesBoard {
         /**
-          * Data list used to generate the cells.
+          * Cell data used to generate the cells.
          */
         "cellData"?: CellData;
     }
@@ -64,7 +64,7 @@ declare namespace LocalJSX {
     }
     interface CodenamesBoard {
         /**
-          * Data list used to generate the cells.
+          * Cell data used to generate the cells.
          */
         "cellData"?: CellData;
     }
