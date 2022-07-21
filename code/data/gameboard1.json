@@ -1,0 +1,126 @@
+[
+  {
+    "word": "beat",
+    "color": "black",
+    "mode": "spymaster"
+  },
+  {
+    "word": "oil",
+    "color": "black",
+    "mode": "endgame"
+  },
+  {
+    "word": "hotel",
+    "color": "black",
+    "mode": "normal",
+    "revealed": true
+  },
+  {
+    "word": "olive",
+    "color": "blue",
+    "mode": "spymaster"
+  },
+  {
+    "word": "port",
+    "color": "blue",
+    "mode": "endgame"
+  },
+  {
+    "word": "bomb",
+    "color": "blue",
+    "mode": "normal",
+    "revealed": true
+  },
+  {
+    "word": "yard",
+    "color": "red",
+    "mode": "spymaster"
+  },
+  {
+    "word": "centaur",
+    "color": "red",
+    "mode": "endgame"
+  },
+  {
+    "word": "link",
+    "color": "red",
+    "mode": "normal",
+    "revealed": true
+  },
+  {
+    "word": "seal",
+    "color": "gray",
+    "mode": "spymaster"
+  },
+  {
+    "word": "pole",
+    "color": "gray",
+    "mode": "endgame"
+  },
+  {
+    "word": "chair",
+    "color": "gray",
+    "mode": "normal",
+    "revealed": true
+  },
+  {
+    "word": "princess",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": true
+  },
+  {
+    "word": "fair",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": true
+  },
+  {
+    "word": "queen",
+    "color": "black",
+    "mode": "spymaster",
+    "revealed": true
+  },
+  {
+    "word": "grass",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": true
+  },
+  {
+    "word": "octopus",
+    "color": "red"
+  },
+  {
+    "word": "glove",
+    "color": "gray"
+  },
+  {
+    "word": "cross",
+    "color": "gray"
+  },
+  {
+    "word": "watch",
+    "color": "red"
+  },
+  {
+    "word": "file",
+    "color": "blue"
+  },
+  {
+    "word": "nail",
+    "color": "blue"
+  },
+  {
+    "word": "brush",
+    "color": "blue"
+  },
+  {
+    "word": "bow",
+    "color": "red"
+  },
+  {
+    "word": "parachute",
+    "color": "red"
+  }
+]
