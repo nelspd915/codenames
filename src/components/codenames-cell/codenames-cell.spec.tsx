@@ -4,7 +4,7 @@ import { CodenamesCell } from './codenames-cell';
 import { CellColor } from "../../extra/types";
 
 describe('codenames-cell', () => {
-  it.skip('renders', async () => {
+  it('renders', async () => {
     const { root } = await newSpecPage({
       components: [CodenamesCell],
       template: () => <codenames-cell word="ivory" color={CellColor.Blue}></codenames-cell>,
