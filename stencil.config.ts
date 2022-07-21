@@ -17,7 +17,13 @@ export const config: Config = {
     },
     {
       type: "www",
-      baseUrl: "/codenames"
+      baseUrl: "/codenames",
+      copy: [
+        {
+          src: "main.js",
+          dest: "main.js"
+        }
+      ]
     },
   ],
   plugins: [sass()],

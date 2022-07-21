@@ -9,7 +9,6 @@ describe('codenames-cell', () => {
       components: [CodenamesCell],
       template: () => <codenames-cell word="ivory" color={CellColor.Blue}></codenames-cell>,
     });
-    console.log(root);
     expect(root).toBeTruthy();
     expect(root.tagName).toBe("CODENAMES-CELL");
     expect(root.word).toBe("ivory");

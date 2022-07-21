@@ -1,5 +1,6 @@
 import { Component, Host, h } from '@stencil/core';
 import axios from "axios";
+import { CellData } from "../../extra/types";
 
 @Component({
   tag: 'codenames-app',
@@ -9,29 +10,26 @@ import axios from "axios";
 export class CodenamesApp {
 
   /**
-   * Codenames board element to display game state.
+   * Cell data passed to codenames-board used to generate cells.
    */
-  private board: HTMLCodenamesBoardElement;
+  private cellData: CellData;
+
+  /**
+   * Stencil lifecycle method `componentWillRender` for `codenames-app` component.
+   */
+  async componentWillRender(): Promise<void> {
+    const res = await axios.get("http://localhost:8080/gameboard");
+    this.cellData = res.data;
+  }
 
   /**
    * Stencil lifecycle method `render` for `codenames-app` component.
    */
-  render() {
+  render(): void {
     return (
       <Host>
-        <codenames-board ref={(el) => {
-          this.board = el;
-        }}></codenames-board>
+        <codenames-board cellData={this.cellData}></codenames-board>
       </Host>
     );
-  }
-
-  /**
-   * Stencil lifecycle method `componentDidRender` for `codenames-app` component.
-   */
-  componentDidRender() {
-    axios.get("http://localhost:8080/gameboard").then((res) => {
-      this.board.cellData = res.data;
-    });
   }
 }
