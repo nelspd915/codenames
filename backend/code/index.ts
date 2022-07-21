@@ -1,17 +1,23 @@
+import express from "express";
+import cors from "cors";
+import { Server } from "socket.io";
+
+// Fetch gameboard data
+import gameboard from "./data/gameboard.json";
+
 // Initialize and configure server
-const express = require("express");
 const app = express();
-const cors = require("cors");
-const PORT = 8080;
+const EXPRESS_PORT: number = 8080;
+const SOCKET_PORT: number = 8000;
 
 // Initialize web sockets with socket.io
-const io = require("socket.io")(8000, {
+const io = new Server(SOCKET_PORT, {
     cors: {
         origin: ["http://localhost:3333"]
     }
 });
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
     socket.on("revealCell", (cell) => {
         console.log(cell);
     });
@@ -21,16 +27,13 @@ io.on("connection", socket => {
 app.use(express.json());
 app.use(cors());
 
-// Fetch gameboard data
-const gameBoard = require("./gameboard");
-
 // Api routes
 app.get("/gameboard", (req, res) => {
-    res.status(200).send(gameBoard);
+    res.status(200).send(gameboard);
 });
 
 // Open server to listen for requests
 app.listen(
-    PORT,
-    () => console.log(`server live on http://localhost:${PORT}`)
+    EXPRESS_PORT,
+    () => console.log(`server live on http://localhost:${EXPRESS_PORT}`)
 );
