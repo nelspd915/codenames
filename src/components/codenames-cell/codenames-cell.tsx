@@ -53,11 +53,13 @@ export class CodenamesCell {
    * Sends request to reveal this cell on the board.
    */
   private revealCell = async (): Promise<void> => {
-    this.showSpinner = true;
-    // TODO: emit reveal event instead of setting own prop
-    setTimeout(() => {
-      this.showSpinner = false;
-      this.revealed = true;
-    }, 500);
+    if (this.mode === CellMode.Normal && this.revealed === false) {
+      this.showSpinner = true;
+      // TODO: emit reveal event instead of setting own prop
+      setTimeout(() => {
+        this.showSpinner = false;
+        this.revealed = true;
+      }, 500);
+    }
   }
 }
