@@ -1,4 +1,4 @@
-import { r as registerInstance, h, e as Host } from './index-7f14832d.js';
+import { r as registerInstance, h, e as Host } from './index-a676ed0a.js';
 
 const codenamesBoardCss = ":host{display:flex;margin:50px;flex-wrap:wrap;justify-content:space-between;height:600px}";
 

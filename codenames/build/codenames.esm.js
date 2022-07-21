@@ -1,4 +1,4 @@
-import { B as BUILD, c as consoleDevInfo, p as plt, w as win, H, d as doc, N as NAMESPACE, a as promiseResolve, b as bootstrapLazy } from './index-7f14832d.js';
+import { B as BUILD, c as consoleDevInfo, p as plt, w as win, H, d as doc, N as NAMESPACE, a as promiseResolve, b as bootstrapLazy } from './index-a676ed0a.js';
 import { g as globalScripts } from './app-globals-0f993ce5.js';
 
 /*
@@ -125,7 +125,7 @@ const patchCloneNodeFix = (HTMLElementPrototype) => {
 
 patchBrowser().then(options => {
   globalScripts();
-  return bootstrapLazy([["codenames-cell",[[1,"codenames-cell",{"word":[1],"color":[1],"mode":[1],"revealed":[4]}]]],["codenames-board",[[1,"codenames-board",{"cellData":[16]}]]]], options);
+  return bootstrapLazy([["codenames-spinner",[[1,"codenames-spinner"]]],["codenames-cell",[[1,"codenames-cell",{"word":[1],"color":[1],"mode":[1],"revealed":[4],"showSpinner":[32]}]]],["codenames-board",[[1,"codenames-board",{"cellData":[16]}]]],["codenames-app",[[1,"codenames-app"]]]], options);
 });
 
 //# sourceMappingURL=codenames.esm.js.map
