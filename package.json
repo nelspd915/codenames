@@ -28,8 +28,7 @@
     "test": "stencil test --spec",
     "test.watch": "stencil test --spec --e2e --watchAll",
     "generate": "stencil generate",
-    "deploy": "npx gh-pages -d www",
-    "server": "python backend/manage.py runserver"
+    "deploy": "npx gh-pages -d www"
   },
   "dependencies": {
     "@stencil/core": "^2.13.0",
