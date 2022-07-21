@@ -9,7 +9,7 @@
 
 | Property   | Attribute | Description                           | Type               | Default     |
 | ---------- | --------- | ------------------------------------- | ------------------ | ----------- |
-| `cellData` | --        | Data list used to generate the cells. | `SingleCellData[]` | `undefined` |
+| `cellData` | --        | Cell data used to generate the cells. | `SingleCellData[]` | `undefined` |
 
 
 ## Dependencies

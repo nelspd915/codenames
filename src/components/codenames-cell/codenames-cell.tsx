@@ -31,8 +31,22 @@ export class CodenamesCell {
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
-    return <div class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}>
-      <span class={"word"}>{this.word.toUpperCase()}</span>
-    </div>;
+    return (
+      <div
+        class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}
+        onClick={this.revealCell}
+      >
+        <span class={"word"}>{this.word.toUpperCase()}</span>
+      </div>
+    );
+  }
+
+  /**
+   * Sends request to reveal this cell on the board.
+   */
+  private revealCell = (): void => {
+    // TODO: enable spinner here
+    // TODO: emit reveal event here
+    console.log(`cell ${this.word} clicked`)
   }
 }

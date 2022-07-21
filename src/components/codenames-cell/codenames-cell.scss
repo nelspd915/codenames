@@ -13,6 +13,10 @@ div {
   font-family: Roboto, verdana, sans-serif;
   font-size: 15pt;
   background: #e8e8e8;
+  cursor: pointer;
+  &.revealed, &.spymaster, &.endgame {
+    cursor: default;
+  }
 }
 
 .blue {
