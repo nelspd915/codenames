@@ -1,24 +1,24 @@
-import { BoardData, CellColor, CellMode } from "codenames-frontend";
+import { BoardData, CellData, Color, Mode } from "codenames-frontend";
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
 
 const addColoredCells = (
   board: BoardData,
   count: number,
-  color: CellColor,
+  color: Color,
   words: string[]
 ) => {
   for (let i = 0; i < count; i += 1) {
     board.push({
       word: words.pop() ?? "",
       color: color,
-      mode: CellMode.Spymaster,
+      mode: Mode.Spymaster,
       revealed: false,
     });
   }
 };
 
-export const generateBoard = (
+export const generateMasterBoard = (
   blue: number,
   red: number,
   gray: number,
@@ -28,10 +28,21 @@ export const generateBoard = (
   const chosenWords = sampleSize(words, wordCount);
   const board: BoardData = [];
 
-  addColoredCells(board, red, CellColor.Red, chosenWords);
-  addColoredCells(board, blue, CellColor.Blue, chosenWords);
-  addColoredCells(board, black, CellColor.Black, chosenWords);
-  addColoredCells(board, gray, CellColor.Gray, chosenWords);
+  addColoredCells(board, red, Color.Red, chosenWords);
+  addColoredCells(board, blue, Color.Blue, chosenWords);
+  addColoredCells(board, black, Color.Black, chosenWords);
+  addColoredCells(board, gray, Color.Gray, chosenWords);
 
   return shuffle(board);
 };
+
+export const generatePublicBoard = (board: BoardData): BoardData => {
+  return board.map((masterCell) => {
+    const publicCell: CellData = {
+      word: masterCell.word,
+      mode: Mode.Normal,
+      revealed: false
+    };
+    return publicCell;
+  })
+}

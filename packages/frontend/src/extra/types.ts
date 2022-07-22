@@ -1,17 +1,21 @@
+import { Socket } from "socket.io";
+
 /**
  * Enumerator for possible cell colors.
  */
-export enum CellColor {
+export enum Color {
   Blue = "blue",
   Red = "red",
   Gray = "gray",
   Black = "black"
 }
 
+export type Team = Extract<Color, Color.Blue | Color.Red>;
+
 /**
  * Possible display modes for a cell.
  */
-export enum CellMode {
+export enum Mode {
   Normal = "normal",
   Spymaster = "spymaster",
   Endgame = "endgame"
@@ -27,7 +31,17 @@ export type BoardData = CellData[];
  */
 export interface CellData {
   word: string,
-  color?: CellColor,
-  mode?: CellMode,
+  color?: Color,
+  mode?: Mode,
   revealed?: boolean
+}
+
+/**
+ * Data to apply to a player.
+ */
+export interface PlayerData {
+  socket: Socket,
+  username?: string,
+  mode?: Mode,
+  team?: Team
 }

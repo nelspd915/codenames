@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { BoardData, CellColor, CellMode } from "./extra/types";
+import { BoardData, Color, Mode } from "./extra/types";
 export namespace Components {
     interface CodenamesApp {
     }
@@ -19,7 +19,7 @@ export namespace Components {
         /**
           * Cell color.
          */
-        "color"?: CellColor;
+        "color"?: Color;
         /**
           * Index of the cell.
          */
@@ -27,7 +27,7 @@ export namespace Components {
         /**
           * Cell display mode.
          */
-        "mode"?: CellMode;
+        "mode"?: Mode;
         /**
           * Whether the cell is revealed.
          */
@@ -89,7 +89,7 @@ declare namespace LocalJSX {
         /**
           * Cell color.
          */
-        "color"?: CellColor;
+        "color"?: Color;
         /**
           * Index of the cell.
          */
@@ -97,7 +97,7 @@ declare namespace LocalJSX {
         /**
           * Cell display mode.
          */
-        "mode"?: CellMode;
+        "mode"?: Mode;
         /**
           * Event fired upon clicking a cell to reveal it.
          */
