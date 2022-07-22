@@ -1,6 +1,7 @@
 import { Component, Host, h, Listen, State } from '@stencil/core';
 import { BoardData } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
+import { SERVER_URL } from "../../extra/constants";
 
 @Component({
   tag: 'codenames-app',
@@ -29,7 +30,7 @@ export class CodenamesApp {
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
    */
   async connectedCallback(): Promise<void> {
-    this.socket = io("https://bestdotaeu-codenames-backend.herokuapp.com");
+    this.socket = io(SERVER_URL);
     this.socket.on("updateBoard", (boardData: BoardData) => {
       this.boardData = boardData;
     });
