@@ -9,13 +9,13 @@ const masterBoard = gameboard2 as BoardData;
 
 // Initialize and configure server
 const app = express();
-const EXPRESS_PORT: number = 8080;
+const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
 const SOCKET_PORT: number = 8000;
 
 // Initialize web sockets with socket.io
 const io = new Server(SOCKET_PORT, {
     cors: {
-        origin: ["http://localhost:3333"]
+        origin: ["http://localhost:3333", "https://nelspd915.github.io/codenames"]
     }
 });
 
