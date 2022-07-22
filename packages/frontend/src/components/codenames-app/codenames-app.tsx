@@ -1,7 +1,7 @@
 import { Component, Host, h, Listen, State } from '@stencil/core';
 import { BoardData } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
-import { PROD_URL } from "../../extra/constants";
+import { PROD_URL, DEV_URL } from "../../extra/constants";
 
 @Component({
   tag: 'codenames-app',
@@ -30,7 +30,9 @@ export class CodenamesApp {
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
    */
   async connectedCallback(): Promise<void> {
-    this.socket = io(PROD_URL);
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get("dev") === "true" ? DEV_URL : PROD_URL;
+    this.socket = io(url);
     this.socket.on("updateBoard", (boardData: BoardData) => {
       this.boardData = boardData;
     });

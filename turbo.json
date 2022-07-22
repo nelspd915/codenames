@@ -19,7 +19,6 @@
       "cache": false
     },
     "serve": {
-      "dependsOn": ["build", "^build"],
       "cache": false
     },
     "deploy": {
