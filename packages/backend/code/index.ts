@@ -56,7 +56,7 @@ app.use(express.json());
 app.use(cors());
 
 // Open server to listen for requests
-app.listen(
+server.listen(
     EXPRESS_PORT,
     () => console.log(`server live on http://localhost:${EXPRESS_PORT}`)
 );
