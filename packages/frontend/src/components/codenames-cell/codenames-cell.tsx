@@ -1,5 +1,5 @@
 import { Component, Prop, h, State, Event, EventEmitter, Watch } from "@stencil/core";
-import { CellColor, CellMode } from "../../extra/types";
+import { Color, Mode } from "../../extra/types";
 
 @Component({
   tag: "codenames-cell",
@@ -20,12 +20,12 @@ export class CodenamesCell {
   /**
    * Cell color.
    */
-  @Prop() color?: CellColor = CellColor.Gray;
+  @Prop() color?: Color = Color.Gray;
 
   /**
    * Cell display mode.
    */
-  @Prop() mode?: CellMode = CellMode.Normal;
+  @Prop() mode?: Mode = Mode.Normal;
 
   /**
    * Whether the cell is revealed.
@@ -71,7 +71,7 @@ export class CodenamesCell {
    * Sends request to reveal this cell on the board.
    */
   private handleRevealCell = async (): Promise<void> => {
-    if (this.mode === CellMode.Normal && this.revealed === false) {
+    if (this.mode === Mode.Normal && this.revealed === false) {
       this.showSpinner = true;
       this.revealCell.emit(this.index)
     }
