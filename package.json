@@ -13,7 +13,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "frontend": "turbo run --filter=*frontend*",
-    "backend": "turbo run --filter=*backend*"
+    "backend": "turbo run --filter=*backend*",
+    "deploy": "npx gh-pages -d packages/frontend/www/codenames"
   },
   "devDependencies": {
     "eslint-config-custom": "*",

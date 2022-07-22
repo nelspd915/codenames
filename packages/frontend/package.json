@@ -23,8 +23,7 @@
     "start": "stencil build --watch --serve",
     "test": "stencil test --spec",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate",
-    "deploy": "npx gh-pages -d www/codenames"
+    "generate": "stencil generate"
   },
   "dependencies": {
     "@stencil/core": "^2.13.0",

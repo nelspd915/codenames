@@ -16,7 +16,7 @@ const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
 // Initialize web sockets with socket.io
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:3333", "https://nelspd915.github.io/codenames"]
+        origin: ["http://localhost:3333", "https://nelspd915.github.io"]
     }
 });
 
