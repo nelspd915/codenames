@@ -10,7 +10,7 @@ const masterBoard = gameboard2 as BoardData;
 // Initialize and configure server
 const app = express();
 const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
-const SOCKET_PORT: number = 8000;
+const SOCKET_PORT: number = EXPRESS_PORT;
 
 // Initialize web sockets with socket.io
 const io = new Server(SOCKET_PORT, {
