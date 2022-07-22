@@ -1,0 +1,152 @@
+[
+  {
+    "word": "beat",
+    "color": "black",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "oil",
+    "color": "black",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "hotel",
+    "color": "black",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "olive",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "port",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "bomb",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "yard",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "centaur",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "link",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "seal",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "pole",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "chair",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "princess",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "fair",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "queen",
+    "color": "black",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "grass",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "octopus",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "glove",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "cross",
+    "color": "gray",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "watch",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "file",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "nail",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "brush",
+    "color": "blue",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "bow",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  },
+  {
+    "word": "parachute",
+    "color": "red",
+    "mode": "spymaster",
+    "revealed": false
+  }
+]

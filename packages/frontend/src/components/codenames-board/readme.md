@@ -7,9 +7,9 @@
 
 ## Properties
 
-| Property   | Attribute | Description                           | Type               | Default     |
-| ---------- | --------- | ------------------------------------- | ------------------ | ----------- |
-| `cellData` | --        | Cell data used to generate the cells. | `SingleCellData[]` | `undefined` |
+| Property    | Attribute | Description                            | Type         | Default     |
+| ----------- | --------- | -------------------------------------- | ------------ | ----------- |
+| `boardData` | --        | Board data used to generate the cells. | `CellData[]` | `undefined` |
 
 
 ## Dependencies
