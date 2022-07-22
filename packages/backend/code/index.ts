@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import http from "http";
 import { Server, Socket } from "socket.io";
 import { BoardData, CellData, CellMode } from "codenames-frontend";
 
@@ -9,13 +10,13 @@ const masterBoard = gameboard2 as BoardData;
 
 // Initialize and configure server
 const app = express();
-const EXPRESS_PORT: number = 8080;
-const SOCKET_PORT: number = 8000;
+const server = http.createServer(app);
+const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
 
 // Initialize web sockets with socket.io
-const io = new Server(SOCKET_PORT, {
+const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:3333"]
+        origin: ["http://localhost:3333", "https://nelspd915.github.io"]
     }
 });
 
@@ -55,7 +56,7 @@ app.use(express.json());
 app.use(cors());
 
 // Open server to listen for requests
-app.listen(
+server.listen(
     EXPRESS_PORT,
     () => console.log(`server live on http://localhost:${EXPRESS_PORT}`)
 );

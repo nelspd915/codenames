@@ -29,7 +29,7 @@ export class CodenamesApp {
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
    */
   async connectedCallback(): Promise<void> {
-    this.socket = io("http://localhost:8000");
+    this.socket = io("https://bestdotaeu-codenames-backend.herokuapp.com");
     this.socket.on("updateBoard", (boardData: BoardData) => {
       this.boardData = boardData;
     });
