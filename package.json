@@ -9,12 +9,12 @@
     "build": "turbo run build",
     "serve": "turbo run --filter=*backend* serve",
     "start": "node packages/backend/build/index.js",
+    "deploy": "turbo run deploy",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "frontend": "turbo run --filter=*frontend*",
-    "backend": "turbo run --filter=*backend*",
-    "deploy": "npx gh-pages -d packages/frontend/www/codenames"
+    "backend": "turbo run --filter=*backend*"
   },
   "devDependencies": {
     "eslint-config-custom": "*",

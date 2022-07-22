@@ -20,10 +20,11 @@
   ],
   "scripts": {
     "build": "stencil build --docs",
-    "start": "stencil build --watch --serve",
+    "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate"
+    "generate": "stencil generate",
+    "deploy": "npx gh-pages -d www/codenames"
   },
   "dependencies": {
     "@stencil/core": "^2.13.0",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@stencil/sass": "^1.5.2",
     "@types/jest": "^27.0.3",
+    "cross-env": "^7.0.3",
     "jest": "^27.4.5",
     "jest-cli": "^27.4.5",
     "puppeteer": "^15.4.0",

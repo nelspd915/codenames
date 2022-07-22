@@ -1,4 +1,4 @@
-import { Component, Prop, h, State, Event, EventEmitter } from "@stencil/core";
+import { Component, Prop, h, State, Event, EventEmitter, Watch } from "@stencil/core";
 import { CellColor, CellMode } from "../../extra/types";
 
 @Component({
@@ -33,6 +33,14 @@ export class CodenamesCell {
   @Prop() revealed?: boolean = false;
 
   /**
+   * Watcher for `revealed` prop.
+   */
+  @Watch("revealed")
+  revealedChanged(): void {
+    this.showSpinner = false;
+  }
+
+  /**
    * Whether to show loading spinner.
    */
   @State() private showSpinner: boolean = false;
@@ -46,7 +54,6 @@ export class CodenamesCell {
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
-    this.showSpinner = false;
     return (
       <div
         class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}

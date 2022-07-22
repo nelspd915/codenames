@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc -w",
-    "serve": "nodemon build/index.js"
+    "serve": "nodemon build/index.js",
+    "deploy": "git push heroku master"
   },
   "keywords": [],
   "author": "",
