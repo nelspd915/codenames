@@ -8,6 +8,7 @@
   "scripts": {
     "build": "turbo run build",
     "serve": "turbo run --filter=*backend* serve",
+    "start": "node packages/backend/build/index.js",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
