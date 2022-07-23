@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { BoardData, Color, Mode } from "./extra/types";
+import { BoardData, Color, Mode, Scores } from "./extra/types";
 export namespace Components {
     interface CodenamesApp {
     }
@@ -37,6 +37,12 @@ export namespace Components {
          */
         "word": string;
     }
+    interface CodenamesScores {
+        /**
+          * Scores to display.
+         */
+        "scores"?: Scores;
+    }
     interface CodenamesSpinner {
     }
 }
@@ -63,6 +69,12 @@ declare global {
         prototype: HTMLCodenamesCellElement;
         new (): HTMLCodenamesCellElement;
     };
+    interface HTMLCodenamesScoresElement extends Components.CodenamesScores, HTMLStencilElement {
+    }
+    var HTMLCodenamesScoresElement: {
+        prototype: HTMLCodenamesScoresElement;
+        new (): HTMLCodenamesScoresElement;
+    };
     interface HTMLCodenamesSpinnerElement extends Components.CodenamesSpinner, HTMLStencilElement {
     }
     var HTMLCodenamesSpinnerElement: {
@@ -73,6 +85,7 @@ declare global {
         "codenames-app": HTMLCodenamesAppElement;
         "codenames-board": HTMLCodenamesBoardElement;
         "codenames-cell": HTMLCodenamesCellElement;
+        "codenames-scores": HTMLCodenamesScoresElement;
         "codenames-spinner": HTMLCodenamesSpinnerElement;
     }
 }
@@ -111,12 +124,19 @@ declare namespace LocalJSX {
          */
         "word"?: string;
     }
+    interface CodenamesScores {
+        /**
+          * Scores to display.
+         */
+        "scores"?: Scores;
+    }
     interface CodenamesSpinner {
     }
     interface IntrinsicElements {
         "codenames-app": CodenamesApp;
         "codenames-board": CodenamesBoard;
         "codenames-cell": CodenamesCell;
+        "codenames-scores": CodenamesScores;
         "codenames-spinner": CodenamesSpinner;
     }
 }
@@ -127,6 +147,7 @@ declare module "@stencil/core" {
             "codenames-app": LocalJSX.CodenamesApp & JSXBase.HTMLAttributes<HTMLCodenamesAppElement>;
             "codenames-board": LocalJSX.CodenamesBoard & JSXBase.HTMLAttributes<HTMLCodenamesBoardElement>;
             "codenames-cell": LocalJSX.CodenamesCell & JSXBase.HTMLAttributes<HTMLCodenamesCellElement>;
+            "codenames-scores": LocalJSX.CodenamesScores & JSXBase.HTMLAttributes<HTMLCodenamesScoresElement>;
             "codenames-spinner": LocalJSX.CodenamesSpinner & JSXBase.HTMLAttributes<HTMLCodenamesSpinnerElement>;
         }
     }

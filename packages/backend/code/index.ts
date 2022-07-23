@@ -1,25 +1,22 @@
-import express from "express";
-import cors from "cors";
-import http from "http";
-import { Server } from "socket.io";
-import { Mode, PlayerData } from "codenames-frontend";
+import { Color, Mode, PlayerData, Scores } from "codenames-frontend";
+import { generateMasterBoard, generatePublicBoard, updateGameForPlayer } from "./utils";
+import { BLACK_WORDS, BLUE_WORDS, GRAY_WORDS, RED_WORDS } from "./constants";
+import { setupServer } from "./server";
 
-// Fetch master gameboard data
-import { generateMasterBoard, generatePublicBoard, updateBoardForPlayer } from "./utils";
-let masterBoard = generateMasterBoard(9, 8, 7, 1);
+// Setup server
+const io = setupServer();
+
+// Starting scores
+const scores: Scores = {
+  [Color.Blue]: BLUE_WORDS,
+  [Color.Red]: RED_WORDS,
+  [Color.Gray]: GRAY_WORDS,
+  [Color.Black]: BLACK_WORDS
+};
+
+// Starting game board
+let masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
 let publicBoard = generatePublicBoard(masterBoard);
-
-// Initialize and configure server
-const app = express();
-const server = http.createServer(app);
-const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
-
-// Initialize web sockets with socket.io
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:3333", "https://nelspd915.github.io"],
-  },
-});
 
 const allPlayers: PlayerData[] = [];
 
@@ -28,11 +25,15 @@ const allPlayers: PlayerData[] = [];
  * @param cellIndex 
  */
 const revealCell = (cellIndex: number): void => {
-  publicBoard[cellIndex].color = masterBoard[cellIndex].color;
+  const color = masterBoard[cellIndex].color;
+  publicBoard[cellIndex].color = color;
   publicBoard[cellIndex].revealed = true;
   masterBoard[cellIndex].revealed = true;
+  if (color !== undefined) {
+    scores[color] -= 1;
+  }
   allPlayers.forEach((player) => {
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   });
 };
 
@@ -44,7 +45,7 @@ const becomeSpymaster = (username: string): void => {
   const player = allPlayers.find((player) => player.username === username);
   if (player !== undefined) {
     player.mode = Mode.Spymaster;
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   }
 }
 
@@ -73,8 +74,8 @@ const updateUsername = (socketId: string, username: string): void => {
       player.mode = oldPlayer.mode;
       player.team = oldPlayer.team;
 
-      // Update board in case mode changed
-      updateBoardForPlayer(player, masterBoard, publicBoard);
+      // Update game in case mode changed
+      updateGameForPlayer(player, masterBoard, publicBoard, scores);
       
       // Remove old player
       allPlayers.splice(oldPlayerIndex, 1);
@@ -86,25 +87,15 @@ const updateUsername = (socketId: string, username: string): void => {
  * Creates new game for room.
  */
 const newGame = (): void => {
-  masterBoard = generateMasterBoard(9, 8, 7, 1);
+  scores.blue = BLUE_WORDS;
+  scores.red = RED_WORDS;
+  masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
   publicBoard = generatePublicBoard(masterBoard);
   allPlayers.forEach((player) => {
     player.mode = Mode.Normal;
     delete player.team;
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   });
-}
-
-function printPlayers() {
-  
-  console.log("playersss:", allPlayers.map(player => {
-    return {
-      id: player.socket.id,
-      username: player.username,
-      mode: player.mode,
-      team: player.team
-    }
-  }));
 }
 
 // Setting up a connection to a client
@@ -121,15 +112,6 @@ io.on("connection", (socket) => {
   socket.on("updateUsername", updateUsername);
   socket.on("newGame", newGame);
 
-  // Pass the board data to the new client
-  updateBoardForPlayer(newPlayer, masterBoard, publicBoard);
+  // Pass the game data to the new client
+  updateGameForPlayer(newPlayer, masterBoard, publicBoard, scores);
 });
-
-// Initialize middleware for server
-app.use(express.json());
-app.use(cors());
-
-// Open server to listen for requests
-server.listen(EXPRESS_PORT, () =>
-  console.log(`server live on http://localhost:${EXPRESS_PORT}`)
-);

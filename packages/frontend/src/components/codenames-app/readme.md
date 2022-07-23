@@ -9,11 +9,13 @@
 
 ### Depends on
 
+- [codenames-scores](../codenames-scores)
 - [codenames-board](../codenames-board)
 
 ### Graph
 ```mermaid
 graph TD;
+  codenames-app --> codenames-scores
   codenames-app --> codenames-board
   codenames-board --> codenames-cell
   codenames-cell --> codenames-spinner

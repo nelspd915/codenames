@@ -45,3 +45,18 @@ export interface PlayerData {
   mode?: Mode,
   team?: Team
 }
+
+/**
+ * Team scores.
+ */
+export type Scores = {
+  [key in Color]: number;
+};
+
+/**
+ * Game data.
+ */
+export interface GameData {
+  board: BoardData,
+  scores: Scores
+}

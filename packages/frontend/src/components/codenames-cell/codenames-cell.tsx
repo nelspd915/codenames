@@ -36,8 +36,13 @@ export class CodenamesCell {
    * Watcher for `revealed` prop.
    */
   @Watch("revealed")
-  revealedChanged(): void {
-    this.showSpinner = false;
+  revealedChanged(newValue: boolean, oldValue: boolean): void {
+    if (newValue === true && oldValue === false) {
+      this.showSpinner = true;
+      setTimeout(() => {
+        this.showSpinner = false;
+      }, 300);
+    }
   }
 
   /**
@@ -56,7 +61,7 @@ export class CodenamesCell {
   render(): void {
     return (
       <div
-        class={`${this.color} ${this.mode} ${this.revealed ? "revealed" : ""}`}
+        class={`${this.color} ${this.mode} ${this.revealed && !this.showSpinner ? "revealed" : ""}`}
         onClick={this.handleRevealCell}
       >
         {this.showSpinner ?
@@ -72,7 +77,6 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.mode === Mode.Normal && this.revealed === false) {
-      this.showSpinner = true;
       this.revealCell.emit(this.index)
     }
   }

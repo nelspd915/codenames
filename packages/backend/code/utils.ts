@@ -1,6 +1,18 @@
-import { BoardData, CellData, Color, Mode, PlayerData } from "codenames-frontend";
+import { BoardData, CellData, Color, GameData, Mode, PlayerData, Scores } from "codenames-frontend";
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
+
+
+export function printPlayers(allPlayers: PlayerData[]) {
+  console.log("players:", allPlayers.map(player => {
+    return {
+      socketId: player.socket.id,
+      username: player.username,
+      mode: player.mode,
+      team: player.team
+    }
+  }));
+}
 
 const addColoredCells = (
   board: BoardData,
@@ -47,10 +59,20 @@ export const generatePublicBoard = (board: BoardData): BoardData => {
   })
 }
 
-export const updateBoardForPlayer = (player: PlayerData, masterBoard: BoardData, publicBoard: BoardData): void => {
+export const updateGameForPlayer = (
+  player: PlayerData,
+  masterBoard: BoardData,
+  publicBoard: BoardData,
+  scores: Scores
+): void => {
+  const gameData: GameData = {
+    board: publicBoard,
+    scores: scores
+  };
+
   if (player.mode === Mode.Spymaster) {
-    player.socket.emit("updateBoard", masterBoard);
-  } else {
-    player.socket.emit("updateBoard", publicBoard);
+    gameData.board = masterBoard;
   }
+
+  player.socket.emit("updateGame", gameData);
 }
