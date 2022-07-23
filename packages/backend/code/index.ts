@@ -1,4 +1,4 @@
-import { Color, Mode, PlayerData, Scores } from "codenames-frontend";
+import { Color, GameData, Lobbies, Mode, PlayerData, Scores } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard, updateGameForPlayer } from "./utils";
 import { BLACK_WORDS, BLUE_WORDS, GRAY_WORDS, RED_WORDS } from "./constants";
 import { setupServer } from "./server";
@@ -19,6 +19,22 @@ let masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_W
 let publicBoard = generatePublicBoard(masterBoard);
 
 const allPlayers: PlayerData[] = [];
+const rooms: Lobbies = {};
+
+// const firstRoom = {
+//   code: "lmaoo",
+//   host: "me",
+//   masterBoard: masterBoard,
+//   publicBoard: publicBoard,
+//   blueTeam: ["sam", "jerry"],
+//   redTeam: ["fred", "tom"],
+//   spymasters: ["sam", "tom"],
+//   scores: scores
+// }
+
+// rooms["lmao"] = firstRoom;
+// rooms["lmao"].host = "you";
+// console.log(rooms["lmao"]);
 
 /**
  * Reveals a cell on the public board.
@@ -107,11 +123,79 @@ io.on("connection", (socket) => {
   };
   allPlayers.push(newPlayer);
   // Add server listener for revealCell
-  socket.on("revealCell", revealCell);
-  socket.on("becomeSpymaster", becomeSpymaster);
+  socket.on("revealCell", (cellIndex: number, code: string) => {
+    const color = rooms[code].masterBoard[cellIndex].color;
+    rooms[code].publicBoard[cellIndex].color = color;
+    rooms[code].publicBoard[cellIndex].revealed = true;
+    rooms[code].masterBoard[cellIndex].revealed = true;
+    if (rooms[code].scores[color] !== undefined) {
+      rooms[code].scores[color] -= 1;
+    }
+    let gameData: GameData = {
+      board: rooms[code].publicBoard,
+      scores: rooms[code].scores
+    };
+    socket.to(code).emit("updateGame", gameData);
+    socket.emit("updateGame", gameData);
+    if (rooms[code].scores[color] === 0 && color !== Color.Gray) {
+      rooms[code].publicBoard.forEach((cell) => {
+        cell.revealed = true;
+        cell.mode = Mode.Endgame;
+      });
+      rooms[code].masterBoard.forEach((cell) => {
+        cell.mode = Mode.Endgame;
+      });
+    }
+    gameData.board = rooms[code].publicBoard;
+    socket.to(code).emit("updateGame", gameData);
+    socket.emit("updateGame", gameData);
+    gameData.board = rooms[code].masterBoard;
+    socket.to(code + "spymaster").emit("updateGame", gameData);
+  });
+  socket.on("becomeSpymaster", (username: string, code: string) => {
+    socket.join(code + "spymaster");
+    console.log("did");
+    let gameData: GameData = {
+      board: rooms[code].masterBoard,
+      scores: rooms[code].scores
+    };
+    socket.emit("updateGame", gameData);
+  });
   socket.on("updateUsername", updateUsername);
   socket.on("newGame", newGame);
+  socket.on("createRoom", (code: string, host: string) => {
+    socket.join(code);
+    const masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
+    const publicBoard = generatePublicBoard(masterBoard);
+    // Starting scores
+    const scores: Scores = {
+      [Color.Blue]: BLUE_WORDS,
+      [Color.Red]: RED_WORDS,
+      [Color.Gray]: GRAY_WORDS,
+      [Color.Black]: BLACK_WORDS
+    };
+    rooms[code] = {
+      code: code,
+      host: host,
+      masterBoard: masterBoard,
+      publicBoard: publicBoard,
+      scores: scores
+    }
+    const gameData: GameData = {
+      board: publicBoard,
+      scores: scores
+    };
+    socket.emit("updateGame", gameData);
+  });
+  socket.on("joinRoom", (code: string, username: string) => {
+    const gameData: GameData = {
+      board: rooms[code].publicBoard,
+      scores: rooms[code].scores
+    };
+    socket.join(code);
+    socket.emit("updateGame", gameData);
+  });
 
   // Pass the game data to the new client
-  updateGameForPlayer(newPlayer, masterBoard, publicBoard, scores);
+  // updateGameForPlayer(newPlayer, masterBoard, publicBoard, scores);
 });
