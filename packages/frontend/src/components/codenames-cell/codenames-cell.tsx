@@ -1,5 +1,5 @@
-import { Component, Prop, h, State, Event, EventEmitter, Watch } from "@stencil/core";
-import { Color, Mode } from "../../extra/types";
+import { Component, Prop, h, State, Watch } from "@stencil/core";
+import { Color, Mode, Requests } from "../../extra/types";
 
 @Component({
   tag: "codenames-cell",
@@ -7,6 +7,11 @@ import { Color, Mode } from "../../extra/types";
   shadow: true,
 })
 export class CodenamesCell {
+
+  /**
+   * Library of requests that can be made to the server
+   */
+  @Prop() requests: Requests;
   /**
    * Index of the cell.
    */
@@ -51,11 +56,6 @@ export class CodenamesCell {
   @State() private showSpinner: boolean = false;
 
   /**
-   * Event fired upon clicking a cell to reveal it.
-   */
-  @Event({ bubbles: true }) revealCell: EventEmitter<number>;
-
-  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
@@ -77,7 +77,7 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.mode === Mode.Normal && this.revealed === false) {
-      this.revealCell.emit(this.index)
+      this.requests.revealCell(this.index)
     }
   }
 }

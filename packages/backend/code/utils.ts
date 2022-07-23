@@ -1,17 +1,26 @@
-import { BoardData, CellData, Color, GameData, Mode, PlayerData, Scores } from "codenames-frontend";
+import {
+  BoardData,
+  CellData,
+  Color,
+  GameData,
+  Mode,
+  PlayerData,
+} from "codenames-frontend";
 import words from "./data/words.json";
-import { shuffle, sampleSize } from "lodash";
-
+import { shuffle, sampleSize, cloneDeep } from "lodash";
 
 export function printPlayers(allPlayers: PlayerData[]) {
-  console.log("players:", allPlayers.map(player => {
-    return {
-      socketId: player.socket.id,
-      username: player.username,
-      mode: player.mode,
-      team: player.team
-    }
-  }));
+  console.log(
+    "players:",
+    allPlayers.map((player) => {
+      return {
+        socketId: player.socket?.id,
+        username: player.username,
+        mode: player.mode,
+        team: player.team,
+      };
+    })
+  );
 }
 
 const addColoredCells = (
@@ -53,26 +62,27 @@ export const generatePublicBoard = (board: BoardData): BoardData => {
     const publicCell: CellData = {
       word: masterCell.word,
       mode: Mode.Normal,
-      revealed: false
+      revealed: false,
     };
     return publicCell;
-  })
-}
+  });
+};
 
 export const updateGameForPlayer = (
   player: PlayerData,
   masterBoard: BoardData,
-  publicBoard: BoardData,
-  scores: Scores
+  gameData: GameData
 ): void => {
-  const gameData: GameData = {
-    board: publicBoard,
-    scores: scores
-  };
-
+  const gameDataClone = cloneDeep(gameData);
   if (player.mode === Mode.Spymaster) {
-    gameData.board = masterBoard;
+    gameDataClone.board = masterBoard;
   }
 
-  player.socket.emit("updateGame", gameData);
-}
+  // Remove sockets from players
+  for (const player of gameDataClone.players) {
+    delete player.socket;
+  }
+  printPlayers(gameData.players);
+
+  player.socket?.emit("updateGame", gameDataClone);
+};

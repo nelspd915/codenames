@@ -1,5 +1,5 @@
-import { Component, Host, h, Listen, State } from '@stencil/core';
-import { GameData } from "../../extra/types";
+import { Component, Host, h, State } from '@stencil/core';
+import { GameData, Requests } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
@@ -10,21 +10,20 @@ import { PROD_URL, DEV_URL } from "../../extra/constants";
 })
 export class CodenamesApp {
 
-  @Listen("revealCell")
-  revealCellHandler(event: CustomEvent<number>): void {
-    const cellIndex = event.detail;
-    this.socket.emit("revealCell", cellIndex);
-  }
-
   /**
    * Game data used to populate values on the board and UI.
    */
   @State() private gameData: GameData | undefined;
 
   /**
-   * Client player's username
+   * Client player's username.
    */
   @State() private username: string | undefined;
+
+  /**
+   * Whether the landing page is shown.
+   */
+  @State() private showLandingPage: boolean = true;
 
   /**
    * Socket connection with the server.
@@ -32,9 +31,9 @@ export class CodenamesApp {
   private socket: Socket;
 
   /**
-   * Input element for username.
+   * Library of requests that can be made to the server
    */
-  private usernameInput: HTMLInputElement;
+  private requests: Requests = {};
 
   /**
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
@@ -47,11 +46,20 @@ export class CodenamesApp {
       this.gameData = gameData;
     });
     this.socket.on("connect", () => {
-      const cachedUsername = window.localStorage.getItem("codenamesUsername")
+      // Pull previous username from local storage if it exists
+      const cachedUsername = window.localStorage.getItem("codenamesUsername");
       if (cachedUsername !== null) {
         this.username = cachedUsername;
-        this.socket.emit("updateUsername", this.socket.id, this.username);
       }
+
+      // Setup all requests
+      this.requests = {
+        revealCell: this.revealCell,
+        updateUsername: this.updateUsername,
+        becomeSpymaster: this.becomeSpymaster,
+        becomeGuesser: this.becomeGuesser,
+        newGame: this.newGame
+      };
     });
   }
 
@@ -61,39 +69,61 @@ export class CodenamesApp {
   render(): void {
     return (
       <Host>
-        <input ref={(element) => {
-          this.usernameInput = element;
-        }} />
-        <button onClick={this.updateUsernameHandler}>Submit</button>
-        <div>{this.username ?? ""}</div><br></br>
-        <codenames-scores scores={this.gameData?.scores}></codenames-scores>
-        <codenames-board boardData={this.gameData?.board}></codenames-board>
-        <button onClick={this.becomeSpymasterHandler}>Spymaster</button>
-        <button onClick={this.newGameHandler}>New game</button>
+        <div class="app-container">
+          { this.showLandingPage ? 
+            <codenames-landing-page
+              requests={this.requests}
+              username={this.username}
+            ></codenames-landing-page>
+            : 
+            <codenames-game
+              requests={this.requests}
+              gameData={this.gameData}
+              userPlayer={this.gameData?.players.find(player => player.username === this.username)}
+            ></codenames-game>
+          }
+        </div>
       </Host>
     );
   }
 
   /**
-   * Handler to request username update.
+   * Request to reveal a cell.
+   * @param index 
    */
-  private updateUsernameHandler = (): void => {
-    this.username = this.usernameInput.value;
-    window.localStorage.setItem("codenamesUsername", this.username);
-    this.socket.emit("updateUsername", this.socket.id, this.username);
+  private revealCell = (index: number): void => {
+    this.socket.emit("revealCell", index);
   }
 
   /**
-   * Handler to request to become a spymaster.
+   * Request username update.
+   * @param username
    */
-  private becomeSpymasterHandler = (): void => {
+  private updateUsername = (username: string): void => {
+    this.username = username;
+    window.localStorage.setItem("codenamesUsername", this.username);
+    this.socket.emit("updateUsername", this.socket.id, this.username);
+    this.showLandingPage = false;
+  }
+
+  /**
+   * Request to become a spymaster.
+   */
+  private becomeSpymaster = (): void => {
     this.socket.emit("becomeSpymaster", this.username);
   }
 
   /**
-   * Handler to request to start a new game.
+   * Request to become a spymaster.
    */
-  private newGameHandler = (): void => {
+  private becomeGuesser = (): void => {
+    this.socket.emit("becomeGuesser", this.username);
+  }
+
+  /**
+   * Request to start a new game.
+   */
+  private newGame = (): void => {
     this.socket.emit("newGame");
   }
 }

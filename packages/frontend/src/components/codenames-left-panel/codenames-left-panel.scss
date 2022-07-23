@@ -1,0 +1,38 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-left: 45px;
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  color: #4183cc;
+  font-family: Roboto, verdana, sans-serif;
+  font-size: 14pt;
+  margin: 1px;
+}
+
+.normal-icon {
+  color: transparent;
+}
+
+.spoiled-icon {
+  color: rgb(230, 33, 33);
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+}
+
+codenames-button {
+  margin-top: 25px;
+}

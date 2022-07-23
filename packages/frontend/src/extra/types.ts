@@ -7,7 +7,7 @@ export enum Color {
   Blue = "blue",
   Red = "red",
   Gray = "gray",
-  Black = "black"
+  Black = "black",
 }
 
 export type Team = Extract<Color, Color.Blue | Color.Red>;
@@ -18,7 +18,7 @@ export type Team = Extract<Color, Color.Blue | Color.Red>;
 export enum Mode {
   Normal = "normal",
   Spymaster = "spymaster",
-  Endgame = "endgame"
+  Endgame = "endgame",
 }
 
 /**
@@ -30,20 +30,21 @@ export type BoardData = CellData[];
  * Data to apply to a cell.
  */
 export interface CellData {
-  word: string,
-  color?: Color,
-  mode?: Mode,
-  revealed?: boolean
+  word: string;
+  color?: Color;
+  mode?: Mode;
+  revealed?: boolean;
 }
 
 /**
  * Data to apply to a player.
  */
 export interface PlayerData {
-  socket: Socket,
-  username?: string,
-  mode?: Mode,
-  team?: Team
+  socket?: Socket;
+  username?: string;
+  mode?: Mode;
+  spoiled?: boolean;
+  team?: Team;
 }
 
 /**
@@ -57,6 +58,18 @@ export type Scores = {
  * Game data.
  */
 export interface GameData {
-  board: BoardData,
-  scores: Scores
+  board: BoardData;
+  players: PlayerData[];
+  scores: Scores;
+}
+
+/**
+ * Library of requests that can be made to the server.
+ */
+export interface Requests {
+  revealCell?: (index: number) => void;
+  updateUsername?: (username: string) => void;
+  becomeSpymaster?: () => void;
+  becomeGuesser?: () => void;
+  newGame?: () => void;
 }

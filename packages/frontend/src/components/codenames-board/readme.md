@@ -7,16 +7,17 @@
 
 ## Properties
 
-| Property    | Attribute | Description                            | Type         | Default     |
-| ----------- | --------- | -------------------------------------- | ------------ | ----------- |
-| `boardData` | --        | Board data used to generate the cells. | `CellData[]` | `undefined` |
+| Property    | Attribute | Description                                        | Type         | Default     |
+| ----------- | --------- | -------------------------------------------------- | ------------ | ----------- |
+| `boardData` | --        | Board data used to generate the cells.             | `CellData[]` | `undefined` |
+| `requests`  | --        | Library of requests that can be made to the server | `Requests`   | `undefined` |
 
 
 ## Dependencies
 
 ### Used by
 
- - [codenames-app](../codenames-app)
+ - [codenames-game](../codenames-game)
 
 ### Depends on
 
@@ -27,7 +28,7 @@
 graph TD;
   codenames-board --> codenames-cell
   codenames-cell --> codenames-spinner
-  codenames-app --> codenames-board
+  codenames-game --> codenames-board
   style codenames-board fill:#f9f,stroke:#333,stroke-width:4px
 ```
 
