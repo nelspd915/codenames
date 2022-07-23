@@ -5,9 +5,11 @@
       "dependsOn": ["^build"]
     },
     "codenames-frontend#build": {
+      "dependsOn": ["^build"],
       "outputs": ["dist/**", "www/**"]
     },
     "codenames-backend#build": {
+      "dependsOn": ["^build"],
       "outputs": ["build/**"]
     },
     "lint": {
@@ -17,6 +19,7 @@
       "cache": false
     },
     "serve": {
+      "dependsOn": ["build"],
       "cache": false
     },
     "deploy": {
