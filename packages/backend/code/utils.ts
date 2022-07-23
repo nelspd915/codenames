@@ -2,6 +2,18 @@ import { BoardData, CellData, Color, Mode, PlayerData } from "codenames-frontend
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
 
+
+export function printPlayers(allPlayers: PlayerData[]) {
+  console.log("players:", allPlayers.map(player => {
+    return {
+      socketId: player.socket.id,
+      username: player.username,
+      mode: player.mode,
+      team: player.team
+    }
+  }));
+}
+
 const addColoredCells = (
   board: BoardData,
   count: number,

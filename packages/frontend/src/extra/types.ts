@@ -45,3 +45,11 @@ export interface PlayerData {
   mode?: Mode,
   team?: Team
 }
+
+/**
+ * Team scores.
+ */
+export interface Scores {
+  blue: number,
+  red: number
+}

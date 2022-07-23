@@ -1,25 +1,20 @@
-import express from "express";
-import cors from "cors";
-import http from "http";
-import { Server } from "socket.io";
-import { Mode, PlayerData } from "codenames-frontend";
-
-// Fetch master gameboard data
+import { Mode, PlayerData, Scores } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard, updateBoardForPlayer } from "./utils";
-let masterBoard = generateMasterBoard(9, 8, 7, 1);
+import { BLACK_WORDS, BLUE_WORDS, GRAY_WORDS, RED_WORDS } from "./constants";
+import { setupServer } from "./server";
+
+// Setup server
+const io = setupServer();
+
+// Starting scores
+const scores: Scores = {
+  blue: BLUE_WORDS,
+  red: RED_WORDS
+};
+
+// Starting game board
+let masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
 let publicBoard = generatePublicBoard(masterBoard);
-
-// Initialize and configure server
-const app = express();
-const server = http.createServer(app);
-const EXPRESS_PORT: number = parseInt(process.env.PORT ?? "8080");
-
-// Initialize web sockets with socket.io
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:3333", "https://nelspd915.github.io"],
-  },
-});
 
 const allPlayers: PlayerData[] = [];
 
@@ -86,25 +81,15 @@ const updateUsername = (socketId: string, username: string): void => {
  * Creates new game for room.
  */
 const newGame = (): void => {
-  masterBoard = generateMasterBoard(9, 8, 7, 1);
+  scores.blue = BLUE_WORDS;
+  scores.red = RED_WORDS;
+  masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
   publicBoard = generatePublicBoard(masterBoard);
   allPlayers.forEach((player) => {
     player.mode = Mode.Normal;
     delete player.team;
     updateBoardForPlayer(player, masterBoard, publicBoard);
   });
-}
-
-function printPlayers() {
-  
-  console.log("playersss:", allPlayers.map(player => {
-    return {
-      id: player.socket.id,
-      username: player.username,
-      mode: player.mode,
-      team: player.team
-    }
-  }));
 }
 
 // Setting up a connection to a client
@@ -124,12 +109,3 @@ io.on("connection", (socket) => {
   // Pass the board data to the new client
   updateBoardForPlayer(newPlayer, masterBoard, publicBoard);
 });
-
-// Initialize middleware for server
-app.use(express.json());
-app.use(cors());
-
-// Open server to listen for requests
-server.listen(EXPRESS_PORT, () =>
-  console.log(`server live on http://localhost:${EXPRESS_PORT}`)
-);
