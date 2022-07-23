@@ -1,4 +1,4 @@
-import { BoardData, CellData, Color, Mode } from "codenames-frontend";
+import { BoardData, CellData, Color, Mode, PlayerData } from "codenames-frontend";
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
 
@@ -45,4 +45,12 @@ export const generatePublicBoard = (board: BoardData): BoardData => {
     };
     return publicCell;
   })
+}
+
+export const updateBoardForPlayer = (player: PlayerData, masterBoard: BoardData, publicBoard: BoardData): void => {
+  if (player.mode === Mode.Spymaster) {
+    player.socket.emit("updateBoard", masterBoard);
+  } else {
+    player.socket.emit("updateBoard", publicBoard);
+  }
 }
