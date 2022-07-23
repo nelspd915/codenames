@@ -1,5 +1,5 @@
-import { Mode, PlayerData, Scores } from "codenames-frontend";
-import { generateMasterBoard, generatePublicBoard, updateBoardForPlayer } from "./utils";
+import { Color, Mode, PlayerData, Scores } from "codenames-frontend";
+import { generateMasterBoard, generatePublicBoard, updateGameForPlayer } from "./utils";
 import { BLACK_WORDS, BLUE_WORDS, GRAY_WORDS, RED_WORDS } from "./constants";
 import { setupServer } from "./server";
 
@@ -8,8 +8,10 @@ const io = setupServer();
 
 // Starting scores
 const scores: Scores = {
-  blue: BLUE_WORDS,
-  red: RED_WORDS
+  [Color.Blue]: BLUE_WORDS,
+  [Color.Red]: RED_WORDS,
+  [Color.Gray]: GRAY_WORDS,
+  [Color.Black]: BLACK_WORDS
 };
 
 // Starting game board
@@ -23,11 +25,15 @@ const allPlayers: PlayerData[] = [];
  * @param cellIndex 
  */
 const revealCell = (cellIndex: number): void => {
-  publicBoard[cellIndex].color = masterBoard[cellIndex].color;
+  const color = masterBoard[cellIndex].color;
+  publicBoard[cellIndex].color = color;
   publicBoard[cellIndex].revealed = true;
   masterBoard[cellIndex].revealed = true;
+  if (color !== undefined) {
+    scores[color] -= 1;
+  }
   allPlayers.forEach((player) => {
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   });
 };
 
@@ -39,7 +45,7 @@ const becomeSpymaster = (username: string): void => {
   const player = allPlayers.find((player) => player.username === username);
   if (player !== undefined) {
     player.mode = Mode.Spymaster;
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   }
 }
 
@@ -68,8 +74,8 @@ const updateUsername = (socketId: string, username: string): void => {
       player.mode = oldPlayer.mode;
       player.team = oldPlayer.team;
 
-      // Update board in case mode changed
-      updateBoardForPlayer(player, masterBoard, publicBoard);
+      // Update game in case mode changed
+      updateGameForPlayer(player, masterBoard, publicBoard, scores);
       
       // Remove old player
       allPlayers.splice(oldPlayerIndex, 1);
@@ -88,7 +94,7 @@ const newGame = (): void => {
   allPlayers.forEach((player) => {
     player.mode = Mode.Normal;
     delete player.team;
-    updateBoardForPlayer(player, masterBoard, publicBoard);
+    updateGameForPlayer(player, masterBoard, publicBoard, scores);
   });
 }
 
@@ -106,6 +112,6 @@ io.on("connection", (socket) => {
   socket.on("updateUsername", updateUsername);
   socket.on("newGame", newGame);
 
-  // Pass the board data to the new client
-  updateBoardForPlayer(newPlayer, masterBoard, publicBoard);
+  // Pass the game data to the new client
+  updateGameForPlayer(newPlayer, masterBoard, publicBoard, scores);
 });

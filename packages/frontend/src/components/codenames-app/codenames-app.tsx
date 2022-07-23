@@ -1,5 +1,5 @@
 import { Component, Host, h, Listen, State } from '@stencil/core';
-import { BoardData } from "../../extra/types";
+import { GameData } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
@@ -17,14 +17,14 @@ export class CodenamesApp {
   }
 
   /**
-   * Board data passed to codenames-board used to generate cells.
+   * Game data used to populate values on the board and UI.
    */
-  @State() private boardData: BoardData;
+  @State() private gameData: GameData | undefined;
 
   /**
    * Client player's username
    */
-  @State() private username: string;
+  @State() private username: string | undefined;
 
   /**
    * Socket connection with the server.
@@ -43,8 +43,8 @@ export class CodenamesApp {
     const urlParams = new URLSearchParams(window.location.search);
     const url = urlParams.get("dev") === "true" ? DEV_URL : PROD_URL;
     this.socket = io(url);
-    this.socket.on("updateBoard", (boardData: BoardData) => {
-      this.boardData = boardData;
+    this.socket.on("updateGame", (gameData: GameData) => {
+      this.gameData = gameData;
     });
     this.socket.on("connect", () => {
       const cachedUsername = window.localStorage.getItem("codenamesUsername")
@@ -65,8 +65,9 @@ export class CodenamesApp {
           this.usernameInput = element;
         }} />
         <button onClick={this.updateUsernameHandler}>Submit</button>
-        <div>{this.username}</div>
-        <codenames-board boardData={this.boardData}></codenames-board>
+        <div>{this.username ?? ""}</div><br></br>
+        <codenames-scores scores={this.gameData?.scores}></codenames-scores>
+        <codenames-board boardData={this.gameData?.board}></codenames-board>
         <button onClick={this.becomeSpymasterHandler}>Spymaster</button>
         <button onClick={this.newGameHandler}>New game</button>
       </Host>
