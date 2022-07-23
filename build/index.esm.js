@@ -1,2 +1,2 @@
-export{C as CellColor,a as CellMode}from"./p-9f42e523.js";
+export{C as Color,M as Mode}from"./p-9a70c03b.js";
 //# sourceMappingURL=index.esm.js.map
