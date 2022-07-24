@@ -13,7 +13,7 @@ export class CodenamesApp {
   @Listen("revealCell")
   revealCellHandler(event: CustomEvent<number>): void {
     const cellIndex = event.detail;
-    this.socket.emit("revealCell", cellIndex);
+    this.socket.emit("revealCell", cellIndex, "poop");
   }
 
   /**
@@ -70,6 +70,8 @@ export class CodenamesApp {
         <codenames-board boardData={this.gameData?.board}></codenames-board>
         <button onClick={this.becomeSpymasterHandler}>Spymaster</button>
         <button onClick={this.newGameHandler}>New game</button>
+        <button onClick={this.createRoomHandler}>Create Room</button>
+        <button onClick={this.JoinRoomHandler}>Join Room</button>
       </Host>
     );
   }
@@ -87,13 +89,21 @@ export class CodenamesApp {
    * Handler to request to become a spymaster.
    */
   private becomeSpymasterHandler = (): void => {
-    this.socket.emit("becomeSpymaster", this.username);
+    this.socket.emit("becomeSpymaster", this.username, "poop");
   }
 
   /**
    * Handler to request to start a new game.
    */
   private newGameHandler = (): void => {
-    this.socket.emit("newGame");
+    this.socket.emit("newGame", "poop");
+  }
+
+  private createRoomHandler = (): void => {
+    this.socket.emit("createRoom", "poop", "Kob");
+  }
+
+  private JoinRoomHandler = (): void => {
+    this.socket.emit("joinRoom", "poop", "Kob");
   }
 }

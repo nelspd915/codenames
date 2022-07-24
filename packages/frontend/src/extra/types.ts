@@ -60,3 +60,18 @@ export interface GameData {
   board: BoardData,
   scores: Scores
 }
+
+export type Lobbies = {
+  [key in string]: Room;
+};
+
+export interface Room {
+  code: string,
+  host: string,
+  masterBoard: BoardData,
+  publicBoard: BoardData,
+  blueTeam?: string[],
+  redTeam?: string[],
+  spymasters?: string[],
+  scores: Scores
+}

@@ -77,7 +77,7 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.mode === Mode.Normal && this.revealed === false) {
-      this.revealCell.emit(this.index)
+      this.revealCell.emit(this.index,);
     }
   }
 }
