@@ -96,7 +96,7 @@ export class CodenamesApp {
    * Handler to request to start a new game.
    */
   private newGameHandler = (): void => {
-    this.socket.emit("newGame");
+    this.socket.emit("newGame", "poop");
   }
 
   private createRoomHandler = (): void => {

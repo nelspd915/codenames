@@ -14,56 +14,10 @@ const scores: Scores = {
   [Color.Black]: BLACK_WORDS
 };
 
-// Starting game board
-let masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
-let publicBoard = generatePublicBoard(masterBoard);
 
+// Initialize storage
 const allPlayers: PlayerData[] = [];
 const rooms: Lobbies = {};
-
-// const firstRoom = {
-//   code: "lmaoo",
-//   host: "me",
-//   masterBoard: masterBoard,
-//   publicBoard: publicBoard,
-//   blueTeam: ["sam", "jerry"],
-//   redTeam: ["fred", "tom"],
-//   spymasters: ["sam", "tom"],
-//   scores: scores
-// }
-
-// rooms["lmao"] = firstRoom;
-// rooms["lmao"].host = "you";
-// console.log(rooms["lmao"]);
-
-/**
- * Reveals a cell on the public board.
- * @param cellIndex 
- */
-const revealCell = (cellIndex: number): void => {
-  const color = masterBoard[cellIndex].color;
-  publicBoard[cellIndex].color = color;
-  publicBoard[cellIndex].revealed = true;
-  masterBoard[cellIndex].revealed = true;
-  if (color !== undefined) {
-    scores[color] -= 1;
-  }
-  allPlayers.forEach((player) => {
-    updateGameForPlayer(player, masterBoard, publicBoard, scores);
-  });
-};
-
-/**
- * Updates player mode to spymaster and emits masterboard to them.
- * @param username
- */
-const becomeSpymaster = (username: string): void => {
-  const player = allPlayers.find((player) => player.username === username);
-  if (player !== undefined) {
-    player.mode = Mode.Spymaster;
-    updateGameForPlayer(player, masterBoard, publicBoard, scores);
-  }
-}
 
 /** 
  * Updates player username.
@@ -89,9 +43,6 @@ const updateUsername = (socketId: string, username: string): void => {
     if (oldPlayer !== undefined) {
       player.mode = oldPlayer.mode;
       player.team = oldPlayer.team;
-
-      // Update game in case mode changed
-      updateGameForPlayer(player, masterBoard, publicBoard, scores);
       
       // Remove old player
       allPlayers.splice(oldPlayerIndex, 1);
@@ -102,16 +53,17 @@ const updateUsername = (socketId: string, username: string): void => {
 /**
  * Creates new game for room.
  */
-const newGame = (): void => {
-  scores.blue = BLUE_WORDS;
-  scores.red = RED_WORDS;
-  masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
-  publicBoard = generatePublicBoard(masterBoard);
-  allPlayers.forEach((player) => {
-    player.mode = Mode.Normal;
-    delete player.team;
-    updateGameForPlayer(player, masterBoard, publicBoard, scores);
-  });
+const newGame = (code: string): void => {
+  rooms[code].scores = scores;
+  const masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
+  const publicBoard = generatePublicBoard(masterBoard);
+  rooms[code].masterBoard = masterBoard;
+  rooms[code].publicBoard = publicBoard;
+  const gameData: GameData = {
+    board: rooms[code].publicBoard,
+    scores: rooms[code].scores
+  };
+  io.to(code).emit("updateGame", gameData);
 }
 
 // Setting up a connection to a client
@@ -122,9 +74,10 @@ io.on("connection", (socket) => {
     mode: Mode.Normal
   };
   allPlayers.push(newPlayer);
-  // Add server listener for revealCell
+
+  // Add server listener and callback function for revealCell
   socket.on("revealCell", (cellIndex: number, code: string) => {
-    const color = rooms[code].masterBoard[cellIndex].color;
+    const color = rooms[code].masterBoard[cellIndex].color as Color;
     rooms[code].publicBoard[cellIndex].color = color;
     rooms[code].publicBoard[cellIndex].revealed = true;
     rooms[code].masterBoard[cellIndex].revealed = true;
@@ -152,9 +105,10 @@ io.on("connection", (socket) => {
     gameData.board = rooms[code].masterBoard;
     socket.to(code + "spymaster").emit("updateGame", gameData);
   });
+
+  // Add server listener and callback function for becomeSpymaster
   socket.on("becomeSpymaster", (username: string, code: string) => {
     socket.join(code + "spymaster");
-    console.log("did");
     let gameData: GameData = {
       board: rooms[code].masterBoard,
       scores: rooms[code].scores
@@ -187,6 +141,8 @@ io.on("connection", (socket) => {
     };
     socket.emit("updateGame", gameData);
   });
+
+  // Add server listener and callback function for joinRoom
   socket.on("joinRoom", (code: string, username: string) => {
     const gameData: GameData = {
       board: rooms[code].publicBoard,
