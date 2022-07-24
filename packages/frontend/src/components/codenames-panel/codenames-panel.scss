@@ -4,7 +4,15 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
-  margin-left: 45px;
+  width: 140px;
+
+  &:host(.blue) {
+    margin-left: 45px;
+  }
+
+  &:host(.red) {
+    margin-right: 45px;
+  }
 }
 
 .player-list {
@@ -14,12 +22,19 @@
 
   .player-name {
     display: flex;
-    color: #4183cc;
     font-family: Roboto, verdana, sans-serif;
     font-size: 14pt;
     margin: 1px;
     width: 100%;
     height: 32px;
+
+    &.blue {
+      color: #4183cc;
+    }
+
+    &.red {
+      color: #d13030;
+    }
   
     .player-name-text {
       display: flex;
@@ -37,7 +52,7 @@
       width: 20%;
       
       &.spoiled-icon {
-        color: rgb(230, 33, 33);
+        color: rgb(255, 89, 0);
       }
     }
   }
@@ -47,8 +62,8 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 25px;
-}
 
-codenames-button {
-  margin-top: 25px;
+  ::slotted(codenames-button) {
+    margin-top: 25px;
+  }
 }

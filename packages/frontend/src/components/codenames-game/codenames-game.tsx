@@ -1,15 +1,14 @@
-import { Component, Host, h, Prop } from '@stencil/core';
-import { GameData, PlayerData, Requests } from "../../extra/types";
+import { Component, Host, h, Prop } from "@stencil/core";
+import { Color, GameData, Mode, PlayerData, Requests } from "../../extra/types";
 
 @Component({
-  tag: 'codenames-game',
-  styleUrl: 'codenames-game.scss',
+  tag: "codenames-game",
+  styleUrl: "codenames-game.scss",
   shadow: true,
 })
 export class CodenamesGame {
-
   /**
-   * Library of requests that can be made to the server
+   * Library of requests that can be made to the server.
    */
   @Prop() requests: Requests;
 
@@ -29,17 +28,33 @@ export class CodenamesGame {
   render(): void {
     return (
       <Host>
-        <codenames-left-panel
-          requests={this.requests}
-          players={this.gameData?.players}
-          userPlayer={this.userPlayer}
-        ></codenames-left-panel>
+        <codenames-panel requests={this.requests} panelTeam={Color.Blue} players={this.gameData?.players}>
+          <codenames-button slot="button" on={this.userPlayer?.mode === Mode.Spymaster} onClick={this.spymasterToggle}>
+            Spymaster 👁
+          </codenames-button>
+          <codenames-button slot="button" onClick={this.requests.newGame}>
+            New game →
+          </codenames-button>
+        </codenames-panel>
+
         <div>
           <codenames-scores scores={this.gameData?.scores}></codenames-scores>
           <codenames-board requests={this.requests} boardData={this.gameData?.board}></codenames-board>
         </div>
+
+        <codenames-panel requests={this.requests} panelTeam={Color.Red} players={this.gameData?.players}></codenames-panel>
       </Host>
     );
   }
 
+  /**
+   * Toggles between spymaster and guesser.
+   */
+  private spymasterToggle = (): void => {
+    if (this.userPlayer?.mode === Mode.Spymaster) {
+      this.requests.becomeGuesser();
+    } else {
+      this.requests.becomeSpymaster();
+    }
+  };
 }

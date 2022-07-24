@@ -1,0 +1,81 @@
+import { Component, Host, h, Prop } from "@stencil/core";
+import { Color, Mode, PlayerData, Requests } from "../../extra/types";
+
+@Component({
+  tag: "codenames-panel",
+  styleUrl: "codenames-panel.scss",
+  shadow: true,
+})
+export class CodenamesPanel {
+  /**
+   * Library of requests that can be made to the server.
+   */
+  @Prop() requests: Requests;
+
+  /**
+   * Library of requests that can be made to the server.
+   */
+  @Prop() panelTeam: Color;
+
+  /**
+   * All players in the game.
+   */
+  @Prop() players?: PlayerData[];
+
+  /**
+   * Stencil lifecycle method `render` for `codenames-panel` component.
+   */
+  render() {
+    return (
+      <Host class={this.panelTeam}>
+        <div class="player-list">
+          {this.players
+            ?.concat([
+              {
+                ...this.players[1],
+                username: "eee",
+                team: Color.Red,
+              },
+            ])
+            .map(player => {
+              return this.isOnTeam(player) ? this.getNameElement(player) : null;
+            })}
+        </div>
+        <div class="buttons-container">
+          <slot name="button"></slot>
+        </div>
+      </Host>
+    );
+  }
+
+  /**
+   * Whether the player is on the team for this panel.
+   * @param player
+   */
+  private isOnTeam(player: PlayerData): boolean {
+    const value = (player.username ?? "") !== "" && player.team === this.panelTeam;
+    return value;
+  }
+
+  /**
+   * Gets the element to display a player's name and icon.
+   * @param player
+   */
+  private getNameElement(player: PlayerData): HTMLElement {
+    let icon = ` `;
+    let iconClass = "";
+    if (player.mode === Mode.Spymaster) {
+      icon = `👁`;
+    } else if (player.spoiled === true) {
+      icon = `⚠`;
+      iconClass = "spoiled-icon";
+    }
+
+    return (
+      <div class={`player-name ${this.panelTeam}`}>
+        <div class={`player-icon ${iconClass}`}>{icon}</div>
+        <div class="player-name-text">{`${player.username}`}</div>
+      </div>
+    );
+  }
+}

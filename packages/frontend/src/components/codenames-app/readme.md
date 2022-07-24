@@ -1,7 +1,5 @@
 # codenames-app
 
-
-
 <!-- Auto Generated Below -->
 
 
@@ -17,10 +15,10 @@
 graph TD;
   codenames-app --> codenames-landing-page
   codenames-app --> codenames-game
-  codenames-game --> codenames-left-panel
+  codenames-game --> codenames-panel
+  codenames-game --> codenames-button
   codenames-game --> codenames-scores
   codenames-game --> codenames-board
-  codenames-left-panel --> codenames-button
   codenames-board --> codenames-cell
   codenames-cell --> codenames-spinner
   style codenames-app fill:#f9f,stroke:#333,stroke-width:4px

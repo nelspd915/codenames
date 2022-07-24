@@ -7,10 +7,10 @@
 
 ## Properties
 
-| Property    | Attribute | Description                                        | Type         | Default     |
-| ----------- | --------- | -------------------------------------------------- | ------------ | ----------- |
-| `boardData` | --        | Board data used to generate the cells.             | `CellData[]` | `undefined` |
-| `requests`  | --        | Library of requests that can be made to the server | `Requests`   | `undefined` |
+| Property    | Attribute | Description                                         | Type         | Default     |
+| ----------- | --------- | --------------------------------------------------- | ------------ | ----------- |
+| `boardData` | --        | Board data used to generate the cells.              | `CellData[]` | `undefined` |
+| `requests`  | --        | Library of requests that can be made to the server. | `Requests`   | `undefined` |
 
 
 ## Dependencies

@@ -7,7 +7,7 @@ export enum Color {
   Blue = "blue",
   Red = "red",
   Gray = "gray",
-  Black = "black",
+  Black = "black"
 }
 
 export type Team = Extract<Color, Color.Blue | Color.Red>;
@@ -18,7 +18,7 @@ export type Team = Extract<Color, Color.Blue | Color.Red>;
 export enum Mode {
   Normal = "normal",
   Spymaster = "spymaster",
-  Endgame = "endgame",
+  Endgame = "endgame"
 }
 
 /**

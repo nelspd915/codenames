@@ -1,7 +1,5 @@
 # codenames-button
 
-
-
 <!-- Auto Generated Below -->
 
 
@@ -17,12 +15,12 @@
 
 ### Used by
 
- - [codenames-left-panel](../codenames-left-panel)
+ - [codenames-game](../codenames-game)
 
 ### Graph
 ```mermaid
 graph TD;
-  codenames-left-panel --> codenames-button
+  codenames-game --> codenames-button
   style codenames-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

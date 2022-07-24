@@ -9,7 +9,7 @@ import { Color, Mode, Requests } from "../../extra/types";
 export class CodenamesCell {
 
   /**
-   * Library of requests that can be made to the server
+   * Library of requests that can be made to the server.
    */
   @Prop() requests: Requests;
   /**

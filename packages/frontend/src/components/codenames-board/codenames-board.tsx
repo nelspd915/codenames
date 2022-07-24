@@ -9,7 +9,7 @@ import { BoardData, Requests } from "../../extra/types";
 export class CodenamesBoard {
 
   /**
-   * Library of requests that can be made to the server
+   * Library of requests that can be made to the server.
    */
   @Prop() requests: Requests;
 

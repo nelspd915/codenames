@@ -7,10 +7,10 @@
 
 ## Properties
 
-| Property   | Attribute  | Description                                        | Type       | Default     |
-| ---------- | ---------- | -------------------------------------------------- | ---------- | ----------- |
-| `requests` | --         | Library of requests that can be made to the server | `Requests` | `undefined` |
-| `username` | `username` | Username currently entered.                        | `string`   | `undefined` |
+| Property   | Attribute  | Description                                         | Type       | Default     |
+| ---------- | ---------- | --------------------------------------------------- | ---------- | ----------- |
+| `requests` | --         | Library of requests that can be made to the server. | `Requests` | `undefined` |
+| `username` | `username` | Username currently entered.                         | `string`   | `undefined` |
 
 
 ## Dependencies

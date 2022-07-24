@@ -1,5 +1,7 @@
 :host {
   display: block;
+  width: fit-content;
+  margin: auto;
 }
 
 codenames-board {
@@ -8,6 +10,7 @@ codenames-board {
 
 .app-container {
   display: flex;
+  justify-content: space-around;
 }
 
 .game-container {

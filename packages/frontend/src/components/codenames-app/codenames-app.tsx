@@ -31,7 +31,7 @@ export class CodenamesApp {
   private socket: Socket;
 
   /**
-   * Library of requests that can be made to the server
+   * Library of requests that can be made to the server.
    */
   private requests: Requests = {};
 

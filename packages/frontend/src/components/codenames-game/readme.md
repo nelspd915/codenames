@@ -1,7 +1,5 @@
 # codenames-game
 
-
-
 <!-- Auto Generated Below -->
 
 
@@ -10,7 +8,7 @@
 | Property     | Attribute | Description                                            | Type         | Default     |
 | ------------ | --------- | ------------------------------------------------------ | ------------ | ----------- |
 | `gameData`   | --        | Game data used to populate values on the board and UI. | `GameData`   | `undefined` |
-| `requests`   | --        | Library of requests that can be made to the server     | `Requests`   | `undefined` |
+| `requests`   | --        | Library of requests that can be made to the server.    | `Requests`   | `undefined` |
 | `userPlayer` | --        | Player data for the user.                              | `PlayerData` | `undefined` |
 
 
@@ -22,17 +20,18 @@
 
 ### Depends on
 
-- [codenames-left-panel](../codenames-left-panel)
+- [codenames-panel](../codenames-panel)
+- [codenames-button](../codenames-button)
 - [codenames-scores](../codenames-scores)
 - [codenames-board](../codenames-board)
 
 ### Graph
 ```mermaid
 graph TD;
-  codenames-game --> codenames-left-panel
+  codenames-game --> codenames-panel
+  codenames-game --> codenames-button
   codenames-game --> codenames-scores
   codenames-game --> codenames-board
-  codenames-left-panel --> codenames-button
   codenames-board --> codenames-cell
   codenames-cell --> codenames-spinner
   codenames-app --> codenames-game

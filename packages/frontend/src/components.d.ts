@@ -15,7 +15,7 @@ export namespace Components {
          */
         "boardData"?: BoardData;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests": Requests;
     }
@@ -43,7 +43,7 @@ export namespace Components {
          */
         "mode"?: Mode;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests": Requests;
         /**
@@ -61,7 +61,7 @@ export namespace Components {
          */
         "gameData": GameData | undefined;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests": Requests;
         /**
@@ -71,7 +71,7 @@ export namespace Components {
     }
     interface CodenamesLandingPage {
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests": Requests;
         /**
@@ -79,19 +79,19 @@ export namespace Components {
          */
         "username"?: string;
     }
-    interface CodenamesLeftPanel {
+    interface CodenamesPanel {
+        /**
+          * Library of requests that can be made to the server.
+         */
+        "panelTeam": Color;
         /**
           * All players in the game.
          */
         "players"?: PlayerData[];
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests": Requests;
-        /**
-          * Player data for the user.
-         */
-        "userPlayer"?: PlayerData;
     }
     interface CodenamesScores {
         /**
@@ -139,11 +139,11 @@ declare global {
         prototype: HTMLCodenamesLandingPageElement;
         new (): HTMLCodenamesLandingPageElement;
     };
-    interface HTMLCodenamesLeftPanelElement extends Components.CodenamesLeftPanel, HTMLStencilElement {
+    interface HTMLCodenamesPanelElement extends Components.CodenamesPanel, HTMLStencilElement {
     }
-    var HTMLCodenamesLeftPanelElement: {
-        prototype: HTMLCodenamesLeftPanelElement;
-        new (): HTMLCodenamesLeftPanelElement;
+    var HTMLCodenamesPanelElement: {
+        prototype: HTMLCodenamesPanelElement;
+        new (): HTMLCodenamesPanelElement;
     };
     interface HTMLCodenamesScoresElement extends Components.CodenamesScores, HTMLStencilElement {
     }
@@ -164,7 +164,7 @@ declare global {
         "codenames-cell": HTMLCodenamesCellElement;
         "codenames-game": HTMLCodenamesGameElement;
         "codenames-landing-page": HTMLCodenamesLandingPageElement;
-        "codenames-left-panel": HTMLCodenamesLeftPanelElement;
+        "codenames-panel": HTMLCodenamesPanelElement;
         "codenames-scores": HTMLCodenamesScoresElement;
         "codenames-spinner": HTMLCodenamesSpinnerElement;
     }
@@ -178,7 +178,7 @@ declare namespace LocalJSX {
          */
         "boardData"?: BoardData;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
     }
@@ -206,7 +206,7 @@ declare namespace LocalJSX {
          */
         "mode"?: Mode;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
         /**
@@ -224,7 +224,7 @@ declare namespace LocalJSX {
          */
         "gameData"?: GameData | undefined;
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
         /**
@@ -234,7 +234,7 @@ declare namespace LocalJSX {
     }
     interface CodenamesLandingPage {
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
         /**
@@ -242,19 +242,19 @@ declare namespace LocalJSX {
          */
         "username"?: string;
     }
-    interface CodenamesLeftPanel {
+    interface CodenamesPanel {
+        /**
+          * Library of requests that can be made to the server.
+         */
+        "panelTeam"?: Color;
         /**
           * All players in the game.
          */
         "players"?: PlayerData[];
         /**
-          * Library of requests that can be made to the server
+          * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
-        /**
-          * Player data for the user.
-         */
-        "userPlayer"?: PlayerData;
     }
     interface CodenamesScores {
         /**
@@ -271,7 +271,7 @@ declare namespace LocalJSX {
         "codenames-cell": CodenamesCell;
         "codenames-game": CodenamesGame;
         "codenames-landing-page": CodenamesLandingPage;
-        "codenames-left-panel": CodenamesLeftPanel;
+        "codenames-panel": CodenamesPanel;
         "codenames-scores": CodenamesScores;
         "codenames-spinner": CodenamesSpinner;
     }
@@ -286,7 +286,7 @@ declare module "@stencil/core" {
             "codenames-cell": LocalJSX.CodenamesCell & JSXBase.HTMLAttributes<HTMLCodenamesCellElement>;
             "codenames-game": LocalJSX.CodenamesGame & JSXBase.HTMLAttributes<HTMLCodenamesGameElement>;
             "codenames-landing-page": LocalJSX.CodenamesLandingPage & JSXBase.HTMLAttributes<HTMLCodenamesLandingPageElement>;
-            "codenames-left-panel": LocalJSX.CodenamesLeftPanel & JSXBase.HTMLAttributes<HTMLCodenamesLeftPanelElement>;
+            "codenames-panel": LocalJSX.CodenamesPanel & JSXBase.HTMLAttributes<HTMLCodenamesPanelElement>;
             "codenames-scores": LocalJSX.CodenamesScores & JSXBase.HTMLAttributes<HTMLCodenamesScoresElement>;
             "codenames-spinner": LocalJSX.CodenamesSpinner & JSXBase.HTMLAttributes<HTMLCodenamesSpinnerElement>;
         }
