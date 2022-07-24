@@ -124,7 +124,7 @@ io.on("connection", (socket) => {
   allPlayers.push(newPlayer);
   // Add server listener for revealCell
   socket.on("revealCell", (cellIndex: number, code: string) => {
-    const color = rooms[code].masterBoard[cellIndex].color;
+    const color = rooms[code].masterBoard[cellIndex].color as Color;
     rooms[code].publicBoard[cellIndex].color = color;
     rooms[code].publicBoard[cellIndex].revealed = true;
     rooms[code].masterBoard[cellIndex].revealed = true;
