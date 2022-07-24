@@ -79,7 +79,7 @@ export class CodenamesApp {
             <codenames-game
               requests={this.requests}
               gameData={this.gameData}
-              userPlayer={this.gameData?.players.find(player => player.username === this.username)}
+              userPlayer={this.gameData?.players?.find(player => player.username === this.username)}
             ></codenames-game>
           }
         </div>
