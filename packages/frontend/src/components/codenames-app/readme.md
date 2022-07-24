@@ -15,6 +15,7 @@
 graph TD;
   codenames-app --> codenames-landing-page
   codenames-app --> codenames-game
+  codenames-landing-page --> codenames-button
   codenames-game --> codenames-panel
   codenames-game --> codenames-button
   codenames-game --> codenames-scores

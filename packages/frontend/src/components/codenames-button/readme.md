@@ -16,11 +16,13 @@
 ### Used by
 
  - [codenames-game](../codenames-game)
+ - [codenames-landing-page](../codenames-landing-page)
 
 ### Graph
 ```mermaid
 graph TD;
   codenames-game --> codenames-button
+  codenames-landing-page --> codenames-button
   style codenames-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

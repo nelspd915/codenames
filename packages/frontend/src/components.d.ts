@@ -75,6 +75,10 @@ export namespace Components {
          */
         "requests": Requests;
         /**
+          * Room code currently entered.
+         */
+        "roomCode"?: string;
+        /**
           * Username currently entered.
          */
         "username"?: string;
@@ -237,6 +241,10 @@ declare namespace LocalJSX {
           * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
+        /**
+          * Room code currently entered.
+         */
+        "roomCode"?: string;
         /**
           * Username currently entered.
          */
