@@ -4,7 +4,7 @@ import { Color, Mode, PlayerData, Requests } from "../../extra/types";
 @Component({
   tag: "codenames-panel",
   styleUrl: "codenames-panel.scss",
-  shadow: true,
+  shadow: true
 })
 export class CodenamesPanel {
   /**
@@ -33,9 +33,9 @@ export class CodenamesPanel {
             ?.concat([
               {
                 ...this.players[1],
-                username: "eee",
-                team: Color.Red,
-              },
+                username: "TEST USER",
+                team: Color.Red
+              }
             ])
             .map(player => {
               return this.isOnTeam(player) ? this.getNameElement(player) : null;
