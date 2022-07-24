@@ -30,6 +30,16 @@ let publicBoard = generatePublicBoard(masterBoard);
 
 const allPlayers: PlayerData[] = [];
 
+const broadcastUpdate = (): void => {
+  allPlayers.forEach((player) => {
+    updateGameForPlayer(player, masterBoard, {
+      board: publicBoard,
+      players: allPlayers,
+      scores: scores,
+    });
+  });
+};
+
 /**
  * Reveals a cell on the public board.
  * @param cellIndex
@@ -42,13 +52,7 @@ const revealCell = (cellIndex: number): void => {
   if (color !== undefined) {
     scores[color] -= 1;
   }
-  allPlayers.forEach((player) => {
-    updateGameForPlayer(player, masterBoard, {
-      board: publicBoard,
-      players: allPlayers,
-      scores: scores,
-    });
-  });
+  broadcastUpdate();
   printPlayers(allPlayers);
 };
 
@@ -61,11 +65,7 @@ const becomeSpymaster = (username: string): void => {
   if (player !== undefined) {
     player.mode = Mode.Spymaster;
     player.spoiled = true;
-    updateGameForPlayer(player, masterBoard, {
-      board: publicBoard,
-      players: allPlayers,
-      scores: scores,
-    });
+    broadcastUpdate();
   }
   printPlayers(allPlayers);
 };
@@ -78,11 +78,7 @@ const becomeGuesser = (username: string): void => {
   const player = allPlayers.find((player) => player.username === username);
   if (player !== undefined) {
     player.mode = Mode.Normal;
-    updateGameForPlayer(player, masterBoard, {
-      board: publicBoard,
-      players: allPlayers,
-      scores: scores,
-    });
+    broadcastUpdate();
   }
   printPlayers(allPlayers);
 };
@@ -115,15 +111,11 @@ const updateUsername = (socketId: string, username: string): void => {
 
       // Remove old player
       allPlayers.splice(oldPlayerIndex, 1);
-
-      // Update game in case mode changed
-      updateGameForPlayer(player, masterBoard, {
-        board: publicBoard,
-        players: allPlayers,
-        scores: scores,
-      });
     }
   }
+
+  // Update game to reflect no username
+  broadcastUpdate();
   printPlayers(allPlayers);
 };
 
@@ -143,12 +135,8 @@ const newGame = (): void => {
   allPlayers.forEach((player) => {
     player.mode = Mode.Normal;
     player.spoiled = false;
-    updateGameForPlayer(player, masterBoard, {
-      board: publicBoard,
-      players: allPlayers,
-      scores: scores,
-    });
   });
+  broadcastUpdate();
   printPlayers(allPlayers);
 };
 
@@ -168,12 +156,8 @@ io.on("connection", (socket) => {
   socket.on("updateUsername", updateUsername);
   socket.on("newGame", newGame);
 
-  // Pass the game data to the new client
-  updateGameForPlayer(newPlayer, masterBoard, {
-    board: publicBoard,
-    players: allPlayers,
-    scores: scores,
-  });
+  // Broadcast update for new client
+  broadcastUpdate();
 
   printPlayers(allPlayers);
 });

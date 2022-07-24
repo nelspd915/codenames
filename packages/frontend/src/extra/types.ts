@@ -1,3 +1,6 @@
+// @ts-ignore
+import { CodenamesApp } from "../components/codenames-app/codenames-app";
+
 import { Socket } from "socket.io";
 
 /**
@@ -67,9 +70,24 @@ export interface GameData {
  * Library of requests that can be made to the server.
  */
 export interface Requests {
+  /**
+   * @see {@link CodenamesApp.revealCell}
+   */
   revealCell?: (index: number) => void;
+  /**
+   * @see {@link CodenamesApp.updateUsername}
+   */
   updateUsername?: (username: string) => void;
+  /**
+   * @see {@link CodenamesApp.becomeSpymaster}
+   */
   becomeSpymaster?: () => void;
+  /**
+   * @see {@link CodenamesApp.becomeGuesser}
+   */
   becomeGuesser?: () => void;
+  /**
+   * @see {@link CodenamesApp.newGame}
+   */
   newGame?: () => void;
 }

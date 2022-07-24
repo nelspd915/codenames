@@ -4,10 +4,9 @@ import { Color, Mode, Requests } from "../../extra/types";
 @Component({
   tag: "codenames-cell",
   styleUrl: "codenames-cell.scss",
-  shadow: true,
+  shadow: true
 })
 export class CodenamesCell {
-
   /**
    * Library of requests that can be made to the server.
    */
@@ -60,14 +59,8 @@ export class CodenamesCell {
    */
   render(): void {
     return (
-      <div
-        class={`${this.color} ${this.mode} ${this.revealed && !this.showSpinner ? "revealed" : ""}`}
-        onClick={this.handleRevealCell}
-      >
-        {this.showSpinner ?
-          <codenames-spinner></codenames-spinner> :
-          <span>{this.word.toUpperCase()}</span>
-        }
+      <div class={`${this.color} ${this.mode} ${this.revealed && !this.showSpinner ? "revealed" : ""}`} onClick={this.handleRevealCell}>
+        {this.showSpinner ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );
   }
@@ -77,7 +70,8 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.mode === Mode.Normal && this.revealed === false) {
-      this.requests.revealCell(this.index)
+      this.showSpinner = true;
+      this.requests.revealCell(this.index);
     }
-  }
+  };
 }
