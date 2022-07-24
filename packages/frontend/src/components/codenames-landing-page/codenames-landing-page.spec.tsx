@@ -1,11 +1,12 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { CodenamesLandingPage } from './codenames-landing-page';
+import { h } from "@stencil/core";
+import { newSpecPage } from "@stencil/core/testing";
+import { CodenamesLandingPage } from "./codenames-landing-page";
 
-describe('codenames-landing-page', () => {
-  it('renders', async () => {
+describe("codenames-landing-page", () => {
+  it("renders", async () => {
     const page = await newSpecPage({
       components: [CodenamesLandingPage],
-      html: `<codenames-landing-page></codenames-landing-page>`,
+      template: () => <codenames-landing-page requests={{}}></codenames-landing-page>
     });
     expect(page.root).toBeTruthy();
   });

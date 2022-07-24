@@ -1,13 +1,12 @@
-import { Component, h, Prop } from '@stencil/core';
+import { Component, h, Prop } from "@stencil/core";
 import { Color } from "../../extra/types";
 
 @Component({
-  tag: 'codenames-button',
-  styleUrl: 'codenames-button.scss',
-  shadow: true,
+  tag: "codenames-button",
+  styleUrl: "codenames-button.scss",
+  shadow: true
 })
 export class CodenamesButton {
-
   /**
    * Button color.
    */
@@ -16,7 +15,7 @@ export class CodenamesButton {
   /**
    * Whether button is on.
    */
-  @Prop() on: boolean;
+  @Prop() on?: boolean;
 
   /**
    * Stencil lifecycle method `render` for `codenames-button` component.
@@ -30,5 +29,4 @@ export class CodenamesButton {
       </div>
     );
   }
-
 }

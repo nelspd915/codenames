@@ -1,11 +1,13 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { CodenamesPanel } from './codenames-panel';
+import { h } from "@stencil/core";
+import { newSpecPage } from "@stencil/core/testing";
+import { Color } from "../../extra/types";
+import { CodenamesPanel } from "./codenames-panel";
 
-describe('codenames-panel', () => {
-  it('renders', async () => {
+describe("codenames-panel", () => {
+  it("renders", async () => {
     const page = await newSpecPage({
       components: [CodenamesPanel],
-      html: `<codenames-panel></codenames-panel>`,
+      template: () => <codenames-panel requests={{}} panelTeam={Color.Blue}></codenames-panel>
     });
     expect(page.root).toBeTruthy();
   });

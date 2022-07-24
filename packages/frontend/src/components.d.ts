@@ -27,7 +27,7 @@ export namespace Components {
         /**
           * Whether button is on.
          */
-        "on": boolean;
+        "on"?: boolean;
     }
     interface CodenamesCell {
         /**
