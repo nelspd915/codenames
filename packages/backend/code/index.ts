@@ -113,15 +113,15 @@ const updateUsername = (socketId: string, username: string): void => {
       player.mode = oldPlayer.mode;
       player.team = oldPlayer.team;
 
+      // Remove old player
+      allPlayers.splice(oldPlayerIndex, 1);
+
       // Update game in case mode changed
       updateGameForPlayer(player, masterBoard, {
         board: publicBoard,
         players: allPlayers,
         scores: scores,
       });
-
-      // Remove old player
-      allPlayers.splice(oldPlayerIndex, 1);
     }
   }
   printPlayers(allPlayers);

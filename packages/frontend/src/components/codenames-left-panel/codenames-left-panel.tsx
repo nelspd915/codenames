@@ -31,14 +31,12 @@ export class CodenamesLeftPanel {
       <Host>
         <div class="player-list">
           {this.players?.map((player) => {
-            return this.isOnTeam(player) ?
-              this.getNameElement(player)
-              : null
+            return this.isOnTeam(player) ? this.getNameElement(player) : null
           })}
         </div>
         <div class="buttons-container">
           <codenames-button
-            on={this.userPlayer.mode === Mode.Spymaster}
+            on={this.userPlayer?.mode === Mode.Spymaster}
             onClick={this.spymasterToggle}
           >Spymaster 👁</codenames-button>
           <codenames-button onClick={this.requests.newGame}>New game →</codenames-button>
@@ -47,6 +45,9 @@ export class CodenamesLeftPanel {
     );
   }
 
+  /**
+   * Toggles between spymaster and guesser.
+   */
   private spymasterToggle = (): void => {
     if (this.userPlayer?.mode === Mode.Spymaster) {
       this.requests.becomeGuesser();
@@ -55,25 +56,32 @@ export class CodenamesLeftPanel {
     }
   }
 
+  /**
+   * Whether the player is on the team for this panel.
+   * @param player
+   */
   private isOnTeam(player: PlayerData): boolean {
-    return player.username !== undefined && player.team === Color.Blue;
+    const value = (player.username ?? "") !== "" && player.team === Color.Blue;
+    return value;
   }
 
+  /**
+   * Gets the element to display a player's name and icon.
+   * @param player
+   */
   private getNameElement(player: PlayerData): HTMLElement {
-    let icon = `👁`;
-    let iconClass = "normal-icon";
+    let icon = ` `;
+    let iconClass = "";
     if (player.mode === Mode.Spymaster) {
-      iconClass = "spymaster-icon";
+      icon = `👁`;
     } else if (player.spoiled === true) {
       icon = `⚠`;
       iconClass = "spoiled-icon";
-    } else {
-
     }
 
     return <div class="player-name">
-      {`${player.username} `}
-      <span class={iconClass}>{icon}</span>
+      <div class={`player-icon ${iconClass}`}>{icon}</div>
+      <div class="player-name-text">{`${player.username}`}</div>
     </div>
   }
 
