@@ -6,6 +6,7 @@ import {
   Room,
   Rooms,
   UnfinishedRoom,
+  Team,
 } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
@@ -27,6 +28,7 @@ const updateGameForRoom = (room: Room): void => {
     board: room.publicBoard,
     players: room.players,
     scores: room.scores,
+    turn: room.turn
   };
 
   // Update game for guessers and spymasters
@@ -49,6 +51,16 @@ const updateScores = (room: Room): void => {
     }
   });
 };
+
+/**
+   * Ends a team's turn.
+   * @param roomCode
+   */
+ const endTurn = (roomCode: string): void => {
+  const room = rooms[roomCode];
+  room.turn = room.turn === Color.Blue ? room.turn = Color.Red : room.turn = Color.Blue
+  updateGameForRoom(rooms[roomCode]);
+}
 
 /**
  * Reveals a cell on the public board.
@@ -74,6 +86,13 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
       cell.mode = Mode.Endgame;
     });
     room.publicBoard = room.masterBoard;
+  }
+
+  // Whether current turn is now over
+  const turnOver = cellColor != room.turn;
+
+  if (turnOver) {
+    endTurn(roomCode);
   }
 
   updateGameForRoom(room);
@@ -119,6 +138,7 @@ io.on("connection", (socket) => {
       code: roomCode,
       host: host,
       players: [],
+      turn: Color.Blue
     };
     rooms[roomCode] = resetRoom(unfinishedRoom);
     joinRoom(roomCode, host);
@@ -196,10 +216,27 @@ io.on("connection", (socket) => {
     updateGameForRoom(rooms[roomCode]);
   };
 
+  /**
+   * Joins a team.
+   * @param roomCode
+   * @param username
+   * @param team
+   */
+  const joinTeam = (roomCode: string, username: string, team: Team): void => {
+    const room = rooms[roomCode];
+    const player = room.players.find((player) => player.username === username);
+    if (player !== undefined) {
+      player.team = team;
+    }
+    updateGameForRoom(rooms[roomCode]);
+  }
+
   // Add server listeners with callback functions
   socket.on("becomeSpymaster", becomeSpymaster);
   socket.on("becomeGuesser", becomeGuesser);
   socket.on("newGame", newGame);
   socket.on("enterRoom", enterRoom);
   socket.on("revealCell", revealCell);
+  socket.on("joinTeam", joinTeam);
+  socket.on("endTurn", endTurn);
 });
