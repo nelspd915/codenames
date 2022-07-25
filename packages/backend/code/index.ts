@@ -220,7 +220,6 @@ io.on("connection", socket => {
    */
   const newGame = async (roomCode: string): Promise<void> => {
     rooms[roomCode] = resetRoom(rooms[roomCode]);
-    randomizeTeams(roomCode);
     const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
     spymasterSockets.forEach(spymaster => {
       spymaster.leave(roomCode + SPYMASTER_SUFFIX);
