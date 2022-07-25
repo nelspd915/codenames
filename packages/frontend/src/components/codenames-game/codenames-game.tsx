@@ -93,7 +93,7 @@ export class CodenamesGame {
           ) : null}
           {this.canGuess ? (
             <codenames-button slot="footer-button" onClick={() => this.requests.endTurn()}>
-              End turn
+              End turn ✓
             </codenames-button>
           ) : null}
         </codenames-panel>
