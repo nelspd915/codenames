@@ -7,9 +7,10 @@
 
 ## Properties
 
-| Property | Attribute | Description        | Type                                                          | Default     |
-| -------- | --------- | ------------------ | ------------------------------------------------------------- | ----------- |
-| `scores` | --        | Scores to display. | `{ blue: number; red: number; gray: number; black: number; }` | `undefined` |
+| Property | Attribute | Description            | Type                                                          | Default     |
+| -------- | --------- | ---------------------- | ------------------------------------------------------------- | ----------- |
+| `scores` | --        | Scores to display.     | `{ blue: number; red: number; gray: number; black: number; }` | `undefined` |
+| `turn`   | `turn`    | Team whose turn it is. | `Color.Black \| Color.Blue \| Color.Gray \| Color.Red`        | `undefined` |
 
 
 ## Dependencies

@@ -5,10 +5,26 @@
   font-size: 24pt;
 }
 
-.blue-score {
-  color: #4183cc;
-}
+.scores-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  
+  div {
+    width: 30%;
+  }
 
-.red-score {
-  color: #d13030;
+  .blue {
+    color: #4183cc;
+  }
+
+  .red {
+    color: #d13030;
+  }
+
+  .turn-text {
+    font-family: Roboto, verdana, sans-serif;
+    font-size: 18pt;
+    font-weight: bold;
+  }
 }

@@ -15,6 +15,10 @@ export namespace Components {
          */
         "boardData"?: BoardData;
         /**
+          * Whether it is currently the user's turn to guess.
+         */
+        "canGuess": boolean;
+        /**
           * Library of requests that can be made to the server.
          */
         "requests": Requests;
@@ -30,6 +34,10 @@ export namespace Components {
         "on"?: boolean;
     }
     interface CodenamesCell {
+        /**
+          * Whether it is currently the user's turn to guess.
+         */
+        "canGuess": boolean;
         /**
           * Cell color.
          */
@@ -59,7 +67,7 @@ export namespace Components {
         /**
           * Game data used to populate values on the board and UI.
          */
-        "gameData": GameData | undefined;
+        "gameData"?: GameData;
         /**
           * Library of requests that can be made to the server.
          */
@@ -102,6 +110,10 @@ export namespace Components {
           * Scores to display.
          */
         "scores"?: Scores;
+        /**
+          * Team whose turn it is.
+         */
+        "turn"?: Color;
     }
     interface CodenamesSpinner {
     }
@@ -182,6 +194,10 @@ declare namespace LocalJSX {
          */
         "boardData"?: BoardData;
         /**
+          * Whether it is currently the user's turn to guess.
+         */
+        "canGuess"?: boolean;
+        /**
           * Library of requests that can be made to the server.
          */
         "requests"?: Requests;
@@ -197,6 +213,10 @@ declare namespace LocalJSX {
         "on"?: boolean;
     }
     interface CodenamesCell {
+        /**
+          * Whether it is currently the user's turn to guess.
+         */
+        "canGuess"?: boolean;
         /**
           * Cell color.
          */
@@ -226,7 +246,7 @@ declare namespace LocalJSX {
         /**
           * Game data used to populate values on the board and UI.
          */
-        "gameData"?: GameData | undefined;
+        "gameData"?: GameData;
         /**
           * Library of requests that can be made to the server.
          */
@@ -269,6 +289,10 @@ declare namespace LocalJSX {
           * Scores to display.
          */
         "scores"?: Scores;
+        /**
+          * Team whose turn it is.
+         */
+        "turn"?: Color;
     }
     interface CodenamesSpinner {
     }

@@ -16,7 +16,7 @@ div {
   word-break: break-all;
   background: #e8e8e8;
   cursor: pointer;
-  &.revealed, &.spymaster, &.endgame {
+  &.revealed, &.spymaster, &.endgame, &.no-guess {
     cursor: default;
   }
 }

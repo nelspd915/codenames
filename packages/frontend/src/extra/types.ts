@@ -96,6 +96,10 @@ export interface Requests {
    * @see {@link CodenamesApp.joinTeam}
    */
   joinTeam?: (color: Color) => void;
+  /**
+   * @see {@link CodenamesApp.endTurn}
+   */
+  endTurn?: () => void;
 }
 
 export type Rooms = {
