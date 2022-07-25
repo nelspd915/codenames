@@ -171,13 +171,16 @@ io.on("connection", (socket) => {
    * Creates new game for room.
    * @param roomCode
    */
-  const newGame = (roomCode: string): void => {
+  const newGame = async (roomCode: string): Promise<void> => {
     rooms[roomCode] = resetRoom(rooms[roomCode]);
-    rooms[roomCode].players.forEach((player) => {
-      if (player.username !== undefined) {
-        becomeGuesser(roomCode, player.username, true);
-      }
+    const spymasterSockets = await io
+      .in(roomCode + SPYMASTER_SUFFIX)
+      .fetchSockets();
+    spymasterSockets.forEach((spymaster) => {
+      spymaster.leave(roomCode + SPYMASTER_SUFFIX);
+      spymaster.join(roomCode + GUESSER_SUFFIX);
     });
+
     updateGameForRoom(rooms[roomCode]);
   };
 
