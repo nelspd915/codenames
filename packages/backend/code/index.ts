@@ -16,11 +16,11 @@ import { cloneDeep } from "lodash";
 const io = setupServer();
 
 // Initialize storage
-const allPlayers: PlayerData[] = [];
 const rooms: Rooms = {};
 
 /**
  * Broadcasts a game update for entire room.
+ * @param room
  */
 const updateGameForRoom = (room: Room): void => {
   const gameData: GameData = {
@@ -38,6 +38,19 @@ const updateGameForRoom = (room: Room): void => {
 };
 
 /**
+ * Updates scores for the room.
+ * @param room
+ */
+const updateScores = (room: Room): void => {
+  room.scores = { blue: 0, red: 0, gray: 0, black: 0 };
+  room.masterBoard.forEach((cell) => {
+    if (cell.revealed === false) {
+      room.scores[cell.color as Color] += 1;
+    }
+  });
+};
+
+/**
  * Reveals a cell on the public board.
  * @param roomCode
  * @param cellIndex
@@ -48,17 +61,13 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
   room.publicBoard[cellIndex].color = cellColor;
   room.publicBoard[cellIndex].revealed = true;
   room.masterBoard[cellIndex].revealed = true;
-  if (room.scores[cellColor] !== undefined) {
-    room.scores[cellColor] -= 1;
-  }
+  updateScores(room);
 
   // Whether the game is now over
   const gameOver =
     room.scores[Color.Blue] === 0 ||
     room.scores[Color.Red] === 0 ||
     cellColor === Color.Black;
-
-  console.log("go", gameOver);
 
   if (gameOver) {
     room.masterBoard.forEach((cell) => {
