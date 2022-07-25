@@ -1,4 +1,4 @@
-import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team } from "codenames-frontend";
+import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team, PlayerData } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
@@ -51,6 +51,48 @@ const endTurn = (roomCode: string): void => {
   const room = rooms[roomCode];
   room.turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
   updateGameForRoom(rooms[roomCode]);
+};
+
+/**
+ * Randomize teams in a room.
+ * @param roomCode
+ */
+ export const randomizeTeams = (roomCode: string): void => {
+  const room: Room = rooms[roomCode];
+  const playersLength: number = room.players.length;
+  const players: PlayerData[] = room.players;
+  let blueTotal: number = 0;
+  let redTotal: number = 0;
+
+  // Determine which team gets more players
+  if (Math.random() < 0.5) {
+    blueTotal = Math.round(playersLength / 2);
+    redTotal = playersLength - blueTotal;
+  } else {
+    redTotal = Math.round(playersLength / 2);
+    blueTotal = playersLength - redTotal;
+  }
+
+  // Assign new teams to players
+  for (let i = 0; i < playersLength; i++) {
+    if (Math.random() < 0.5) {
+      if (blueTotal != 0) {
+        players[i].team = Color.Blue;
+        blueTotal -= 1;
+      } else {
+        players[i].team = Color.Red;
+        redTotal -= 1;
+      }
+    } else {
+      if (redTotal != 0) {
+        players[i].team = Color.Red;
+        redTotal -= 1;
+      } else {
+        players[i].team = Color.Blue;
+        blueTotal -= 1;
+      }
+    }
+  }
 };
 
 /**
@@ -178,6 +220,7 @@ io.on("connection", socket => {
    */
   const newGame = async (roomCode: string): Promise<void> => {
     rooms[roomCode] = resetRoom(rooms[roomCode]);
+    randomizeTeams(roomCode);
     const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
     spymasterSockets.forEach(spymaster => {
       spymaster.leave(roomCode + SPYMASTER_SUFFIX);
@@ -225,4 +268,5 @@ io.on("connection", socket => {
   socket.on("revealCell", revealCell);
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
+  socket.on("randomizeTeams", randomizeTeams);
 });
