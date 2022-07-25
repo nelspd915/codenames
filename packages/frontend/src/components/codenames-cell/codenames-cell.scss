@@ -12,11 +12,17 @@ div {
   height: 100%;
   font-family: Roboto, verdana, sans-serif;
   font-size: 15pt;
+  overflow-wrap: break-word;
+  word-break: break-all;
   background: #e8e8e8;
   cursor: pointer;
   &.revealed, &.spymaster, &.endgame {
     cursor: default;
   }
+}
+
+span {
+  margin: 0px 3px;
 }
 
 .blue {
@@ -25,13 +31,13 @@ div {
     font-weight: bold;
   }
 
+  &.endgame {
+    background: #a6c7ee;
+  }
+
   &.revealed {
     background: #4183cc;
     color: #ffffff;
-  }
-
-  &.endgame {
-    background: #a6c7ee;
   }
 }
 
@@ -41,13 +47,13 @@ div {
     font-weight: bold;
   }
 
+  &.endgame {
+    background: #ecabab;
+  }
+
   &.revealed {
     background: #d13030;
     color: #ffffff;
-  }
-
-  &.endgame {
-    background: #ecabab;
   }
 }
 

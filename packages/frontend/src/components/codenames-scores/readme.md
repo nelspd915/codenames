@@ -16,12 +16,12 @@
 
 ### Used by
 
- - [codenames-app](../codenames-app)
+ - [codenames-game](../codenames-game)
 
 ### Graph
 ```mermaid
 graph TD;
-  codenames-app --> codenames-scores
+  codenames-game --> codenames-scores
   style codenames-scores fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

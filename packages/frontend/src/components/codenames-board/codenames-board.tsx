@@ -1,5 +1,5 @@
 import { Component, Host, h, Prop } from '@stencil/core';
-import { BoardData } from "../../extra/types";
+import { BoardData, Requests } from "../../extra/types";
 
 @Component({
   tag: 'codenames-board',
@@ -7,6 +7,11 @@ import { BoardData } from "../../extra/types";
   shadow: true,
 })
 export class CodenamesBoard {
+
+  /**
+   * Library of requests that can be made to the server.
+   */
+  @Prop() requests: Requests;
 
   /**
    * Board data used to generate the cells.
@@ -22,6 +27,7 @@ export class CodenamesBoard {
         {this.boardData?.map((cellData, i) => {
           return (
             <codenames-cell
+              requests={this.requests}
               index={i}
               word={cellData.word}
               color={cellData.color}

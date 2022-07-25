@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  margin-top: 100px;
+}
+
+.section {
+  display: flex;
+  justify-content: space-evenly;
+  color: #4a4a4a;
+  font-family: Roboto, verdana, sans-serif;
+  font-size: 16pt;
+}
+
+.header {
+  font-family: Courier New, monospace;
+  font-size: 24pt;
+  font-weight: bold;
+  letter-spacing: 5px;
+  margin-bottom: 50px;
+}
+
+.message {
+  color: #ff4747;
+  font-size: 12pt;
+}
+
+.input-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0px;
+  width: 120px;
+}
+
+input {
+  border: #a9a9a9 solid 2px;
+  border-radius: 4px;
+  color: #4a4a4a;
+  font-family: Roboto, verdana, sans-serif;
+  font-size: 14pt;
+  padding: 8.8px;
+  margin: 10px 25px;
+
+  &:invalid {
+    background-color: #ffdddd;
+  }
+}
+
+codenames-button {
+  margin: 50px auto;
+}

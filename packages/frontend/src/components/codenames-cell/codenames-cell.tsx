@@ -1,12 +1,16 @@
-import { Component, Prop, h, State, Event, EventEmitter, Watch } from "@stencil/core";
-import { Color, Mode } from "../../extra/types";
+import { Component, Prop, h, State, Watch } from "@stencil/core";
+import { Color, Mode, Requests } from "../../extra/types";
 
 @Component({
   tag: "codenames-cell",
   styleUrl: "codenames-cell.scss",
-  shadow: true,
+  shadow: true
 })
 export class CodenamesCell {
+  /**
+   * Library of requests that can be made to the server.
+   */
+  @Prop() requests: Requests;
   /**
    * Index of the cell.
    */
@@ -26,6 +30,19 @@ export class CodenamesCell {
    * Cell display mode.
    */
   @Prop() mode?: Mode = Mode.Normal;
+
+  /**
+   * Watcher for `revealed` prop.
+   */
+  @Watch("mode")
+  modeChanged(newValue: Mode): void {
+    if (newValue === Mode.Endgame) {
+      this.loadingEndgame = true;
+      setTimeout(() => {
+        this.loadingEndgame = false;
+      }, 300);
+    }
+  }
 
   /**
    * Whether the cell is revealed.
@@ -51,23 +68,17 @@ export class CodenamesCell {
   @State() private showSpinner: boolean = false;
 
   /**
-   * Event fired upon clicking a cell to reveal it.
+   * Whether loading endgame.
    */
-  @Event({ bubbles: true }) revealCell: EventEmitter<number>;
+  @State() private loadingEndgame: boolean = false;
 
   /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
     return (
-      <div
-        class={`${this.color} ${this.mode} ${this.revealed && !this.showSpinner ? "revealed" : ""}`}
-        onClick={this.handleRevealCell}
-      >
-        {this.showSpinner ?
-          <codenames-spinner></codenames-spinner> :
-          <span>{this.word.toUpperCase()}</span>
-        }
+      <div class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${this.revealed && !this.showSpinner ? "revealed" : ""}`} onClick={this.handleRevealCell}>
+        {this.showSpinner ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );
   }
@@ -77,7 +88,8 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.mode === Mode.Normal && this.revealed === false) {
-      this.revealCell.emit(this.index,);
+      this.showSpinner = true;
+      this.requests.revealCell(this.index);
     }
-  }
+  };
 }

@@ -1,18 +1,13 @@
-import { BoardData, CellData, Color, GameData, Mode, PlayerData, Scores } from "codenames-frontend";
+import {
+  BoardData,
+  CellData,
+  Color,
+  Mode,
+  PlayerData,
+  Scores,
+} from "codenames-frontend";
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
-
-
-export function printPlayers(allPlayers: PlayerData[]) {
-  console.log("players:", allPlayers.map(player => {
-    return {
-      socketId: player.socket.id,
-      username: player.username,
-      mode: player.mode,
-      team: player.team
-    }
-  }));
-}
 
 const addColoredCells = (
   board: BoardData,
@@ -30,18 +25,14 @@ const addColoredCells = (
   }
 };
 
-export const generateMasterBoard = (
-  blue: number,
-  red: number,
-  gray: number,
-  black: number
-): BoardData => {
-  const wordCount = red + blue + gray + black;
+export const generateMasterBoard = (startingScores: Scores): BoardData => {
+  const { blue, red, gray, black } = startingScores;
+  const wordCount = blue + red + gray + black;
   const chosenWords = sampleSize(words, wordCount);
   const board: BoardData = [];
 
-  addColoredCells(board, red, Color.Red, chosenWords);
   addColoredCells(board, blue, Color.Blue, chosenWords);
+  addColoredCells(board, red, Color.Red, chosenWords);
   addColoredCells(board, black, Color.Black, chosenWords);
   addColoredCells(board, gray, Color.Gray, chosenWords);
 
@@ -53,26 +44,8 @@ export const generatePublicBoard = (board: BoardData): BoardData => {
     const publicCell: CellData = {
       word: masterCell.word,
       mode: Mode.Normal,
-      revealed: false
+      revealed: false,
     };
     return publicCell;
-  })
-}
-
-export const updateGameForPlayer = (
-  player: PlayerData,
-  masterBoard: BoardData,
-  publicBoard: BoardData,
-  scores: Scores
-): void => {
-  const gameData: GameData = {
-    board: publicBoard,
-    scores: scores
-  };
-
-  if (player.mode === Mode.Spymaster) {
-    gameData.board = masterBoard;
-  }
-
-  player.socket.emit("updateGame", gameData);
-}
+  });
+};

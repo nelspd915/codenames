@@ -1,30 +1,33 @@
-import { Component, Host, h, Listen, State } from '@stencil/core';
-import { GameData } from "../../extra/types";
+import { Component, Host, h, State } from "@stencil/core";
+import { GameData, Requests } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
 @Component({
-  tag: 'codenames-app',
-  styleUrl: 'codenames-app.scss',
-  shadow: true,
+  tag: "codenames-app",
+  styleUrl: "codenames-app.scss",
+  shadow: true
 })
 export class CodenamesApp {
-
-  @Listen("revealCell")
-  revealCellHandler(event: CustomEvent<number>): void {
-    const cellIndex = event.detail;
-    this.socket.emit("revealCell", cellIndex, "poop");
-  }
-
   /**
    * Game data used to populate values on the board and UI.
    */
   @State() private gameData: GameData | undefined;
 
   /**
-   * Client player's username
+   * Room code.
+   */
+  @State() private roomCode: string | undefined;
+
+  /**
+   * Client player's username.
    */
   @State() private username: string | undefined;
+
+  /**
+   * Whether the landing page is shown.
+   */
+  @State() private showLandingPage: boolean = true;
 
   /**
    * Socket connection with the server.
@@ -32,9 +35,9 @@ export class CodenamesApp {
   private socket: Socket;
 
   /**
-   * Input element for username.
+   * Library of requests that can be made to the server.
    */
-  private usernameInput: HTMLInputElement;
+  private requests: Requests = {};
 
   /**
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
@@ -47,11 +50,26 @@ export class CodenamesApp {
       this.gameData = gameData;
     });
     this.socket.on("connect", () => {
-      const cachedUsername = window.localStorage.getItem("codenamesUsername")
+      // Pull previous room code from local storage if it exists
+      const cachedRoomCode = window.localStorage.getItem("codenamesRoomCode");
+      if (cachedRoomCode !== null) {
+        this.roomCode = cachedRoomCode;
+      }
+
+      // Pull previous username from local storage if it exists
+      const cachedUsername = window.localStorage.getItem("codenamesUsername");
       if (cachedUsername !== null) {
         this.username = cachedUsername;
-        this.socket.emit("updateUsername", this.socket.id, this.username);
       }
+
+      // Setup all requests
+      this.requests = {
+        revealCell: this.revealCell,
+        enterRoom: this.enterRoom,
+        becomeSpymaster: this.becomeSpymaster,
+        becomeGuesser: this.becomeGuesser,
+        newGame: this.newGame
+      };
     });
   }
 
@@ -61,49 +79,61 @@ export class CodenamesApp {
   render(): void {
     return (
       <Host>
-        <input ref={(element) => {
-          this.usernameInput = element;
-        }} />
-        <button onClick={this.updateUsernameHandler}>Submit</button>
-        <div>{this.username ?? ""}</div><br></br>
-        <codenames-scores scores={this.gameData?.scores}></codenames-scores>
-        <codenames-board boardData={this.gameData?.board}></codenames-board>
-        <button onClick={this.becomeSpymasterHandler}>Spymaster</button>
-        <button onClick={this.newGameHandler}>New game</button>
-        <button onClick={this.createRoomHandler}>Create Room</button>
-        <button onClick={this.JoinRoomHandler}>Join Room</button>
+        <div class="app-container">
+          {this.showLandingPage ? (
+            <codenames-landing-page requests={this.requests} roomCode={this.roomCode} username={this.username}></codenames-landing-page>
+          ) : (
+            <codenames-game
+              requests={this.requests}
+              gameData={this.gameData}
+              userPlayer={this.gameData?.players?.find(player => player.username === this.username)}
+            ></codenames-game>
+          )}
+        </div>
       </Host>
     );
   }
 
   /**
-   * Handler to request username update.
+   * Request to reveal a cell.
+   * @param cellIndex
    */
-  private updateUsernameHandler = (): void => {
-    this.username = this.usernameInput.value;
+  private revealCell = (cellIndex: number): void => {
+    this.socket.emit("revealCell", this.roomCode, cellIndex);
+  };
+
+  /**
+   * Request to enter room.
+   * @param roomCode
+   * @param username
+   */
+  private enterRoom = (roomCode: string, username: string): void => {
+    this.roomCode = roomCode;
+    this.username = username;
+    window.localStorage.setItem("codenamesRoomCode", this.roomCode);
     window.localStorage.setItem("codenamesUsername", this.username);
-    this.socket.emit("updateUsername", this.socket.id, this.username);
-  }
+    this.socket.emit("enterRoom", this.roomCode, this.username);
+    this.showLandingPage = false;
+  };
 
   /**
-   * Handler to request to become a spymaster.
+   * Request to become a spymaster.
    */
-  private becomeSpymasterHandler = (): void => {
-    this.socket.emit("becomeSpymaster", this.username, "poop");
-  }
+  private becomeSpymaster = (): void => {
+    this.socket.emit("becomeSpymaster", this.roomCode, this.username);
+  };
 
   /**
-   * Handler to request to start a new game.
+   * Request to become a spymaster.
    */
-  private newGameHandler = (): void => {
-    this.socket.emit("newGame", "poop");
-  }
+  private becomeGuesser = (): void => {
+    this.socket.emit("becomeGuesser", this.roomCode, this.username);
+  };
 
-  private createRoomHandler = (): void => {
-    this.socket.emit("createRoom", "poop", "Kob");
-  }
-
-  private JoinRoomHandler = (): void => {
-    this.socket.emit("joinRoom", "poop", "Kob");
-  }
+  /**
+   * Request to start a new game.
+   */
+  private newGame = (): void => {
+    this.socket.emit("newGame", this.roomCode);
+  };
 }

@@ -1,4 +1,5 @@
-import { Socket } from "socket.io";
+// @ts-ignore
+import { CodenamesApp } from "../components/codenames-app/codenames-app";
 
 /**
  * Enumerator for possible cell colors.
@@ -30,20 +31,20 @@ export type BoardData = CellData[];
  * Data to apply to a cell.
  */
 export interface CellData {
-  word: string,
-  color?: Color,
-  mode?: Mode,
-  revealed?: boolean
+  word: string;
+  color?: Color;
+  mode?: Mode;
+  revealed?: boolean;
 }
 
 /**
  * Data to apply to a player.
  */
 export interface PlayerData {
-  socket: Socket,
-  username?: string,
-  mode?: Mode,
-  team?: Team
+  username?: string;
+  mode?: Mode;
+  spoiled?: boolean;
+  team?: Team;
 }
 
 /**
@@ -57,21 +58,63 @@ export type Scores = {
  * Game data.
  */
 export interface GameData {
-  board: BoardData,
-  scores: Scores
+  board: BoardData;
+  players: PlayerData[];
+  scores: Scores;
 }
 
-export type Lobbies = {
+/**
+ * Library of requests that can be made to the server.
+ */
+export interface Requests {
+  /**
+   * @see {@link CodenamesApp.revealCell}
+   */
+  revealCell?: (index: number) => void;
+  /**
+   * @see {@link CodenamesApp.enterRoom}
+   */
+  enterRoom?: (username: string, roomCode: string) => void;
+  /**
+   * @see {@link CodenamesApp.becomeSpymaster}
+   */
+  becomeSpymaster?: () => void;
+  /**
+   * @see {@link CodenamesApp.becomeGuesser}
+   */
+  becomeGuesser?: () => void;
+  /**
+   * @see {@link CodenamesApp.newGame}
+   */
+  newGame?: () => void;
+  /**
+   * @see {@link CodenamesApp.createRoom}
+   */
+  createRoom?: () => void;
+  /**
+   * @see {@link CodenamesApp.joinRoom}
+   */
+  joinRoom?: () => void;
+}
+
+export type Rooms = {
   [key in string]: Room;
 };
 
 export interface Room {
-  code: string,
-  host: string,
-  masterBoard: BoardData,
-  publicBoard: BoardData,
-  blueTeam?: string[],
-  redTeam?: string[],
-  spymasters?: string[],
-  scores: Scores
+  code: string;
+  host: string;
+  masterBoard: BoardData;
+  publicBoard: BoardData;
+  players: PlayerData[];
+  scores: Scores;
+}
+
+export interface UnfinishedRoom {
+  code: string;
+  host: string;
+  players: PlayerData[];
+  masterBoard?: BoardData;
+  publicBoard?: BoardData;
+  scores?: Scores;
 }

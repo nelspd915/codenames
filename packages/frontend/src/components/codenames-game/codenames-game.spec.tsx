@@ -1,12 +1,12 @@
 import { h } from "@stencil/core";
 import { newSpecPage } from "@stencil/core/testing";
-import { CodenamesBoard } from "./codenames-board";
+import { CodenamesGame } from "./codenames-game";
 
-describe("codenames-board", () => {
+describe("codenames-game", () => {
   it("renders", async () => {
     const page = await newSpecPage({
-      components: [CodenamesBoard],
-      template: () => <codenames-board requests={{}}></codenames-board>
+      components: [CodenamesGame],
+      template: () => <codenames-game requests={{}}></codenames-game>
     });
     expect(page.root).toBeTruthy();
   });

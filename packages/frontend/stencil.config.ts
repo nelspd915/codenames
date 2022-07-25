@@ -20,8 +20,8 @@ export const config: Config = {
       baseUrl: "/codenames",
       copy: [
         {
-          src: "main.js",
-          dest: "main.js"
+          src: "app/",
+          dest: "app/"
         }
       ]
     },

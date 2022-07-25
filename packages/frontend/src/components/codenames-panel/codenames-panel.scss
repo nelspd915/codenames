@@ -1,0 +1,69 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  width: 140px;
+
+  &:host(.blue) {
+    margin-left: 45px;
+  }
+
+  &:host(.red) {
+    margin-right: 45px;
+  }
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .player-name {
+    display: flex;
+    font-family: Roboto, verdana, sans-serif;
+    font-size: 14pt;
+    margin: 1px;
+    width: 100%;
+    height: 32px;
+
+    &.blue {
+      color: #4183cc;
+    }
+
+    &.red {
+      color: #d13030;
+    }
+  
+    .player-name-text {
+      display: flex;
+      align-items: center;
+      width: 80%;
+      overflow: visible;
+      margin-left: 5px;
+    }
+    
+    .player-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 20%;
+      
+      &.spoiled-icon {
+        color: rgb(255, 89, 0);
+      }
+    }
+  }
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+
+  ::slotted(codenames-button) {
+    margin-top: 25px;
+  }
+}

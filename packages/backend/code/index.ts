@@ -1,157 +1,205 @@
-import { Color, GameData, Lobbies, Mode, PlayerData, Scores } from "codenames-frontend";
-import { generateMasterBoard, generatePublicBoard, updateGameForPlayer } from "./utils";
-import { BLACK_WORDS, BLUE_WORDS, GRAY_WORDS, RED_WORDS } from "./constants";
+import {
+  Color,
+  Mode,
+  PlayerData,
+  GameData,
+  Room,
+  Rooms,
+  UnfinishedRoom,
+} from "codenames-frontend";
+import { generateMasterBoard, generatePublicBoard } from "./utils";
+import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
+import { cloneDeep } from "lodash";
 
 // Setup server
 const io = setupServer();
 
-// Starting scores
-const scores: Scores = {
-  [Color.Blue]: BLUE_WORDS,
-  [Color.Red]: RED_WORDS,
-  [Color.Gray]: GRAY_WORDS,
-  [Color.Black]: BLACK_WORDS
-};
-
-
 // Initialize storage
-const allPlayers: PlayerData[] = [];
-const rooms: Lobbies = {};
-
-/** 
- * Updates player username.
- * @param socketId
- * @param username
- */
-const updateUsername = (socketId: string, username: string): void => {
-  const player = allPlayers.find((eachPlayer) => eachPlayer.socket.id === socketId);
-
-  // Find old cached player data with the same username if it exists
-  const oldPlayerIndex = allPlayers.findIndex((eachPlayer) => {
-    return (
-      eachPlayer.username === username &&
-      eachPlayer.socket.id !== socketId
-    );
-  });
-  const oldPlayer = allPlayers[oldPlayerIndex];
-
-  if (player !== undefined) {
-    player.username = username;
-
-    // If there was a previous user cached, bring back their data
-    if (oldPlayer !== undefined) {
-      player.mode = oldPlayer.mode;
-      player.team = oldPlayer.team;
-      
-      // Remove old player
-      allPlayers.splice(oldPlayerIndex, 1);
-    }
-  }
-}
+const rooms: Rooms = {};
 
 /**
- * Creates new game for room.
+ * Broadcasts a game update for entire room.
+ * @param room
  */
-const newGame = (code: string): void => {
-  rooms[code].scores = scores;
-  const masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
-  const publicBoard = generatePublicBoard(masterBoard);
-  rooms[code].masterBoard = masterBoard;
-  rooms[code].publicBoard = publicBoard;
+const updateGameForRoom = (room: Room): void => {
   const gameData: GameData = {
-    board: rooms[code].publicBoard,
-    scores: rooms[code].scores
+    board: room.publicBoard,
+    players: room.players,
+    scores: room.scores,
   };
-  io.to(code).emit("updateGame", gameData);
-}
+
+  // Update game for guessers and spymasters
+  io.to(room.code + GUESSER_SUFFIX).emit("updateGame", gameData);
+  io.to(room.code + SPYMASTER_SUFFIX).emit("updateGame", {
+    ...gameData,
+    board: room.masterBoard,
+  });
+};
+
+/**
+ * Updates scores for the room.
+ * @param room
+ */
+const updateScores = (room: Room): void => {
+  room.scores = { blue: 0, red: 0, gray: 0, black: 0 };
+  room.masterBoard.forEach((cell) => {
+    if (cell.revealed === false) {
+      room.scores[cell.color as Color] += 1;
+    }
+  });
+};
+
+/**
+ * Reveals a cell on the public board.
+ * @param roomCode
+ * @param cellIndex
+ */
+const revealCell = (roomCode: string, cellIndex: number): void => {
+  const room = rooms[roomCode];
+  const cellColor = room.masterBoard[cellIndex].color as Color;
+  room.publicBoard[cellIndex].color = cellColor;
+  room.publicBoard[cellIndex].revealed = true;
+  room.masterBoard[cellIndex].revealed = true;
+  updateScores(room);
+
+  // Whether the game is now over
+  const gameOver =
+    room.scores[Color.Blue] === 0 ||
+    room.scores[Color.Red] === 0 ||
+    cellColor === Color.Black;
+
+  if (gameOver) {
+    room.masterBoard.forEach((cell) => {
+      cell.mode = Mode.Endgame;
+    });
+    room.publicBoard = room.masterBoard;
+  }
+
+  updateGameForRoom(room);
+};
+
+/**
+ * Reset a room by populating new game data.
+ */
+const resetRoom = (partialRoom: UnfinishedRoom): Room => {
+  const newRoom = cloneDeep(partialRoom);
+  newRoom.scores = { ...STARTING_SCORES };
+  newRoom.masterBoard = generateMasterBoard(STARTING_SCORES);
+  newRoom.publicBoard = generatePublicBoard(newRoom.masterBoard);
+  newRoom.players.forEach((player) => {
+    player.mode = Mode.Normal;
+    player.spoiled = false;
+  });
+  return newRoom as Room;
+};
 
 // Setting up a connection to a client
 io.on("connection", (socket) => {
-  // Add socket to list
-  const newPlayer = {
-    socket: socket,
-    mode: Mode.Normal
+  // Callback function to join a room
+  const joinRoom = (roomCode: string, username: string) => {
+    socket.join(roomCode + GUESSER_SUFFIX);
+    const room = rooms[roomCode];
+    const player = room.players.find((player) => player.username === username);
+    if (player === undefined) {
+      room.players.push({
+        username: username,
+        mode: Mode.Normal,
+        spoiled: false,
+        team: Color.Blue,
+      });
+    }
+
+    updateGameForRoom(room);
   };
-  allPlayers.push(newPlayer);
 
-  // Add server listener and callback function for revealCell
-  socket.on("revealCell", (cellIndex: number, code: string) => {
-    const color = rooms[code].masterBoard[cellIndex].color as Color;
-    rooms[code].publicBoard[cellIndex].color = color;
-    rooms[code].publicBoard[cellIndex].revealed = true;
-    rooms[code].masterBoard[cellIndex].revealed = true;
-    if (rooms[code].scores[color] !== undefined) {
-      rooms[code].scores[color] -= 1;
-    }
-    let gameData: GameData = {
-      board: rooms[code].publicBoard,
-      scores: rooms[code].scores
-    };
-    socket.to(code).emit("updateGame", gameData);
-    socket.emit("updateGame", gameData);
-    if (rooms[code].scores[color] === 0 && color !== Color.Gray) {
-      rooms[code].publicBoard.forEach((cell) => {
-        cell.revealed = true;
-        cell.mode = Mode.Endgame;
-      });
-      rooms[code].masterBoard.forEach((cell) => {
-        cell.mode = Mode.Endgame;
-      });
-    }
-    gameData.board = rooms[code].publicBoard;
-    socket.to(code).emit("updateGame", gameData);
-    socket.emit("updateGame", gameData);
-    gameData.board = rooms[code].masterBoard;
-    socket.to(code + "spymaster").emit("updateGame", gameData);
-  });
-
-  // Add server listener and callback function for becomeSpymaster
-  socket.on("becomeSpymaster", (username: string, code: string) => {
-    socket.join(code + "spymaster");
-    let gameData: GameData = {
-      board: rooms[code].masterBoard,
-      scores: rooms[code].scores
-    };
-    socket.emit("updateGame", gameData);
-  });
-  socket.on("updateUsername", updateUsername);
-  socket.on("newGame", newGame);
-  socket.on("createRoom", (code: string, host: string) => {
-    socket.join(code);
-    const masterBoard = generateMasterBoard(BLUE_WORDS, RED_WORDS, GRAY_WORDS, BLACK_WORDS);
-    const publicBoard = generatePublicBoard(masterBoard);
-    // Starting scores
-    const scores: Scores = {
-      [Color.Blue]: BLUE_WORDS,
-      [Color.Red]: RED_WORDS,
-      [Color.Gray]: GRAY_WORDS,
-      [Color.Black]: BLACK_WORDS
-    };
-    rooms[code] = {
-      code: code,
+  // Callback function to create a new room
+  const createRoom = (roomCode: string, host: string): void => {
+    const unfinishedRoom: UnfinishedRoom = {
+      code: roomCode,
       host: host,
-      masterBoard: masterBoard,
-      publicBoard: publicBoard,
-      scores: scores
+      players: [],
+    };
+    rooms[roomCode] = resetRoom(unfinishedRoom);
+    joinRoom(roomCode, host);
+  };
+
+  // Callback function to become a spymaster
+  const becomeSpymaster = (
+    roomCode: string,
+    username: string,
+    suppressUpdate = false
+  ): void => {
+    socket.leave(roomCode + GUESSER_SUFFIX);
+    socket.join(roomCode + SPYMASTER_SUFFIX);
+    const room = rooms[roomCode];
+    const player = room.players.find((player) => player.username === username);
+    if (player !== undefined) {
+      player.mode = Mode.Spymaster;
+      player.spoiled = true;
     }
-    const gameData: GameData = {
-      board: publicBoard,
-      scores: scores
-    };
-    socket.emit("updateGame", gameData);
-  });
 
-  // Add server listener and callback function for joinRoom
-  socket.on("joinRoom", (code: string, username: string) => {
-    const gameData: GameData = {
-      board: rooms[code].publicBoard,
-      scores: rooms[code].scores
-    };
-    socket.join(code);
-    socket.emit("updateGame", gameData);
-  });
+    if (suppressUpdate === false) {
+      updateGameForRoom(room);
+    }
+  };
 
-  // Pass the game data to the new client
-  // updateGameForPlayer(newPlayer, masterBoard, publicBoard, scores);
+  /**
+   * Become a guesser.
+   * @param roomCode
+   * @param username
+   */
+  const becomeGuesser = (
+    roomCode: string,
+    username: string,
+    suppressUpdate = false
+  ): void => {
+    socket.leave(roomCode + SPYMASTER_SUFFIX);
+    socket.join(roomCode + GUESSER_SUFFIX);
+    const room = rooms[roomCode];
+    const player = room.players.find((player) => player.username === username);
+    if (player !== undefined) {
+      player.mode = Mode.Normal;
+    }
+
+    if (suppressUpdate === false) {
+      updateGameForRoom(room);
+    }
+  };
+
+  /**
+   * Creates new game for room.
+   * @param roomCode
+   */
+  const newGame = (roomCode: string): void => {
+    rooms[roomCode] = resetRoom(rooms[roomCode]);
+    rooms[roomCode].players.forEach((player) => {
+      if (player.username !== undefined) {
+        becomeGuesser(roomCode, player.username, true);
+      }
+    });
+    updateGameForRoom(rooms[roomCode]);
+  };
+
+  /**
+   * Creates or joins a room to enter.
+   * @param roomCode
+   * @param username
+   */
+  const enterRoom = (roomCode: string, username: string): void => {
+    if (rooms[roomCode] === undefined) {
+      createRoom(roomCode, username);
+    }
+
+    joinRoom(roomCode, username);
+
+    updateGameForRoom(rooms[roomCode]);
+  };
+
+  // Add server listeners with callback functions
+  socket.on("becomeSpymaster", becomeSpymaster);
+  socket.on("becomeGuesser", becomeGuesser);
+  socket.on("newGame", newGame);
+  socket.on("enterRoom", enterRoom);
+  socket.on("revealCell", revealCell);
 });
