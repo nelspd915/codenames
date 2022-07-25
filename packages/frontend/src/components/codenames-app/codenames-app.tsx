@@ -45,6 +45,13 @@ export class CodenamesApp {
   connectedCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const url = urlParams.get("dev") === "true" ? DEV_URL : PROD_URL;
+    this.requests = {
+      revealCell: this.revealCell,
+      enterRoom: this.enterRoom,
+      becomeSpymaster: this.becomeSpymaster,
+      becomeGuesser: this.becomeGuesser,
+      newGame: this.newGame
+    };
     this.socket = io(url);
     this.socket.on("updateGame", (gameData: GameData) => {
       this.gameData = gameData;
@@ -61,15 +68,6 @@ export class CodenamesApp {
       if (cachedUsername !== null) {
         this.username = cachedUsername;
       }
-
-      // Setup all requests
-      this.requests = {
-        revealCell: this.revealCell,
-        enterRoom: this.enterRoom,
-        becomeSpymaster: this.becomeSpymaster,
-        becomeGuesser: this.becomeGuesser,
-        newGame: this.newGame
-      };
     });
   }
 
