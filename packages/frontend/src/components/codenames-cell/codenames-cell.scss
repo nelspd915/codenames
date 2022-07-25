@@ -31,13 +31,13 @@ span {
     font-weight: bold;
   }
 
+  &.endgame {
+    background: #a6c7ee;
+  }
+
   &.revealed {
     background: #4183cc;
     color: #ffffff;
-  }
-
-  &.endgame {
-    background: #a6c7ee;
   }
 }
 
@@ -47,13 +47,13 @@ span {
     font-weight: bold;
   }
 
+  &.endgame {
+    background: #ecabab;
+  }
+
   &.revealed {
     background: #d13030;
     color: #ffffff;
-  }
-
-  &.endgame {
-    background: #ecabab;
   }
 }
 

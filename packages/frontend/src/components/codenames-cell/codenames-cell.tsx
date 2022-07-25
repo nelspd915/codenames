@@ -32,6 +32,19 @@ export class CodenamesCell {
   @Prop() mode?: Mode = Mode.Normal;
 
   /**
+   * Watcher for `revealed` prop.
+   */
+  @Watch("mode")
+  modeChanged(newValue: Mode): void {
+    if (newValue === Mode.Endgame) {
+      this.loadingEndgame = true;
+      setTimeout(() => {
+        this.loadingEndgame = false;
+      }, 300);
+    }
+  }
+
+  /**
    * Whether the cell is revealed.
    */
   @Prop() revealed?: boolean = false;
@@ -55,11 +68,16 @@ export class CodenamesCell {
   @State() private showSpinner: boolean = false;
 
   /**
+   * Whether loading endgame.
+   */
+  @State() private loadingEndgame: boolean = false;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): void {
     return (
-      <div class={`${this.color} ${this.mode} ${this.revealed && !this.showSpinner ? "revealed" : ""}`} onClick={this.handleRevealCell}>
+      <div class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${this.revealed && !this.showSpinner ? "revealed" : ""}`} onClick={this.handleRevealCell}>
         {this.showSpinner ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );

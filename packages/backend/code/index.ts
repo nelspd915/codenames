@@ -58,13 +58,13 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
     room.scores[Color.Red] === 0 ||
     cellColor === Color.Black;
 
-  if (gameOver && room.masterBoard[cellIndex].revealed === false) {
-    room.publicBoard.forEach((cell) => {
-      cell.mode = Mode.Endgame;
-    });
+  console.log("go", gameOver);
+
+  if (gameOver) {
     room.masterBoard.forEach((cell) => {
       cell.mode = Mode.Endgame;
     });
+    room.publicBoard = room.masterBoard;
   }
 
   updateGameForRoom(room);
@@ -83,14 +83,6 @@ const resetRoom = (partialRoom: UnfinishedRoom): Room => {
     player.spoiled = false;
   });
   return newRoom as Room;
-};
-
-/**
- * Creates new game for room.
- */
-const newGame = (roomCode: string): void => {
-  rooms[roomCode] = resetRoom(rooms[roomCode]);
-  updateGameForRoom(rooms[roomCode]);
 };
 
 // Setting up a connection to a client
@@ -123,21 +115,13 @@ io.on("connection", (socket) => {
     joinRoom(roomCode, host);
   };
 
-  // Add server listener and callback to enter room
-  socket.on("enterRoom", (roomCode: string, username: string) => {
-    if (rooms[roomCode] === undefined) {
-      createRoom(roomCode, username);
-    }
-
-    joinRoom(roomCode, username);
-
-    updateGameForRoom(rooms[roomCode]);
-
-    console.log("ROOMS", rooms);
-  });
-
-  // Add server listener and callback for become spymaster
-  socket.on("becomeSpymaster", (roomCode: string, username: string) => {
+  // Callback function to become a spymaster
+  const becomeSpymaster = (
+    roomCode: string,
+    username: string,
+    suppressUpdate = false
+  ): void => {
+    socket.leave(roomCode + GUESSER_SUFFIX);
     socket.join(roomCode + SPYMASTER_SUFFIX);
     const room = rooms[roomCode];
     const player = room.players.find((player) => player.username === username);
@@ -146,11 +130,22 @@ io.on("connection", (socket) => {
       player.spoiled = true;
     }
 
-    updateGameForRoom(room);
-  });
+    if (suppressUpdate === false) {
+      updateGameForRoom(room);
+    }
+  };
 
-  // Add server listener and callback for become guesser
-  socket.on("becomeGuesser", (roomCode: string, username: string) => {
+  /**
+   * Become a guesser.
+   * @param roomCode
+   * @param username
+   */
+  const becomeGuesser = (
+    roomCode: string,
+    username: string,
+    suppressUpdate = false
+  ): void => {
+    socket.leave(roomCode + SPYMASTER_SUFFIX);
     socket.join(roomCode + GUESSER_SUFFIX);
     const room = rooms[roomCode];
     const player = room.players.find((player) => player.username === username);
@@ -158,10 +153,44 @@ io.on("connection", (socket) => {
       player.mode = Mode.Normal;
     }
 
-    updateGameForRoom(room);
-  });
+    if (suppressUpdate === false) {
+      updateGameForRoom(room);
+    }
+  };
 
-  // Add other server listeners with callback functions
-  socket.on("revealCell", revealCell);
+  /**
+   * Creates new game for room.
+   * @param roomCode
+   */
+  const newGame = (roomCode: string): void => {
+    rooms[roomCode] = resetRoom(rooms[roomCode]);
+    rooms[roomCode].players.forEach((player) => {
+      if (player.username !== undefined) {
+        becomeGuesser(roomCode, player.username, true);
+      }
+    });
+    updateGameForRoom(rooms[roomCode]);
+  };
+
+  /**
+   * Creates or joins a room to enter.
+   * @param roomCode
+   * @param username
+   */
+  const enterRoom = (roomCode: string, username: string): void => {
+    if (rooms[roomCode] === undefined) {
+      createRoom(roomCode, username);
+    }
+
+    joinRoom(roomCode, username);
+
+    updateGameForRoom(rooms[roomCode]);
+  };
+
+  // Add server listeners with callback functions
+  socket.on("becomeSpymaster", becomeSpymaster);
+  socket.on("becomeGuesser", becomeGuesser);
   socket.on("newGame", newGame);
+  socket.on("enterRoom", enterRoom);
+  socket.on("revealCell", revealCell);
 });
