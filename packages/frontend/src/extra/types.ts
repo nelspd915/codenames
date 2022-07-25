@@ -61,6 +61,7 @@ export interface GameData {
   board: BoardData;
   players: PlayerData[];
   scores: Scores;
+  turn?: Color;
 }
 
 /**
@@ -108,6 +109,7 @@ export interface Room {
   publicBoard: BoardData;
   players: PlayerData[];
   scores: Scores;
+  turn: Color;
 }
 
 export interface UnfinishedRoom {
@@ -117,4 +119,5 @@ export interface UnfinishedRoom {
   masterBoard?: BoardData;
   publicBoard?: BoardData;
   scores?: Scores;
+  turn: Color;
 }
