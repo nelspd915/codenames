@@ -74,13 +74,13 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
       cell.mode = Mode.Endgame;
     });
     room.publicBoard = room.masterBoard;
-  }
+  } else {
+    // Whether current turn is now over
+    const turnOver = cellColor != room.turn;
 
-  // Whether current turn is now over
-  const turnOver = cellColor != room.turn;
-
-  if (turnOver) {
-    endTurn(roomCode);
+    if (turnOver) {
+      endTurn(roomCode);
+    }
   }
 
   updateGameForRoom(room);
@@ -92,6 +92,7 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
 const resetRoom = (partialRoom: UnfinishedRoom): Room => {
   const newRoom = cloneDeep(partialRoom);
   newRoom.scores = { ...STARTING_SCORES };
+  newRoom.turn = Color.Blue;
   newRoom.masterBoard = generateMasterBoard(STARTING_SCORES);
   newRoom.publicBoard = generatePublicBoard(newRoom.masterBoard);
   newRoom.players.forEach(player => {

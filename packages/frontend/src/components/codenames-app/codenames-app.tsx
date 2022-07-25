@@ -12,17 +12,17 @@ export class CodenamesApp {
   /**
    * Game data used to populate values on the board and UI.
    */
-  @State() private gameData: GameData | undefined;
+  @State() private gameData?: GameData;
 
   /**
    * Room code.
    */
-  @State() private roomCode: string | undefined;
+  @State() private roomCode?: string;
 
   /**
    * Client player's username.
    */
-  @State() private username: string | undefined;
+  @State() private username?: string;
 
   /**
    * Whether the landing page is shown.
@@ -60,7 +60,8 @@ export class CodenamesApp {
       becomeSpymaster: this.becomeSpymaster,
       becomeGuesser: this.becomeGuesser,
       newGame: this.newGame,
-      joinTeam: this.joinTeam
+      joinTeam: this.joinTeam,
+      endTurn: this.endTurn
     };
     this.socket = io(url);
     this.socket.on("updateGame", (gameData: GameData) => {
@@ -133,9 +134,16 @@ export class CodenamesApp {
   };
 
   /**
-   * Request to start a new game.
+   * Request to join a team.
    */
   private joinTeam = (color: Color): void => {
     this.socket.emit("joinTeam", this.roomCode, this.username, color);
+  };
+
+  /**
+   * Request to end the turn.
+   */
+  private endTurn = (): void => {
+    this.socket.emit("endTurn", this.roomCode);
   };
 }

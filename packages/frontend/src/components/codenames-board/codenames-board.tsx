@@ -1,13 +1,12 @@
-import { Component, Host, h, Prop } from '@stencil/core';
+import { Component, Host, h, Prop } from "@stencil/core";
 import { BoardData, Requests } from "../../extra/types";
 
 @Component({
-  tag: 'codenames-board',
-  styleUrl: 'codenames-board.scss',
-  shadow: true,
+  tag: "codenames-board",
+  styleUrl: "codenames-board.scss",
+  shadow: true
 })
 export class CodenamesBoard {
-
   /**
    * Library of requests that can be made to the server.
    */
@@ -17,6 +16,11 @@ export class CodenamesBoard {
    * Board data used to generate the cells.
    */
   @Prop() boardData?: BoardData;
+
+  /**
+   * Whether it is currently the user's turn to guess.
+   */
+  @Prop() canGuess: boolean = false;
 
   /**
    * Stencil lifecycle method `render` for `codenames-board` component.
@@ -33,11 +37,11 @@ export class CodenamesBoard {
               color={cellData.color}
               mode={cellData.mode}
               revealed={cellData.revealed}
+              canGuess={this.canGuess}
             ></codenames-cell>
-          )
+          );
         }) ?? null}
       </Host>
     );
   }
-
 }

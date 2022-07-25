@@ -1,27 +1,32 @@
-import { Component, Host, h, Prop, Watch, State } from '@stencil/core';
+import { Component, Host, h, Prop, Watch, State } from "@stencil/core";
 import { Color, Scores } from "../../extra/types";
 
 @Component({
-  tag: 'codenames-scores',
-  styleUrl: 'codenames-scores.scss',
-  shadow: true,
+  tag: "codenames-scores",
+  styleUrl: "codenames-scores.scss",
+  shadow: true
 })
 export class CodenamesScores {
-
   /**
    * Scores to display.
    */
   @Prop() scores?: Scores;
 
   /**
-   * Watcher for `revealed` prop.
+   * Team whose turn it is.
+   */
+  @Prop() turn?: Color;
+
+  /**
+   * Watcher for data props.
    */
   @Watch("scores")
-  revealedChanged(): void {
-      this.waitForCellSpinner = true;
-      setTimeout(() => {
-        this.waitForCellSpinner = false;
-      }, 300);
+  @Watch("turn")
+  dataChanged(): void {
+    this.waitForCellSpinner = true;
+    setTimeout(() => {
+      this.waitForCellSpinner = false;
+    }, 300);
   }
 
   /**
@@ -42,9 +47,14 @@ export class CodenamesScores {
   render(): void {
     return (
       <Host>
-        <span class="blue-score">{this.scores?.[Color.Blue] ?? "?"}</span> - <span class="red-score">{this.scores?.[Color.Red] ?? "?"}</span>
+        <div class="scores-container">
+          <div class={Color.Blue + " turn-text"}>{this.turn === Color.Blue ? "← Blue's turn" : ""}</div>
+          <div>
+            <span class={Color.Blue}>{this.scores?.[Color.Blue] ?? "?"}</span> - <span class={Color.Red}>{this.scores?.[Color.Red] ?? "?"}</span>
+          </div>
+          <div class={Color.Red + " turn-text"}>{this.turn === Color.Red ? "Red's turn →" : ""}</div>
+        </div>
       </Host>
     );
   }
-
 }

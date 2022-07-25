@@ -63,6 +63,11 @@ export class CodenamesCell {
   }
 
   /**
+   * Whether it is currently the user's turn to guess.
+   */
+  @Prop() canGuess: boolean = false;
+
+  /**
    * Whether to show loading spinner.
    */
   @State() private showSpinner: boolean = false;
@@ -77,7 +82,12 @@ export class CodenamesCell {
    */
   render(): void {
     return (
-      <div class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${this.revealed && !this.showSpinner ? "revealed" : ""}`} onClick={this.handleRevealCell}>
+      <div
+        class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${
+          this.revealed && !this.showSpinner ? "revealed" : ""
+        } ${this.canGuess === false ? "no-guess" : ""}`}
+        onClick={this.handleRevealCell}
+      >
         {this.showSpinner ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );
@@ -87,7 +97,7 @@ export class CodenamesCell {
    * Sends request to reveal this cell on the board.
    */
   private handleRevealCell = async (): Promise<void> => {
-    if (this.mode === Mode.Normal && this.revealed === false) {
+    if (this.canGuess && this.revealed === false) {
       this.showSpinner = true;
       this.requests.revealCell(this.index);
     }
