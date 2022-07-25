@@ -1,8 +1,6 @@
 // @ts-ignore
 import { CodenamesApp } from "../components/codenames-app/codenames-app";
 
-import { Socket } from "socket.io";
-
 /**
  * Enumerator for possible cell colors.
  */
@@ -43,7 +41,6 @@ export interface CellData {
  * Data to apply to a player.
  */
 export interface PlayerData {
-  socket?: Socket;
   username?: string;
   mode?: Mode;
   spoiled?: boolean;
@@ -75,9 +72,9 @@ export interface Requests {
    */
   revealCell?: (index: number) => void;
   /**
-   * @see {@link CodenamesApp.updateUsername}
+   * @see {@link CodenamesApp.enterRoom}
    */
-  updateUsername?: (username: string) => void;
+  enterRoom?: (username: string, roomCode: string) => void;
   /**
    * @see {@link CodenamesApp.becomeSpymaster}
    */
@@ -90,4 +87,34 @@ export interface Requests {
    * @see {@link CodenamesApp.newGame}
    */
   newGame?: () => void;
+  /**
+   * @see {@link CodenamesApp.createRoom}
+   */
+  createRoom?: () => void;
+  /**
+   * @see {@link CodenamesApp.joinRoom}
+   */
+  joinRoom?: () => void;
+}
+
+export type Rooms = {
+  [key in string]: Room;
+};
+
+export interface Room {
+  code: string;
+  host: string;
+  masterBoard: BoardData;
+  publicBoard: BoardData;
+  players: PlayerData[];
+  scores: Scores;
+}
+
+export interface UnfinishedRoom {
+  code: string;
+  host: string;
+  players: PlayerData[];
+  masterBoard?: BoardData;
+  publicBoard?: BoardData;
+  scores?: Scores;
 }

@@ -78,7 +78,7 @@ export class CodenamesLandingPage {
     this.roomCode = this.roomCodeInput.value;
 
     if (this.username !== "" && this.roomCode !== "") {
-      this.requests.updateUsername(this.username);
+      this.requests.enterRoom(this.roomCode, this.username);
     } else {
       this.message = "Please fill out both fields.";
     }

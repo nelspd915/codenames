@@ -1,19 +1,23 @@
-import { Component, Host, h, State } from '@stencil/core';
+import { Component, Host, h, State } from "@stencil/core";
 import { GameData, Requests } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
 @Component({
-  tag: 'codenames-app',
-  styleUrl: 'codenames-app.scss',
-  shadow: true,
+  tag: "codenames-app",
+  styleUrl: "codenames-app.scss",
+  shadow: true
 })
 export class CodenamesApp {
-
   /**
    * Game data used to populate values on the board and UI.
    */
   @State() private gameData: GameData | undefined;
+
+  /**
+   * Room code.
+   */
+  @State() private roomCode: string | undefined;
 
   /**
    * Client player's username.
@@ -46,6 +50,12 @@ export class CodenamesApp {
       this.gameData = gameData;
     });
     this.socket.on("connect", () => {
+      // Pull previous room code from local storage if it exists
+      const cachedRoomCode = window.localStorage.getItem("codenamesRoomCode");
+      if (cachedRoomCode !== null) {
+        this.roomCode = cachedRoomCode;
+      }
+
       // Pull previous username from local storage if it exists
       const cachedUsername = window.localStorage.getItem("codenamesUsername");
       if (cachedUsername !== null) {
@@ -55,7 +65,7 @@ export class CodenamesApp {
       // Setup all requests
       this.requests = {
         revealCell: this.revealCell,
-        updateUsername: this.updateUsername,
+        enterRoom: this.enterRoom,
         becomeSpymaster: this.becomeSpymaster,
         becomeGuesser: this.becomeGuesser,
         newGame: this.newGame
@@ -70,18 +80,15 @@ export class CodenamesApp {
     return (
       <Host>
         <div class="app-container">
-          { this.showLandingPage ? 
-            <codenames-landing-page
-              requests={this.requests}
-              username={this.username}
-            ></codenames-landing-page>
-            : 
+          {this.showLandingPage ? (
+            <codenames-landing-page requests={this.requests} roomCode={this.roomCode} username={this.username}></codenames-landing-page>
+          ) : (
             <codenames-game
               requests={this.requests}
               gameData={this.gameData}
               userPlayer={this.gameData?.players?.find(player => player.username === this.username)}
             ></codenames-game>
-          }
+          )}
         </div>
       </Host>
     );
@@ -89,41 +96,44 @@ export class CodenamesApp {
 
   /**
    * Request to reveal a cell.
-   * @param index 
+   * @param cellIndex
    */
-  private revealCell = (index: number): void => {
-    this.socket.emit("revealCell", index);
-  }
+  private revealCell = (cellIndex: number): void => {
+    this.socket.emit("revealCell", this.roomCode, cellIndex);
+  };
 
   /**
-   * Request username update.
+   * Request to enter room.
+   * @param roomCode
    * @param username
    */
-  private updateUsername = (username: string): void => {
+  private enterRoom = (roomCode: string, username: string): void => {
+    this.roomCode = roomCode;
     this.username = username;
+    window.localStorage.setItem("codenamesRoomCode", this.roomCode);
     window.localStorage.setItem("codenamesUsername", this.username);
-    this.socket.emit("updateUsername", this.socket.id, this.username);
+    this.socket.emit("enterRoom", this.roomCode, this.username);
     this.showLandingPage = false;
-  }
+  };
 
   /**
    * Request to become a spymaster.
    */
   private becomeSpymaster = (): void => {
-    this.socket.emit("becomeSpymaster", this.username);
-  }
+    this.socket.emit("becomeSpymaster", this.roomCode, this.username);
+  };
 
   /**
    * Request to become a spymaster.
    */
   private becomeGuesser = (): void => {
-    this.socket.emit("becomeGuesser", this.username);
-  }
+    this.socket.emit("becomeGuesser", this.roomCode, this.username);
+  };
 
   /**
    * Request to start a new game.
    */
   private newGame = (): void => {
-    this.socket.emit("newGame");
-  }
+    this.socket.emit("newGame", this.roomCode);
+  };
 }
