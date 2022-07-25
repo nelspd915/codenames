@@ -61,7 +61,7 @@ export interface GameData {
   board: BoardData;
   players: PlayerData[];
   scores: Scores;
-  turn?: Color;
+  turn: Color;
 }
 
 /**
@@ -93,9 +93,9 @@ export interface Requests {
    */
   createRoom?: () => void;
   /**
-   * @see {@link CodenamesApp.joinRoom}
+   * @see {@link CodenamesApp.joinTeam}
    */
-  joinRoom?: () => void;
+  joinTeam?: (color: Color) => void;
 }
 
 export type Rooms = {

@@ -1,26 +1,14 @@
-import {
-  BoardData,
-  CellData,
-  Color,
-  Mode,
-  PlayerData,
-  Scores,
-} from "codenames-frontend";
+import { BoardData, CellData, Color, Mode, Scores } from "codenames-frontend";
 import words from "./data/words.json";
 import { shuffle, sampleSize } from "lodash";
 
-const addColoredCells = (
-  board: BoardData,
-  count: number,
-  color: Color,
-  words: string[]
-) => {
+const addColoredCells = (board: BoardData, count: number, color: Color, words: string[]) => {
   for (let i = 0; i < count; i += 1) {
     board.push({
       word: words.pop() ?? "",
       color: color,
       mode: Mode.Spymaster,
-      revealed: false,
+      revealed: false
     });
   }
 };
@@ -40,11 +28,11 @@ export const generateMasterBoard = (startingScores: Scores): BoardData => {
 };
 
 export const generatePublicBoard = (board: BoardData): BoardData => {
-  return board.map((masterCell) => {
+  return board.map(masterCell => {
     const publicCell: CellData = {
       word: masterCell.word,
       mode: Mode.Normal,
-      revealed: false,
+      revealed: false
     };
     return publicCell;
   });

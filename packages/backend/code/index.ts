@@ -1,13 +1,4 @@
-import {
-  Color,
-  Mode,
-  PlayerData,
-  GameData,
-  Room,
-  Rooms,
-  UnfinishedRoom,
-  Team,
-} from "codenames-frontend";
+import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
@@ -35,7 +26,7 @@ const updateGameForRoom = (room: Room): void => {
   io.to(room.code + GUESSER_SUFFIX).emit("updateGame", gameData);
   io.to(room.code + SPYMASTER_SUFFIX).emit("updateGame", {
     ...gameData,
-    board: room.masterBoard,
+    board: room.masterBoard
   });
 };
 
@@ -45,7 +36,7 @@ const updateGameForRoom = (room: Room): void => {
  */
 const updateScores = (room: Room): void => {
   room.scores = { blue: 0, red: 0, gray: 0, black: 0 };
-  room.masterBoard.forEach((cell) => {
+  room.masterBoard.forEach(cell => {
     if (cell.revealed === false) {
       room.scores[cell.color as Color] += 1;
     }
@@ -53,14 +44,14 @@ const updateScores = (room: Room): void => {
 };
 
 /**
-   * Ends a team's turn.
-   * @param roomCode
-   */
- const endTurn = (roomCode: string): void => {
+ * Ends a team's turn.
+ * @param roomCode
+ */
+const endTurn = (roomCode: string): void => {
   const room = rooms[roomCode];
-  room.turn = room.turn === Color.Blue ? room.turn = Color.Red : room.turn = Color.Blue
+  room.turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
   updateGameForRoom(rooms[roomCode]);
-}
+};
 
 /**
  * Reveals a cell on the public board.
@@ -76,13 +67,10 @@ const revealCell = (roomCode: string, cellIndex: number): void => {
   updateScores(room);
 
   // Whether the game is now over
-  const gameOver =
-    room.scores[Color.Blue] === 0 ||
-    room.scores[Color.Red] === 0 ||
-    cellColor === Color.Black;
+  const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
 
   if (gameOver) {
-    room.masterBoard.forEach((cell) => {
+    room.masterBoard.forEach(cell => {
       cell.mode = Mode.Endgame;
     });
     room.publicBoard = room.masterBoard;
@@ -106,7 +94,7 @@ const resetRoom = (partialRoom: UnfinishedRoom): Room => {
   newRoom.scores = { ...STARTING_SCORES };
   newRoom.masterBoard = generateMasterBoard(STARTING_SCORES);
   newRoom.publicBoard = generatePublicBoard(newRoom.masterBoard);
-  newRoom.players.forEach((player) => {
+  newRoom.players.forEach(player => {
     player.mode = Mode.Normal;
     player.spoiled = false;
   });
@@ -114,19 +102,24 @@ const resetRoom = (partialRoom: UnfinishedRoom): Room => {
 };
 
 // Setting up a connection to a client
-io.on("connection", (socket) => {
+io.on("connection", socket => {
   // Callback function to join a room
   const joinRoom = (roomCode: string, username: string) => {
-    socket.join(roomCode + GUESSER_SUFFIX);
     const room = rooms[roomCode];
-    const player = room.players.find((player) => player.username === username);
+    const player = room.players.find(player => player.username === username);
     if (player === undefined) {
       room.players.push({
         username: username,
         mode: Mode.Normal,
         spoiled: false,
-        team: Color.Blue,
+        team: Color.Blue
       });
+    }
+
+    if (player?.mode === Mode.Spymaster) {
+      socket.join(roomCode + SPYMASTER_SUFFIX);
+    } else {
+      socket.join(roomCode + GUESSER_SUFFIX);
     }
 
     updateGameForRoom(room);
@@ -145,15 +138,11 @@ io.on("connection", (socket) => {
   };
 
   // Callback function to become a spymaster
-  const becomeSpymaster = (
-    roomCode: string,
-    username: string,
-    suppressUpdate = false
-  ): void => {
+  const becomeSpymaster = (roomCode: string, username: string, suppressUpdate = false): void => {
     socket.leave(roomCode + GUESSER_SUFFIX);
     socket.join(roomCode + SPYMASTER_SUFFIX);
     const room = rooms[roomCode];
-    const player = room.players.find((player) => player.username === username);
+    const player = room.players.find(player => player.username === username);
     if (player !== undefined) {
       player.mode = Mode.Spymaster;
       player.spoiled = true;
@@ -169,15 +158,11 @@ io.on("connection", (socket) => {
    * @param roomCode
    * @param username
    */
-  const becomeGuesser = (
-    roomCode: string,
-    username: string,
-    suppressUpdate = false
-  ): void => {
+  const becomeGuesser = (roomCode: string, username: string, suppressUpdate = false): void => {
     socket.leave(roomCode + SPYMASTER_SUFFIX);
     socket.join(roomCode + GUESSER_SUFFIX);
     const room = rooms[roomCode];
-    const player = room.players.find((player) => player.username === username);
+    const player = room.players.find(player => player.username === username);
     if (player !== undefined) {
       player.mode = Mode.Normal;
     }
@@ -191,13 +176,14 @@ io.on("connection", (socket) => {
    * Creates new game for room.
    * @param roomCode
    */
-  const newGame = (roomCode: string): void => {
+  const newGame = async (roomCode: string): Promise<void> => {
     rooms[roomCode] = resetRoom(rooms[roomCode]);
-    rooms[roomCode].players.forEach((player) => {
-      if (player.username !== undefined) {
-        becomeGuesser(roomCode, player.username, true);
-      }
+    const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
+    spymasterSockets.forEach(spymaster => {
+      spymaster.leave(roomCode + SPYMASTER_SUFFIX);
+      spymaster.join(roomCode + GUESSER_SUFFIX);
     });
+
     updateGameForRoom(rooms[roomCode]);
   };
 
@@ -224,12 +210,12 @@ io.on("connection", (socket) => {
    */
   const joinTeam = (roomCode: string, username: string, team: Team): void => {
     const room = rooms[roomCode];
-    const player = room.players.find((player) => player.username === username);
+    const player = room.players.find(player => player.username === username);
     if (player !== undefined) {
       player.team = team;
     }
     updateGameForRoom(rooms[roomCode]);
-  }
+  };
 
   // Add server listeners with callback functions
   socket.on("becomeSpymaster", becomeSpymaster);

@@ -29,20 +29,15 @@ export class CodenamesPanel {
     return (
       <Host class={this.panelTeam}>
         <div class="player-list">
-          {this.players
-            ?.concat([
-              {
-                ...this.players[1],
-                username: "TEST USER",
-                team: Color.Red
-              }
-            ])
-            .map(player => {
-              return this.isOnTeam(player) ? this.getNameElement(player) : null;
-            })}
+          {this.players?.map(player => {
+            return this.isOnTeam(player) ? this.getNameElement(player) : null;
+          })}
+          <div class="list-button-container">
+            <slot name="list-button"></slot>
+          </div>
         </div>
-        <div class="buttons-container">
-          <slot name="button"></slot>
+        <div class="footer-buttons-container">
+          <slot name="footer-button"></slot>
         </div>
       </Host>
     );
@@ -73,8 +68,10 @@ export class CodenamesPanel {
 
     return (
       <div class={`player-name ${this.panelTeam}`}>
-        <div class={`player-icon ${iconClass}`}>{icon}</div>
-        <div class="player-name-text">{`${player.username}`}</div>
+        <div class="player-name-text">
+          {`${player.username}`}
+          <div class={`player-icon ${iconClass}`}>{icon}</div>
+        </div>
       </div>
     );
   }
