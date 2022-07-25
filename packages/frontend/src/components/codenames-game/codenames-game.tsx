@@ -4,7 +4,7 @@ import { Color, GameData, Mode, PlayerData, Requests } from "../../extra/types";
 @Component({
   tag: "codenames-game",
   styleUrl: "codenames-game.scss",
-  shadow: true,
+  shadow: true
 })
 export class CodenamesGame {
   /**
@@ -29,10 +29,15 @@ export class CodenamesGame {
     return (
       <Host>
         <codenames-panel requests={this.requests} panelTeam={Color.Blue} players={this.gameData?.players}>
-          <codenames-button slot="button" on={this.userPlayer?.mode === Mode.Spymaster} onClick={this.spymasterToggle}>
+          {this.userPlayer?.team !== Color.Blue ? (
+            <codenames-button slot="list-button" onClick={() => this.requests.joinTeam(Color.Blue)}>
+              Join {Color.Blue}
+            </codenames-button>
+          ) : null}
+          <codenames-button slot="footer-button" on={this.userPlayer?.mode === Mode.Spymaster} onClick={this.spymasterToggle}>
             Spymaster 👁
           </codenames-button>
-          <codenames-button slot="button" onClick={this.requests.newGame}>
+          <codenames-button slot="footer-button" onClick={this.requests.newGame}>
             New game →
           </codenames-button>
         </codenames-panel>
@@ -42,7 +47,13 @@ export class CodenamesGame {
           <codenames-board requests={this.requests} boardData={this.gameData?.board}></codenames-board>
         </div>
 
-        <codenames-panel requests={this.requests} panelTeam={Color.Red} players={this.gameData?.players}></codenames-panel>
+        <codenames-panel requests={this.requests} panelTeam={Color.Red} players={this.gameData?.players}>
+          {this.userPlayer?.team !== Color.Red ? (
+            <codenames-button slot="list-button" onClick={() => this.requests.joinTeam(Color.Red)}>
+              Join {Color.Red}
+            </codenames-button>
+          ) : null}
+        </codenames-panel>
       </Host>
     );
   }

@@ -1,5 +1,5 @@
 import { Component, Host, h, State } from "@stencil/core";
-import { GameData, Requests } from "../../extra/types";
+import { Color, GameData, Requests } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
@@ -45,29 +45,26 @@ export class CodenamesApp {
   connectedCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const url = urlParams.get("dev") === "true" ? DEV_URL : PROD_URL;
+
+    // Pull previous room code from local storage if it exists
+    const cachedRoomCode = window.localStorage.getItem("codenamesRoomCode");
+    this.roomCode = urlParams.get("roomCode") ?? cachedRoomCode ?? "";
+
+    // Pull previous username from local storage if it exists
+    const cachedUsername = window.localStorage.getItem("codenamesUsername");
+
+    this.username = cachedUsername ?? "";
     this.requests = {
       revealCell: this.revealCell,
       enterRoom: this.enterRoom,
       becomeSpymaster: this.becomeSpymaster,
       becomeGuesser: this.becomeGuesser,
-      newGame: this.newGame
+      newGame: this.newGame,
+      joinTeam: this.joinTeam
     };
     this.socket = io(url);
     this.socket.on("updateGame", (gameData: GameData) => {
       this.gameData = gameData;
-    });
-    this.socket.on("connect", () => {
-      // Pull previous room code from local storage if it exists
-      const cachedRoomCode = window.localStorage.getItem("codenamesRoomCode");
-      if (cachedRoomCode !== null) {
-        this.roomCode = cachedRoomCode;
-      }
-
-      // Pull previous username from local storage if it exists
-      const cachedUsername = window.localStorage.getItem("codenamesUsername");
-      if (cachedUsername !== null) {
-        this.username = cachedUsername;
-      }
     });
   }
 
@@ -133,5 +130,12 @@ export class CodenamesApp {
    */
   private newGame = (): void => {
     this.socket.emit("newGame", this.roomCode);
+  };
+
+  /**
+   * Request to start a new game.
+   */
+  private joinTeam = (color: Color): void => {
+    this.socket.emit("joinTeam", this.roomCode, this.username, color);
   };
 }

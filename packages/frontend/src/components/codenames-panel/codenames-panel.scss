@@ -49,21 +49,29 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      width: 20%;
+      margin-left: 5px;
+      width: 35px;
+      color: #000;
       
       &.spoiled-icon {
-        color: rgb(255, 89, 0);
+        color: rgb(255, 111, 33);
       }
     }
   }
 }
 
-.buttons-container {
+.footer-buttons-container {
   display: flex;
   flex-direction: column;
   margin-bottom: 25px;
 
   ::slotted(codenames-button) {
     margin-top: 25px;
+  }
+}
+
+.list-button-container {
+  ::slotted(codenames-button) {
+    margin-top: 50px;
   }
 }

@@ -49,6 +49,7 @@ export class CodenamesLandingPage {
           <input
             value={this.username}
             required={true}
+            maxLength={10}
             ref={element => {
               this.usernameInput = element;
             }}
@@ -59,6 +60,7 @@ export class CodenamesLandingPage {
           <input
             value={this.roomCode}
             required={true}
+            maxLength={10}
             ref={element => {
               this.roomCodeInput = element;
             }}

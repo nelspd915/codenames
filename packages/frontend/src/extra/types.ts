@@ -92,9 +92,9 @@ export interface Requests {
    */
   createRoom?: () => void;
   /**
-   * @see {@link CodenamesApp.joinRoom}
+   * @see {@link CodenamesApp.joinTeam}
    */
-  joinRoom?: () => void;
+  joinTeam?: (color: Color) => void;
 }
 
 export type Rooms = {
