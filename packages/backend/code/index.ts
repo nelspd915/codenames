@@ -71,11 +71,11 @@ const randomizeTeams = (roomCode: string): void => {
   }
 
   // Assign new teams to players
-  for (let i = 0; i < players.length; i++) {
-    players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
+  for (let i = 0; i < room.players.length; i++) {
+    room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
   }
-};
 
+  updateGameForRoom(room);
 /**
  * Reveals a cell on the public board.
  * @param roomCode
