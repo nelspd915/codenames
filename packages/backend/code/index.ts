@@ -1,4 +1,4 @@
-import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team, PlayerData } from "codenames-frontend";
+import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
@@ -57,6 +57,7 @@ const endTurn = (roomCode: string): void => {
  * Randomize teams in a room.
  * @param roomCode
  */
+
 const randomizeTeams = (roomCode: string): void => {
   const room = rooms[roomCode];
   room.players = shuffle(room.players);
