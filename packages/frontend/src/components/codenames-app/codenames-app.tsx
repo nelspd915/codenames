@@ -52,8 +52,9 @@ export class CodenamesApp {
 
     // Pull previous username from local storage if it exists
     const cachedUsername = window.localStorage.getItem("codenamesUsername");
-
     this.username = cachedUsername ?? "";
+
+    // Setup requests collection
     this.requests = {
       revealCell: this.revealCell,
       enterRoom: this.enterRoom,
@@ -61,8 +62,10 @@ export class CodenamesApp {
       becomeGuesser: this.becomeGuesser,
       newGame: this.newGame,
       joinTeam: this.joinTeam,
-      endTurn: this.endTurn
+      endTurn: this.endTurn,
+      randomizeTeams: this.randomizeTeams
     };
+
     this.socket = io(url);
     this.socket.on("updateGame", (gameData: GameData) => {
       this.gameData = gameData;
@@ -77,7 +80,11 @@ export class CodenamesApp {
       <Host>
         <div class="app-container">
           {this.showLandingPage ? (
-            <codenames-landing-page requests={this.requests} roomCode={this.roomCode} username={this.username}></codenames-landing-page>
+            <codenames-landing-page
+              requests={this.requests}
+              roomCode={this.roomCode}
+              username={this.username}
+            ></codenames-landing-page>
           ) : (
             <codenames-game
               requests={this.requests}
@@ -145,5 +152,12 @@ export class CodenamesApp {
    */
   private endTurn = (): void => {
     this.socket.emit("endTurn", this.roomCode);
+  };
+
+  /**
+   * Request to randomize teams.
+   */
+  private randomizeTeams = (): void => {
+    this.socket.emit("randomizeTeams", this.roomCode);
   };
 }

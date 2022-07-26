@@ -100,6 +100,10 @@ export interface Requests {
    * @see {@link CodenamesApp.endTurn}
    */
   endTurn?: () => void;
+  /**
+   * @see {@link CodenamesApp.randomizeTeams}
+   */
+  randomizeTeams?: () => void;
 }
 
 export type Rooms = {
