@@ -59,20 +59,26 @@ export class CodenamesGame {
     return (
       <Host>
         <codenames-panel requests={this.requests} panelTeam={Color.Blue} players={this.gameData?.players}>
-          {this.userPlayer?.team !== Color.Blue ? (
-            <codenames-button slot="list-button" onClick={() => this.requests.joinTeam(Color.Blue)}>
-              Join {Color.Blue}
-            </codenames-button>
-          ) : null}
+          <codenames-button
+            class={this.userPlayer?.team !== Color.Blue ? "" : "hidden"}
+            slot="list-button"
+            color={Color.Blue}
+            onClick={() => this.requests.joinTeam(Color.Blue)}
+          >
+            <span>Join {Color.Blue}</span>
+          </codenames-button>
           <codenames-button
             slot="footer-button"
             on={this.userPlayer?.mode === Mode.Spymaster}
             onClick={this.spymasterToggle}
           >
-            Spymaster 👁
+            <span>Spymaster 👁</span>
+          </codenames-button>
+          <codenames-button slot="footer-button" onClick={this.requests.randomizeTeams}>
+            <span>Randomize teams ⚄</span>
           </codenames-button>
           <codenames-button slot="footer-button" onClick={this.requests.newGame}>
-            New game →
+            <span>New game →</span>
           </codenames-button>
         </codenames-panel>
 
@@ -86,16 +92,21 @@ export class CodenamesGame {
         </div>
 
         <codenames-panel requests={this.requests} panelTeam={Color.Red} players={this.gameData?.players}>
-          {this.userPlayer?.team !== Color.Red ? (
-            <codenames-button slot="list-button" onClick={() => this.requests.joinTeam(Color.Red)}>
-              Join {Color.Red}
-            </codenames-button>
-          ) : null}
-          {this.canGuess ? (
-            <codenames-button slot="footer-button" onClick={() => this.requests.endTurn()}>
-              End turn ✓
-            </codenames-button>
-          ) : null}
+          <codenames-button
+            class={this.userPlayer?.team !== Color.Red ? "" : "hidden"}
+            slot="list-button"
+            color={Color.Red}
+            onClick={() => this.requests.joinTeam(Color.Red)}
+          >
+            <span>Join {Color.Red}</span>
+          </codenames-button>
+          <codenames-button
+            class={this.canGuess ? "" : "hidden"}
+            slot="footer-button"
+            onClick={() => this.requests.endTurn()}
+          >
+            <span>End turn ✓</span>
+          </codenames-button>
         </codenames-panel>
       </Host>
     );
