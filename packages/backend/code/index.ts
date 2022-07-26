@@ -76,6 +76,7 @@ const randomizeTeams = (roomCode: string): void => {
   }
 
   updateGameForRoom(room);
+}
 /**
  * Reveals a cell on the public board.
  * @param roomCode
