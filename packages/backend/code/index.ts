@@ -55,11 +55,11 @@ const endTurn = (roomCode: string): void => {
 
 /**
  * Randomize teams in a room.
- * @param room
+ * @param roomCode
  */
-const randomizeTeams = (room: Room): void => {
-  let players: PlayerData[] = room.players;
-  players = shuffle(players);
+const randomizeTeams = (roomCode: string): void => {
+  const room = rooms[roomCode];
+  room.players = shuffle(room.players);
 
   // Determine initial team color
   let evenTeam: Team = Color.Red;
