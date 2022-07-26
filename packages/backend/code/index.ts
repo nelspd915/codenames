@@ -2,7 +2,7 @@ import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team, PlayerData } 
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
-import { cloneDeep } from "lodash";
+import { cloneDeep, shuffle } from "lodash";
 
 // Setup server
 const io = setupServer();
@@ -55,43 +55,24 @@ const endTurn = (roomCode: string): void => {
 
 /**
  * Randomize teams in a room.
- * @param roomCode
+ * @param room
  */
- export const randomizeTeams = (roomCode: string): void => {
-  const room: Room = rooms[roomCode];
-  const playersLength: number = room.players.length;
-  const players: PlayerData[] = room.players;
-  let blueTotal: number = 0;
-  let redTotal: number = 0;
+const randomizeTeams = (room: Room): void => {
+  let players: PlayerData[] = room.players;
+  players = shuffle(players);
 
-  // Determine which team gets more players
+  // Determine initial team color
+  let evenTeam: Team = Color.Red;
+  let oddTeam: Team = Color.Blue;
+
   if (Math.random() < 0.5) {
-    blueTotal = Math.round(playersLength / 2);
-    redTotal = playersLength - blueTotal;
-  } else {
-    redTotal = Math.round(playersLength / 2);
-    blueTotal = playersLength - redTotal;
+    oddTeam = Color.Red;
+    evenTeam = Color.Blue;
   }
 
   // Assign new teams to players
-  for (let i = 0; i < playersLength; i++) {
-    if (Math.random() < 0.5) {
-      if (blueTotal != 0) {
-        players[i].team = Color.Blue;
-        blueTotal -= 1;
-      } else {
-        players[i].team = Color.Red;
-        redTotal -= 1;
-      }
-    } else {
-      if (redTotal != 0) {
-        players[i].team = Color.Red;
-        redTotal -= 1;
-      } else {
-        players[i].team = Color.Blue;
-        blueTotal -= 1;
-      }
-    }
+  for (let i = 0; i < players.length; i++) {
+    players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
   }
 };
 
