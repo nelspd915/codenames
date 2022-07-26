@@ -2,7 +2,7 @@ import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team } from "codena
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
-import { cloneDeep } from "lodash";
+import { cloneDeep, shuffle } from "lodash";
 
 // Setup server
 const io = setupServer();
@@ -53,6 +53,31 @@ const endTurn = (roomCode: string): void => {
   updateGameForRoom(rooms[roomCode]);
 };
 
+/**
+ * Randomize teams in a room.
+ * @param roomCode
+ */
+
+const randomizeTeams = (roomCode: string): void => {
+  const room = rooms[roomCode];
+  room.players = shuffle(room.players);
+
+  // Determine initial team color
+  let evenTeam: Team = Color.Red;
+  let oddTeam: Team = Color.Blue;
+
+  if (Math.random() < 0.5) {
+    oddTeam = Color.Red;
+    evenTeam = Color.Blue;
+  }
+
+  // Assign new teams to players
+  for (let i = 0; i < room.players.length; i++) {
+    room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
+  }
+
+  updateGameForRoom(room);
+}
 /**
  * Reveals a cell on the public board.
  * @param roomCode
@@ -226,4 +251,5 @@ io.on("connection", socket => {
   socket.on("revealCell", revealCell);
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
+  socket.on("randomizeTeams", randomizeTeams);
 });
