@@ -11,7 +11,7 @@ export enum Color {
   Black = "black"
 }
 
-export type Team = Extract<Color, Color.Blue | Color.Red>;
+export type Team = Extract<Color, Color.Blue | Color.Red | Color.Gray>;
 
 /**
  * Possible display modes for a cell.

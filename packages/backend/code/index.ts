@@ -77,37 +77,40 @@ const randomizeTeams = (roomCode: string): void => {
   }
 
   updateGameForRoom(room);
-}
+};
+
 /**
  * Reveals a cell on the public board.
  * @param roomCode
  * @param cellIndex
  */
-const revealCell = (roomCode: string, cellIndex: number): void => {
+const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
   const room = rooms[roomCode];
+  const player = room.players.find(player => player.username === username);
   const cellColor = room.masterBoard[cellIndex].color as Color;
-  room.publicBoard[cellIndex].color = cellColor;
-  room.publicBoard[cellIndex].revealed = true;
-  room.masterBoard[cellIndex].revealed = true;
-  updateScores(room);
+  if (player?.team === room.turn) {
+    room.publicBoard[cellIndex].color = cellColor;
+    room.publicBoard[cellIndex].revealed = true;
+    room.masterBoard[cellIndex].revealed = true;
+    updateScores(room);
 
-  // Whether the game is now over
-  const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
+    // Whether the game is now over
+    const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
 
-  if (gameOver) {
-    room.masterBoard.forEach(cell => {
-      cell.mode = Mode.Endgame;
-    });
-    room.publicBoard = room.masterBoard;
-  } else {
-    // Whether current turn is now over
-    const turnOver = cellColor != room.turn;
+    if (gameOver) {
+      room.masterBoard.forEach(cell => {
+        cell.mode = Mode.Endgame;
+      });
+      room.publicBoard = room.masterBoard;
+    } else {
+      // Whether current turn is now over
+      const turnOver = cellColor != room.turn;
 
-    if (turnOver) {
-      endTurn(roomCode);
+      if (turnOver) {
+        endTurn(roomCode);
+      }
     }
   }
-
   updateGameForRoom(room);
 };
 
@@ -138,7 +141,7 @@ io.on("connection", socket => {
         username: username,
         mode: Mode.Normal,
         spoiled: false,
-        team: Color.Blue
+        team: Color.Gray
       });
     }
 
