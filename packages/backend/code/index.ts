@@ -1,4 +1,4 @@
-import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team } from "codenames-frontend";
+import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team, User } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
@@ -9,6 +9,7 @@ const io = setupServer();
 
 // Initialize storage
 const rooms: Rooms = {};
+export const users: User[] = [];
 
 /**
  * Broadcasts a game update for entire room.

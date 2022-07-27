@@ -129,3 +129,8 @@ export interface UnfinishedRoom {
   scores?: Scores;
   turn: Color;
 }
+
+export interface User {
+  username: string;
+  password: string;
+}
