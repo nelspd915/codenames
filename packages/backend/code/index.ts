@@ -86,9 +86,9 @@ const randomizeTeams = (roomCode: string): void => {
  */
 const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
   const room = rooms[roomCode];
-  const player = room.players.find(player => player.username === username);
-  const cellColor = room.masterBoard[cellIndex].color as Color;
-  if (player?.team === room.turn) {
+  const player = room?.players?.find(player => player.username === username);
+  const cellColor = room?.masterBoard[cellIndex].color as Color;
+  if (player?.team === room?.turn) {
     room.publicBoard[cellIndex].color = cellColor;
     room.publicBoard[cellIndex].revealed = true;
     room.masterBoard[cellIndex].revealed = true;
