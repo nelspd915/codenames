@@ -132,5 +132,6 @@ export interface UnfinishedRoom {
 
 export interface User {
   username: string;
-  password: string;
+  password?: string;
+  verified?: boolean;
 }

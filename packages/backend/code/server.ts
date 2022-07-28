@@ -12,7 +12,6 @@ require("dotenv").config();
  * Sets up server environment and returns the socket IO.
  */
 
-const refreshTokens: string[] = [];
 
 export function setupServer(): Server {
   
@@ -28,59 +27,58 @@ export function setupServer(): Server {
     },
   });
 
-  const authenticateUser = (token: string): boolean | undefined=> {
-    let authenticated: boolean = false;
-    if (token !== undefined) {
-
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err) => {
-      if (err) {
-        authenticated = false;
-      } else {
-        console.log("here");
-        authenticated = true;
-      }
-    });
-    return authenticated
-  }
-
   // Initialize middleware for server
   app.use(express.json());
   app.use(cors());
 
   // Api routes
-  app.get("/users", (req, res) => {
-    const authHeader = req.headers["authorization"]
-    const token = authHeader && authHeader.split(" ")[1];
-    if (token) {
-      console.log(authenticateUser(token));
-    }
-    res.json(users);
+  app.get("/test", (req, res) => {
+    const authHeader = req.headers["authorization"] as string;
+    const token = authHeader.split(" ")[1];
+    
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err, user: any) => {
+      if (err) {
+        res.sendStatus(403);
+      } else {
+        console.log(user.username);
+      }
+    });
   });
 
   app.post("/register", (req, res) => {
-    const user = {
-      username: req.body.username,
-      password: req.body.password
-    };
-    users.push(user);
-    res.status(201).send("success");
+    const username = req.body.username;
+    const password = req.body.password;
+    const user = users.find((user) => user.username === username);
+
+    if (user === undefined) {
+      const newUser: User = {
+        username: username,
+        password: password,
+        verified: true
+      };
+      users.push(newUser);
+      res.status(201).send("success");
+    } else if (user.verified) {
+      res.sendStatus(403);
+    } else {
+      user.verified = true;
+      user.password = password
+    }
   });
 
   app.post("/login", (req, res) => {
-    const user: User = users.find((user) => user.username === req.body.username) as User;
+    const user = users.find((user) => user.username === req.body.username);
 
-    if (user !== undefined) {
+    if (user !== undefined && user.verified === true) {
       if (req.body.password === user.password) {
-        const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15s" });
-        const refreshToken = jwt.sign({ username: user.username}, process.env.REFRESH_TOKEN_SECRET as string);
-        refreshTokens.push(refreshToken);
+        const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" });
+        const refreshToken = jwt.sign({ username: user.username}, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "30d" });
         res.json({ accessToken: accessToken, refreshToken: refreshToken});
       } else {
         res.status(401).send("passwords do not match");
       }
     } else {
-      res.status(401).send("user doesnt exists");
+      res.status(401).send("user doesnt exists or name already taken");
     }
   });
 
@@ -89,15 +87,14 @@ export function setupServer(): Server {
     if (refreshToken === undefined) {
       return res.sendStatus(401);
     }
-    if (refreshTokens.includes(refreshToken)) {
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, user: any) => {
-        if (err) {
-          return res.sendStatus(403);
-        }
-        const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15s" }); 
-        res.json({ accessToken: accessToken });
-      });
-    }
+    
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, user: any) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" }); 
+      res.json({ accessToken: accessToken });
+    });
   });
 
   // Open server to listen for requests
