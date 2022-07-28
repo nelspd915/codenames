@@ -34,6 +34,7 @@ const updateGameForRoom = (room: Room): void => {
  * Updates chat for the room.
  * @param roomCode
  * @param message
+ * @param username
  * @param team
  */
 const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
