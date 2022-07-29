@@ -5,16 +5,15 @@ import { Server } from "socket.io";
 import { users } from ".";
 import { User } from "codenames-frontend";
 
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 /**
  * Sets up server environment and returns the socket IO.
  */
 
-
 export function setupServer(): Server {
-  
   // Initialize and configure server
   const app = express();
   const server = http.createServer(app);
@@ -23,20 +22,24 @@ export function setupServer(): Server {
   // Initialize web sockets with socket.io
   const io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3333", "https://nelspd915.github.io"],
-    },
+      origin: ["http://localhost:3333", "https://nelspd915.github.io"]
+    }
   });
 
   // Initialize middleware for server
   app.use(express.json());
-  app.use(cors());
+  app.use(
+    cors({
+      origin: ["http://localhost:3333", "https://nelspd915.github.io"]
+    })
+  );
 
   // Api routes
   app.get("/test", (req, res) => {
     const authHeader = req.headers["authorization"] as string;
     const token = authHeader.split(" ")[1];
-    
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err, user: any) => {
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err: any, user: any) => {
       if (err) {
         res.sendStatus(403);
       } else {
@@ -45,37 +48,51 @@ export function setupServer(): Server {
     });
   });
 
-  app.post("/register", (req, res) => {
+  app.post("/register", async (req, res) => {
     const username = req.body.username;
-    const password = req.body.password;
-    const user = users.find((user) => user.username === username);
+    const hashedPassword = await bcrypt.hash(req.body.passwordOne, 10);
+    const user = users.find(user => user.username === username);
+    const samePass = req.body.passwordOne === req.body.passwordTwo;
 
     if (user === undefined) {
-      const newUser: User = {
-        username: username,
-        password: password,
-        verified: true
-      };
-      users.push(newUser);
-      res.status(201).send("success");
+      if (samePass) {
+        const newUser: User = {
+          username: username,
+          password: hashedPassword,
+          verified: true
+        };
+        users.push(newUser);
+        res.status(201).send("success");
+      } else {
+        res.status(401).send("Passwords do not match");
+      }
     } else if (user.verified) {
-      res.sendStatus(403);
+      res.status(401).send("User with this name already exists");
     } else {
-      user.verified = true;
-      user.password = password
+      if (samePass) {
+        user.verified = true;
+        user.password = hashedPassword;
+        res.status(201).send("success");
+      } else {
+        res.status(401).send("Passwords do not match");
+      }
     }
   });
 
-  app.post("/login", (req, res) => {
-    const user = users.find((user) => user.username === req.body.username);
+  app.post("/login", async (req, res) => {
+    const user = users.find(user => user.username === req.body.username);
 
-    if (user !== undefined && user.verified === true) {
-      if (req.body.password === user.password) {
-        const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" });
-        const refreshToken = jwt.sign({ username: user.username}, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "30d" });
-        res.json({ accessToken: accessToken, refreshToken: refreshToken});
+    if (user !== undefined && user.verified) {
+      if (await bcrypt.compare(req.body.password, user.password)) {
+        const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET as string, {
+          expiresIn: "15m"
+        });
+        const refreshToken = jwt.sign({ username: user.username }, process.env.REFRESH_TOKEN_SECRET as string, {
+          expiresIn: "30d"
+        });
+        res.json({ accessToken: accessToken, refreshToken: refreshToken });
       } else {
-        res.status(401).send("passwords do not match");
+        res.status(401).send("Incorrect Password");
       }
     } else {
       res.status(401).send("user doesnt exists or name already taken");
@@ -87,20 +104,20 @@ export function setupServer(): Server {
     if (refreshToken === undefined) {
       return res.sendStatus(401);
     }
-    
+
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, user: any) => {
       if (err) {
         return res.sendStatus(403);
       }
-      const accessToken = jwt.sign({ username: user.username}, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" }); 
+      const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET as string, {
+        expiresIn: "15m"
+      });
       res.json({ accessToken: accessToken });
     });
   });
 
   // Open server to listen for requests
-  server.listen(EXPRESS_PORT, () =>
-    console.log(`server live on http://localhost:${EXPRESS_PORT}`)
-  );
+  server.listen(EXPRESS_PORT, () => console.log(`server live on http://localhost:${EXPRESS_PORT}`));
 
   return io;
 }
