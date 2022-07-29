@@ -100,6 +100,9 @@ export class CodenamesCell {
     if (this.canGuess && this.revealed === false) {
       this.showSpinner = true;
       this.requests.revealCell(this.index);
+      setTimeout(() => {
+        this.showSpinner = false;
+      }, 500);
     }
   };
 }

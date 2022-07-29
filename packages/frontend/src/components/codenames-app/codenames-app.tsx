@@ -102,7 +102,7 @@ export class CodenamesApp {
    * @param cellIndex
    */
   private revealCell = (cellIndex: number): void => {
-    this.socket.emit("revealCell", this.roomCode, cellIndex);
+    this.socket.emit("revealCell", this.roomCode, cellIndex, this.username);
   };
 
   /**

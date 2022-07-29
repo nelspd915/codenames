@@ -32,6 +32,18 @@ const updateGameForRoom = (room: Room): void => {
 };
 
 /**
+ * Updates chat for the room.
+ * @param roomCode
+ * @param message
+ * @param username
+ * @param team
+ */
+const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
+  io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
+  io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
+}
+
+/**
  * Updates scores for the room.
  * @param room
  */
@@ -58,7 +70,6 @@ const endTurn = (roomCode: string): void => {
  * Randomize teams in a room.
  * @param roomCode
  */
-
 const randomizeTeams = (roomCode: string): void => {
   const room = rooms[roomCode];
   room.players = shuffle(room.players);
@@ -78,42 +89,46 @@ const randomizeTeams = (roomCode: string): void => {
   }
 
   updateGameForRoom(room);
-}
+};
+
 /**
  * Reveals a cell on the public board.
  * @param roomCode
  * @param cellIndex
  */
-const revealCell = (roomCode: string, cellIndex: number): void => {
+const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
   const room = rooms[roomCode];
+  const player = room.players.find((player) => player.username === username);
   const cellColor = room.masterBoard[cellIndex].color as Color;
-  room.publicBoard[cellIndex].color = cellColor;
-  room.publicBoard[cellIndex].revealed = true;
-  room.masterBoard[cellIndex].revealed = true;
-  updateScores(room);
+  if (player?.team === room.turn) {
+    room.publicBoard[cellIndex].color = cellColor;
+    room.publicBoard[cellIndex].revealed = true;
+    room.masterBoard[cellIndex].revealed = true;
+    updateScores(room);
 
-  // Whether the game is now over
-  const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
+    // Whether the game is now over
+    const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
 
-  if (gameOver) {
-    room.masterBoard.forEach(cell => {
-      cell.mode = Mode.Endgame;
-    });
-    room.publicBoard = room.masterBoard;
-  } else {
-    // Whether current turn is now over
-    const turnOver = cellColor != room.turn;
+    if (gameOver) {
+      room.masterBoard.forEach(cell => {
+        cell.mode = Mode.Endgame;
+      });
+      room.publicBoard = room.masterBoard;
+    } else {
+      // Whether current turn is now over
+      const turnOver = cellColor != room.turn;
 
-    if (turnOver) {
-      endTurn(roomCode);
+      if (turnOver) {
+        endTurn(roomCode);
+      }
     }
   }
-
   updateGameForRoom(room);
 };
 
 /**
  * Reset a room by populating new game data.
+ * @param partialRoom
  */
 const resetRoom = (partialRoom: UnfinishedRoom): Room => {
   const newRoom = cloneDeep(partialRoom);
@@ -139,7 +154,7 @@ io.on("connection", socket => {
         username: username,
         mode: Mode.Normal,
         spoiled: false,
-        team: Color.Blue
+        team: Color.Gray
       });
     }
 
@@ -253,4 +268,12 @@ io.on("connection", socket => {
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
   socket.on("randomizeTeams", randomizeTeams);
+  socket.on("updateChat", updateChat);
+});
+
+io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any; }) => {
+  console.log(err.req);      // the request object
+  console.log(err.code);     // the error code, for example 1
+  console.log(err.message);  // the error message, for example "Session ID unknown"
+  console.log(err.context);  // some additional error context
 });
