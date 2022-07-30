@@ -59,7 +59,8 @@ export function setupServer(): Server {
         const newUser: User = {
           username: username,
           password: hashedPassword,
-          verified: true
+          verified: true,
+          matchHistory: []
         };
         users.push(newUser);
         res.status(201).send("success");

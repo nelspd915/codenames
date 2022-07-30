@@ -32,6 +32,39 @@ const updateGameForRoom = (room: Room): void => {
 };
 
 /**
+ * Updates match history for players in a room, if no user exists in DB creates new user.
+ * @param room
+ * @param winner
+ */
+const updateHistory = (room: Room, winner: Team): void => {
+  const gameData: GameData = {
+    code: room.code,
+    board: room.masterBoard,
+    players: room.players,
+    scores: room.scores,
+    turn: room.turn,
+    winner: winner
+  };
+
+  // Add endgame data to match history of each user.
+  room.players.forEach(player => {
+    if (player.team === Color.Blue || player.team === Color.Red) {
+      const user = users.find(user => (player.username = user.username));
+      if (user === undefined) {
+        const newUser: User = {
+          username: player.username as string,
+          matchHistory: []
+        };
+        newUser.matchHistory.push(gameData);
+        users.push(newUser);
+      } else {
+        user.matchHistory.push(gameData);
+      }
+    }
+  });
+};
+
+/**
  * Updates chat for the room.
  * @param roomCode
  * @param message
@@ -41,7 +74,7 @@ const updateGameForRoom = (room: Room): void => {
 const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
   io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
   io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
-}
+};
 
 /**
  * Updates scores for the room.
@@ -98,7 +131,7 @@ const randomizeTeams = (roomCode: string): void => {
  */
 const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
   const room = rooms[roomCode];
-  const player = room.players.find((player) => player.username === username);
+  const player = room.players.find(player => player.username === username);
   const cellColor = room.masterBoard[cellIndex].color as Color;
   if (player?.team === room.turn) {
     room.publicBoard[cellIndex].color = cellColor;
@@ -114,6 +147,15 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
         cell.mode = Mode.Endgame;
       });
       room.publicBoard = room.masterBoard;
+
+      // Determine winning team and add match to player match history.
+      let winner = Color.Gray;
+      if (room.scores[Color.Black] === 0) {
+        winner = room.turn === Color.Red ? (Color.Blue as Team) : (Color.Red as Team);
+      } else {
+        winner = room.scores[Color.Red] === 0 ? (Color.Red as Team) : (Color.Blue as Team);
+      }
+      updateHistory(room, winner);
     } else {
       // Whether current turn is now over
       const turnOver = cellColor != room.turn;
@@ -271,9 +313,9 @@ io.on("connection", socket => {
   socket.on("updateChat", updateChat);
 });
 
-io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any; }) => {
-  console.log(err.req);      // the request object
-  console.log(err.code);     // the error code, for example 1
-  console.log(err.message);  // the error message, for example "Session ID unknown"
-  console.log(err.context);  // some additional error context
+io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any }) => {
+  console.log(err.req); // the request object
+  console.log(err.code); // the error code, for example 1
+  console.log(err.message); // the error message, for example "Session ID unknown"
+  console.log(err.context); // some additional error context
 });
