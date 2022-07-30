@@ -29,3 +29,11 @@ Content-Type:  application/json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtvYmdvcmUiLCJpYXQiOjE2NTkxMjE2NDQsImV4cCI6MTY2MTcxMzY0NH0.xH9zAMaVVuoKJ6zKQ4CHAUlrkdjwW5S_JsA2-YtwlDA"
 }
+
+###
+GET http://localhost:8080/winrate HTTP/1.1
+Content-Type:  application/json
+
+{
+  "username": "kobgore"
+}

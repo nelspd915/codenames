@@ -46,7 +46,7 @@ const updateHistory = (room: Room, winner: Team): void => {
     winner: winner
   };
 
-  // Add endgame data to match history of each user.
+  // Add endgame data to match history of each user unless username is claimed.
   room.players.forEach(player => {
     if (player.team === Color.Blue || player.team === Color.Red) {
       const user = users.find(user => (player.username = user.username));
@@ -58,7 +58,9 @@ const updateHistory = (room: Room, winner: Team): void => {
         newUser.matchHistory.push(gameData);
         users.push(newUser);
       } else {
-        user.matchHistory.push(gameData);
+        if (!user.verified) {
+          user.matchHistory.push(gameData);
+        }
       }
     }
   });

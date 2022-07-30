@@ -117,6 +117,25 @@ export function setupServer(): Server {
     });
   });
 
+  app.get("/winrate", (req, res) => {
+    const user = users.find((user) => req.body.username === user.username);
+    if (user !== undefined) {
+      let wins = 0;
+      let losses = 0;
+      user.matchHistory.forEach((match) => {
+        const player = match.players.find((player) => user.username === player.username);
+        if (player?.team === match.winner) {
+          wins += 1;
+        } else {
+          losses += 1;
+        }
+      });
+      return res.json({ winrate: (wins / (wins + losses) * 100)});
+    } else {
+      return res.status(403).send("User does not exist");
+    }
+  })
+
   // Open server to listen for requests
   server.listen(EXPRESS_PORT, () => console.log(`server live on http://localhost:${EXPRESS_PORT}`));
 
