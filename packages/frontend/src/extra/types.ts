@@ -129,3 +129,7 @@ export interface UnfinishedRoom {
   scores?: Scores;
   turn: Color;
 }
+
+export type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
