@@ -57,6 +57,18 @@ const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
 };
 
 /**
+ * Updates chat for the room.
+ * @param roomCode
+ * @param message
+ * @param username
+ * @param team
+ */
+const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
+  io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
+  io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
+};
+
+/**
  * Updates game data for clients.
  * @param room
  */
@@ -109,7 +121,6 @@ const endTurn = async (roomCode: string): Promise<void> => {
  * Randomize teams in a room.
  * @param roomCode
  */
-
 const randomizeTeams = async (roomCode: string): Promise<void> => {
   const room = await mongoGetRoom(roomCode);
   if (room) {
@@ -345,4 +356,12 @@ io.on("connection", socket => {
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
   socket.on("randomizeTeams", randomizeTeams);
+  socket.on("updateChat", updateChat);
+});
+
+io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any }) => {
+  console.log(err.req); // the request object
+  console.log(err.code); // the error code, for example 1
+  console.log(err.message); // the error message, for example "Session ID unknown"
+  console.log(err.context); // some additional error context
 });
