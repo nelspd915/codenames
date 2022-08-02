@@ -51,7 +51,6 @@ const mongoGetRoom = async (roomCode: string): Promise<Room | null | undefined> 
 const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
   const currentRoom = (await rooms?.findOne({ code: roomCode })) ?? {};
   const newRoom = merge(currentRoom, data) as Room;
-  newRoom.scores = findScores(newRoom.masterBoard);
   await rooms?.replaceOne({ code: roomCode }, newRoom, { upsert: true });
 
   updateGame(newRoom);
@@ -61,7 +60,7 @@ const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
  * Updates game data for clients.
  * @param room
  */
-const updateGame = async (room: Room | null | undefined): Promise<void> => {
+const updateGame = (room: Room | null | undefined): void => {
   if (room) {
     const gameData: GameData = {
       board: room.publicBoard,
@@ -149,6 +148,7 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
   if (room) {
     const player = room.players.find(player => player.username === username);
     const cellColor = room.masterBoard[cellIndex].color as Color;
+    const scores = findScores(room.masterBoard);
     if (player?.team === room.turn) {
       // Update cell on public board
       data.publicBoard[cellIndex] = {
@@ -161,12 +161,16 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
         revealed: true
       };
 
+      // Update scores
+      scores[cellColor] -= 1;
+      data.scores = scores;
+
       // Whether the game is now over
-      const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
+      const gameOver = scores[Color.Blue] === 0 || scores[Color.Red] === 0 || cellColor === Color.Black;
 
       if (gameOver) {
         for (let i = 0; i < room.masterBoard.length; i++) {
-          data.masterBoard[i] = merge(data.masterBoard[i], { mode: Mode.Endgame });
+          data.masterBoard[i] = merge(room.masterBoard[i], { mode: Mode.Endgame });
         }
         data.publicBoard = data.masterBoard;
       } else {
@@ -174,7 +178,7 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
         const turnOver = cellColor != room.turn;
 
         if (turnOver) {
-          endTurn(roomCode);
+          await endTurn(roomCode);
         }
       }
     }
