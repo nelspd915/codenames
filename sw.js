@@ -27,15 +27,15 @@ self.addEventListener('message', (event) => {
 self.__precacheManifest = [
   {
     "url": "index.html",
-    "revision": "23d44f2c3522bac873929891ba92eb18"
+    "revision": "dff2ce1269727e6eb72bd3a6cf71ddf6"
   },
   {
     "url": "app/main.css",
-    "revision": "178b73d9131f56f77db547953ea083c7"
+    "revision": "d2e34a7f40a0c76b8c4f609cc2ed4395"
   },
   {
     "url": "app/main.js",
-    "revision": "80fd369622bdd5781e933e3b48192ddc"
+    "revision": "ea4ec1a055adeff3fd5d40b7f944cebc"
   },
   {
     "url": "build/index.esm.js",
@@ -45,13 +45,10 @@ self.__precacheManifest = [
     "url": "build/p-19b14d5f.js"
   },
   {
-    "url": "build/p-32847974.entry.js"
-  },
-  {
     "url": "build/p-9a70c03b.js"
   },
   {
-    "url": "build/p-d86e15c9.entry.js"
+    "url": "build/p-c8b2c846.css"
   },
   {
     "url": "build/p-fc9e4a53.entry.js"
