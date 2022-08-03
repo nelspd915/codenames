@@ -44,7 +44,7 @@ export class CodenamesPanel {
   }
 
   /**
-   * Whether the player is on the team for this panel.
+   * Whether the player is on the team for this panel. //
    * @param player
    */
   private isOnTeam(player: PlayerData): boolean {

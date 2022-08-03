@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "serve": "turbo run --filter=*backend* serve",
+    "serve": "turbo run --filter=*backend* serve -- dev",
     "start": "node packages/backend/build/index.js",
     "deploy": "turbo run deploy",
     "test": "turbo run test",
