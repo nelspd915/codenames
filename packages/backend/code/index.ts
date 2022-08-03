@@ -15,6 +15,10 @@ import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, merge, shuffle } from "lodash";
 import { AnyError, Collection, Db, MongoClient } from "mongodb";
+import * as dotenv from "dotenv";
+
+// Setup environment variables
+dotenv.config();
 
 // Setup server
 const io = setupServer();
@@ -22,8 +26,8 @@ const io = setupServer();
 // Setup MongoDB database
 let db: Db | undefined;
 let rooms: Collection | undefined;
-const localUrl = "mongodb://0.0.0.0:27017/";
-const atlasUrl = "mongodb+srv://codenames:codegorepatel@codenames.z041u.mongodb.net/?retryWrites=true&w=majority";
+const localUrl = `mongodb://0.0.0.0:27017/`;
+const atlasUrl = `mongodb+srv://codenames:${process.env.MONGO_PASSWORD}@codenames.z041u.mongodb.net/?retryWrites=true&w=majority`;
 const mongoUrl = process.argv[2] === "dev" ? localUrl : atlasUrl;
 MongoClient.connect(mongoUrl, (err?: AnyError, mongoClient?: MongoClient) => {
   if (err !== undefined) {
@@ -96,7 +100,7 @@ const updateGame = (room: Room | null | undefined): void => {
  */
 const findScores = (board: BoardData): Scores => {
   const scores = { blue: 0, red: 0, gray: 0, black: 0 };
-  board.forEach(cell => {
+  board.forEach((cell) => {
     if (cell.revealed === false) {
       scores[cell.color as Color] += 1;
     }
@@ -157,21 +161,10 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
 
   const room = await mongoGetRoom(roomCode);
   if (room) {
-    const player = room.players.find(player => player.username === username);
+    const player = room.players.find((player) => player.username === username);
     const cellColor = room.masterBoard[cellIndex].color as Color;
     const scores = findScores(room.masterBoard);
     if (player?.team === room.turn) {
-      // Update cell on public board
-      data.publicBoard[cellIndex] = {
-        color: cellColor,
-        revealed: true
-      };
-
-      // Update cell on master board
-      data.masterBoard[cellIndex] = {
-        revealed: true
-      };
-
       // Update scores
       scores[cellColor] -= 1;
       data.scores = scores;
@@ -183,7 +176,7 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
         for (let i = 0; i < room.masterBoard.length; i++) {
           data.masterBoard[i] = merge(room.masterBoard[i], { mode: Mode.Endgame });
         }
-        data.publicBoard = data.masterBoard;
+        data.publicBoard = cloneDeep(data.masterBoard);
       } else {
         // Whether current turn is now over
         const turnOver = cellColor != room.turn;
@@ -192,6 +185,17 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
           await endTurn(roomCode);
         }
       }
+
+      // Update cell on public board
+      data.publicBoard[cellIndex] = merge(data.publicBoard[cellIndex], {
+        color: cellColor,
+        revealed: true
+      });
+
+      // Update cell on master board
+      data.masterBoard[cellIndex] = merge(data.masterBoard[cellIndex], {
+        revealed: true
+      });
     }
 
     await mongoUpdateRoom(roomCode, data);
@@ -208,7 +212,7 @@ const resetRoom = async (unfinishedRoom: UnfinishedRoom): Promise<void> => {
   newRoom.turn = Color.Blue;
   newRoom.masterBoard = generateMasterBoard(STARTING_SCORES);
   newRoom.publicBoard = generatePublicBoard(newRoom.masterBoard);
-  newRoom.players.forEach(player => {
+  newRoom.players.forEach((player) => {
     player.mode = Mode.Normal;
     player.spoiled = false;
   });
@@ -217,13 +221,13 @@ const resetRoom = async (unfinishedRoom: UnfinishedRoom): Promise<void> => {
 };
 
 // Setting up a connection to a client
-io.on("connection", socket => {
+io.on("connection", (socket) => {
   // Callback function to join a room
   const joinRoom = async (roomCode: string, username: string): Promise<void> => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
     if (room) {
-      const player = room.players.find(player => player.username === username);
+      const player = room.players.find((player) => player.username === username);
       if (player === undefined) {
         data.players[room.players.length] = {
           username: username,
@@ -261,7 +265,7 @@ io.on("connection", socket => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
     if (room) {
-      const playerIndex = room.players.findIndex(player => player.username === username);
+      const playerIndex = room.players.findIndex((player) => player.username === username);
       if (room.players[playerIndex] !== undefined) {
         data.players[playerIndex] = { mode: Mode.Spymaster, spoiled: true };
       }
@@ -284,7 +288,7 @@ io.on("connection", socket => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
     if (room) {
-      const playerIndex = room.players.findIndex(player => player.username === username);
+      const playerIndex = room.players.findIndex((player) => player.username === username);
       if (room.players[playerIndex] !== undefined) {
         data.players[playerIndex] = { mode: Mode.Normal };
       }
@@ -306,7 +310,7 @@ io.on("connection", socket => {
     const room = await mongoGetRoom(roomCode);
     if (room) {
       const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
-      spymasterSockets.forEach(spymaster => {
+      spymasterSockets.forEach((spymaster) => {
         spymaster.leave(roomCode + SPYMASTER_SUFFIX);
         spymaster.join(roomCode + GUESSER_SUFFIX);
       });
@@ -338,7 +342,7 @@ io.on("connection", socket => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
     if (room) {
-      const playerIndex = room.players.findIndex(player => player.username === username);
+      const playerIndex = room.players.findIndex((player) => player.username === username);
       if (room.players[playerIndex] !== undefined) {
         data.players[playerIndex] = { team: team };
       }
