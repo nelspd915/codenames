@@ -279,11 +279,12 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
 
     const room = await mongoGetRoom(roomCode);
     if (room) {
-      await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, room.turn);
       const player = room.players.find((player) => player.username === username);
       const cellColor = room.masterBoard[cellIndex].color as Color;
       const scores = findScores(room.masterBoard);
       if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
+        await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, room.turn);
+
         // Update scores
         scores[cellColor] -= 1;
         data.scores = scores;
