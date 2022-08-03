@@ -16,12 +16,19 @@ import { setupServer } from "./server";
 import { cloneDeep, merge, shuffle } from "lodash";
 import { AnyError, Collection, Db, MongoClient } from "mongodb";
 import * as dotenv from "dotenv";
+import Queue from "queue-promise";
 
 // Setup environment variables
 dotenv.config();
 
 // Setup server
 const io = setupServer();
+
+// Setup promise queue
+const queue = new Queue({
+  concurrent: 1,
+  interval: 0
+});
 
 // Setup MongoDB database
 let db: Db | undefined;
@@ -153,53 +160,55 @@ const randomizeTeams = async (roomCode: string): Promise<void> => {
  * @param roomCode
  * @param cellIndex
  */
-const revealCell = async (roomCode: string, cellIndex: number, username: string): Promise<void> => {
-  const data: RecursivePartial<Room> & {
-    publicBoard: RecursivePartial<BoardData>;
-    masterBoard: RecursivePartial<BoardData>;
-  } = { publicBoard: [], masterBoard: [] };
+const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
+  queue.enqueue(async () => {
+    const data: RecursivePartial<Room> & {
+      publicBoard: RecursivePartial<BoardData>;
+      masterBoard: RecursivePartial<BoardData>;
+    } = { publicBoard: [], masterBoard: [] };
 
-  const room = await mongoGetRoom(roomCode);
-  if (room) {
-    const player = room.players.find((player) => player.username === username);
-    const cellColor = room.masterBoard[cellIndex].color as Color;
-    const scores = findScores(room.masterBoard);
-    if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
-      // Update scores
-      scores[cellColor] -= 1;
-      data.scores = scores;
+    const room = await mongoGetRoom(roomCode);
+    if (room) {
+      const player = room.players.find((player) => player.username === username);
+      const cellColor = room.masterBoard[cellIndex].color as Color;
+      const scores = findScores(room.masterBoard);
+      if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
+        // Update scores
+        scores[cellColor] -= 1;
+        data.scores = scores;
 
-      // Whether the game is now over
-      const gameOver = scores[Color.Blue] === 0 || scores[Color.Red] === 0 || cellColor === Color.Black;
+        // Whether the game is now over
+        const gameOver = scores[Color.Blue] === 0 || scores[Color.Red] === 0 || cellColor === Color.Black;
 
-      if (gameOver) {
-        for (let i = 0; i < room.masterBoard.length; i++) {
-          data.masterBoard[i] = merge(room.masterBoard[i], { mode: Mode.Endgame });
+        if (gameOver) {
+          for (let i = 0; i < room.masterBoard.length; i++) {
+            data.masterBoard[i] = merge(room.masterBoard[i], { mode: Mode.Endgame });
+          }
+          data.publicBoard = cloneDeep(data.masterBoard);
+        } else {
+          // Whether current turn is now over
+          const turnOver = cellColor != room.turn;
+
+          if (turnOver) {
+            await endTurn(roomCode);
+          }
         }
-        data.publicBoard = cloneDeep(data.masterBoard);
-      } else {
-        // Whether current turn is now over
-        const turnOver = cellColor != room.turn;
 
-        if (turnOver) {
-          await endTurn(roomCode);
-        }
+        // Update cell on public board
+        data.publicBoard[cellIndex] = merge(data.publicBoard[cellIndex], {
+          color: cellColor,
+          revealed: true
+        });
+
+        // Update cell on master board
+        data.masterBoard[cellIndex] = merge(data.masterBoard[cellIndex], {
+          revealed: true
+        });
       }
 
-      // Update cell on public board
-      data.publicBoard[cellIndex] = merge(data.publicBoard[cellIndex], {
-        color: cellColor,
-        revealed: true
-      });
-
-      // Update cell on master board
-      data.masterBoard[cellIndex] = merge(data.masterBoard[cellIndex], {
-        revealed: true
-      });
+      await mongoUpdateRoom(roomCode, data);
     }
-
-    await mongoUpdateRoom(roomCode, data);
-  }
+  });
 };
 
 /**
