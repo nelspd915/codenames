@@ -271,6 +271,26 @@ io.on("connection", (socket) => {
   };
 
   /**
+   * Leaves a room.
+   * @param roomCode
+   * @param username
+   */
+   const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+    const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
+    const room = await mongoGetRoom(roomCode);
+    if (room) {
+      const playerIndex = room.players.findIndex((player) => player.username === username);
+      const player = room.players[playerIndex];
+      if (player !== undefined) {
+        player.mode === Mode.Spymaster ? socket.leave(roomCode + SPYMASTER_SUFFIX) : socket.leave(roomCode + GUESSER_SUFFIX);
+        data.players.splice(playerIndex, 1);
+        console.log(data.players);
+      }
+      await mongoUpdateRoom(roomCode, data);
+    }
+  };
+
+  /**
    * Creates a new room.
    * @param roomCode
    * @param host
@@ -402,6 +422,7 @@ io.on("connection", (socket) => {
   socket.on("becomeGuesser", becomeGuesser);
   socket.on("newGame", newGame);
   socket.on("enterRoom", enterRoom);
+  socket.on("leaveRoom", leaveRoom);
   socket.on("revealCell", revealCell);
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
