@@ -14,35 +14,25 @@ import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { BLACK_WORDS, GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, merge, shuffle } from "lodash";
-import { AnyError, Collection, Db, MongoClient } from "mongodb";
+import { Collection, Db } from "mongodb";
 import * as dotenv from "dotenv";
 import Queue from "queue-promise";
+import { Queues } from "./types";
+import { setupMongoDatabase } from "./mongo";
 
 // Setup environment variables
 dotenv.config();
 
-// Setup server
+// Setup promise queues
+const queues: Queues = {};
+
+// Setup IO server
 const io = setupServer();
 
-// Setup promise queue
-const queue = new Queue({
-  concurrent: 1,
-  interval: 0
-});
-
 // Setup MongoDB database
-let db: Db | undefined;
 let rooms: Collection | undefined;
-const localUrl = `mongodb://0.0.0.0:27017/`;
-const atlasUrl = `mongodb+srv://codenames:${process.env.MONGO_PASSWORD}@codenames.z041u.mongodb.net/?retryWrites=true&w=majority`;
-const mongoUrl = process.argv[2] === "dev" ? localUrl : atlasUrl;
-MongoClient.connect(mongoUrl, (err?: AnyError, mongoClient?: MongoClient) => {
-  if (err !== undefined) {
-    throw err;
-  } else {
-    db = mongoClient?.db("codenamesdb");
-    rooms = db?.collection("rooms");
-  }
+setupMongoDatabase().then((db: Db | undefined) => {
+  rooms = db?.collection("rooms");
 });
 
 /**
@@ -60,11 +50,25 @@ const mongoGetRoom = async (roomCode: string): Promise<Room | null | undefined> 
  * @param data
  */
 const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
-  const currentRoom = (await rooms?.findOne({ code: roomCode })) ?? {};
+  const currentRoom = (await mongoGetRoom(roomCode)) ?? {};
   const newRoom = merge(currentRoom, data) as Room;
-  await rooms?.replaceOne({ code: roomCode }, newRoom, { upsert: true });
-
   updateGame(newRoom);
+  await rooms?.replaceOne({ code: roomCode }, newRoom, { upsert: true });
+};
+
+/**
+ * Gets the promise queue for a specified room code.
+ * @param roomCode
+ */
+const getQueue = (roomCode: string): Queue => {
+  if (queues[roomCode] === undefined) {
+    queues[roomCode] = new Queue({
+      concurrent: 1,
+      interval: 0
+    });
+  }
+
+  return queues[roomCode];
 };
 
 /**
@@ -75,8 +79,10 @@ const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
  * @param team
  */
 const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
-  io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
-  io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
+  getQueue(roomCode).enqueue(async () => {
+    io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
+    io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
+  });
 };
 
 /**
@@ -121,38 +127,42 @@ const findScores = (board: BoardData): Scores => {
  * @param roomCode
  */
 const endTurn = async (roomCode: string): Promise<void> => {
-  const room = await mongoGetRoom(roomCode);
-  if (room) {
-    const turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
-    await mongoUpdateRoom(roomCode, { turn });
-  }
+  getQueue(roomCode).enqueue(async () => {
+    const room = await mongoGetRoom(roomCode);
+    if (room) {
+      const turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
+      await mongoUpdateRoom(roomCode, { turn });
+    }
+  });
 };
 
 /**
- * Randomize teams in a room.
+ * Randomizes teams in a room.
  * @param roomCode
  */
 const randomizeTeams = async (roomCode: string): Promise<void> => {
-  const room = await mongoGetRoom(roomCode);
-  if (room) {
-    const players = shuffle(room.players);
+  getQueue(roomCode).enqueue(async () => {
+    const room = await mongoGetRoom(roomCode);
+    if (room) {
+      const players = shuffle(room.players);
 
-    // Determine initial team color
-    let evenTeam: Team = Color.Red;
-    let oddTeam: Team = Color.Blue;
+      // Determine initial team color
+      let evenTeam: Team = Color.Red;
+      let oddTeam: Team = Color.Blue;
 
-    if (Math.random() < 0.5) {
-      oddTeam = Color.Red;
-      evenTeam = Color.Blue;
+      if (Math.random() < 0.5) {
+        oddTeam = Color.Red;
+        evenTeam = Color.Blue;
+      }
+
+      // Assign new teams to players
+      for (let i = 0; i < room.players.length; i++) {
+        players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
+      }
+
+      await mongoUpdateRoom(roomCode, { players });
     }
-
-    // Assign new teams to players
-    for (let i = 0; i < room.players.length; i++) {
-      players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
-    }
-
-    await mongoUpdateRoom(roomCode, { players });
-  }
+  });
 };
 
 /**
@@ -161,7 +171,7 @@ const randomizeTeams = async (roomCode: string): Promise<void> => {
  * @param cellIndex
  */
 const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
-  queue.enqueue(async () => {
+  getQueue(roomCode).enqueue(async () => {
     const data: RecursivePartial<Room> & {
       publicBoard: RecursivePartial<BoardData>;
       masterBoard: RecursivePartial<BoardData>;
@@ -231,7 +241,11 @@ const resetRoom = async (unfinishedRoom: UnfinishedRoom): Promise<void> => {
 
 // Setting up a connection to a client
 io.on("connection", (socket) => {
-  // Callback function to join a room
+  /**
+   * Joins a room.
+   * @param roomCode
+   * @param username
+   */
   const joinRoom = async (roomCode: string, username: string): Promise<void> => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
@@ -256,7 +270,11 @@ io.on("connection", (socket) => {
     }
   };
 
-  // Callback function to create a new room
+  /**
+   * Creates a new room.
+   * @param roomCode
+   * @param host
+   */
   const createRoom = async (roomCode: string, host: string): Promise<void> => {
     const unfinishedRoom: UnfinishedRoom = {
       code: roomCode,
@@ -267,48 +285,61 @@ io.on("connection", (socket) => {
 
     await resetRoom(unfinishedRoom);
     await joinRoom(roomCode, host);
+
+    // Create queue for the new room
+    getQueue(roomCode);
   };
 
-  // Callback function to become a spymaster
+  /**
+   * Become a spymaster.
+   * @param roomCode
+   * @param username
+   * @param suppressUpdate
+   */
   const becomeSpymaster = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
-    const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
-    const room = await mongoGetRoom(roomCode);
-    if (room) {
-      const playerIndex = room.players.findIndex((player) => player.username === username);
-      if (room.players[playerIndex] !== undefined) {
-        data.players[playerIndex] = { mode: Mode.Spymaster, spoiled: true };
-      }
+    getQueue(roomCode).enqueue(async () => {
+      const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
+      const room = await mongoGetRoom(roomCode);
+      if (room) {
+        const playerIndex = room.players.findIndex((player) => player.username === username);
+        if (room.players[playerIndex] !== undefined) {
+          data.players[playerIndex] = { mode: Mode.Spymaster, spoiled: true };
+        }
 
-      socket.leave(roomCode + GUESSER_SUFFIX);
-      socket.join(roomCode + SPYMASTER_SUFFIX);
+        socket.leave(roomCode + GUESSER_SUFFIX);
+        socket.join(roomCode + SPYMASTER_SUFFIX);
 
-      if (suppressUpdate === false) {
-        await mongoUpdateRoom(roomCode, data);
+        if (suppressUpdate === false) {
+          await mongoUpdateRoom(roomCode, data);
+        }
       }
-    }
+    });
   };
 
   /**
    * Become a guesser.
    * @param roomCode
    * @param username
+   * @param suppressUpdate
    */
   const becomeGuesser = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
-    const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
-    const room = await mongoGetRoom(roomCode);
-    if (room) {
-      const playerIndex = room.players.findIndex((player) => player.username === username);
-      if (room.players[playerIndex] !== undefined) {
-        data.players[playerIndex] = { mode: Mode.Normal };
-      }
+    getQueue(roomCode).enqueue(async () => {
+      const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
+      const room = await mongoGetRoom(roomCode);
+      if (room) {
+        const playerIndex = room.players.findIndex((player) => player.username === username);
+        if (room.players[playerIndex] !== undefined) {
+          data.players[playerIndex] = { mode: Mode.Normal };
+        }
 
-      socket.leave(roomCode + SPYMASTER_SUFFIX);
-      socket.join(roomCode + GUESSER_SUFFIX);
+        socket.leave(roomCode + SPYMASTER_SUFFIX);
+        socket.join(roomCode + GUESSER_SUFFIX);
 
-      if (suppressUpdate === false) {
-        await mongoUpdateRoom(roomCode, data);
+        if (suppressUpdate === false) {
+          await mongoUpdateRoom(roomCode, data);
+        }
       }
-    }
+    });
   };
 
   /**
@@ -316,15 +347,17 @@ io.on("connection", (socket) => {
    * @param roomCode
    */
   const newGame = async (roomCode: string): Promise<void> => {
-    const room = await mongoGetRoom(roomCode);
-    if (room) {
-      const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
-      spymasterSockets.forEach((spymaster) => {
-        spymaster.leave(roomCode + SPYMASTER_SUFFIX);
-        spymaster.join(roomCode + GUESSER_SUFFIX);
-      });
-      await resetRoom(room);
-    }
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      if (room) {
+        const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
+        spymasterSockets.forEach((spymaster) => {
+          spymaster.leave(roomCode + SPYMASTER_SUFFIX);
+          spymaster.join(roomCode + GUESSER_SUFFIX);
+        });
+        await resetRoom(room);
+      }
+    });
   };
 
   /**
@@ -333,12 +366,14 @@ io.on("connection", (socket) => {
    * @param username
    */
   const enterRoom = async (roomCode: string, username: string): Promise<void> => {
-    const room = await mongoGetRoom(roomCode);
-    if (!room) {
-      await createRoom(roomCode, username);
-    } else {
-      await joinRoom(roomCode, username);
-    }
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      if (!room) {
+        await createRoom(roomCode, username);
+      } else {
+        await joinRoom(roomCode, username);
+      }
+    });
   };
 
   /**
@@ -348,16 +383,18 @@ io.on("connection", (socket) => {
    * @param team
    */
   const joinTeam = async (roomCode: string, username: string, team: Team): Promise<void> => {
-    const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
-    const room = await mongoGetRoom(roomCode);
-    if (room) {
-      const playerIndex = room.players.findIndex((player) => player.username === username);
-      if (room.players[playerIndex] !== undefined) {
-        data.players[playerIndex] = { team: team };
-      }
+    getQueue(roomCode).enqueue(async () => {
+      const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
+      const room = await mongoGetRoom(roomCode);
+      if (room) {
+        const playerIndex = room.players.findIndex((player) => player.username === username);
+        if (room.players[playerIndex] !== undefined) {
+          data.players[playerIndex] = { team: team };
+        }
 
-      await mongoUpdateRoom(roomCode, data);
-    }
+        await mongoUpdateRoom(roomCode, data);
+      }
+    });
   };
 
   // Add server listeners with callback functions
