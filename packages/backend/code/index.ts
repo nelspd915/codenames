@@ -11,7 +11,7 @@ import {
   BoardData
 } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
-import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
+import { BLACK_WORDS, GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, merge, shuffle } from "lodash";
 import { AnyError, Collection, Db, MongoClient } from "mongodb";
@@ -164,7 +164,7 @@ const revealCell = async (roomCode: string, cellIndex: number, username: string)
     const player = room.players.find((player) => player.username === username);
     const cellColor = room.masterBoard[cellIndex].color as Color;
     const scores = findScores(room.masterBoard);
-    if (player?.team === room.turn) {
+    if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
       // Update scores
       scores[cellColor] -= 1;
       data.scores = scores;
