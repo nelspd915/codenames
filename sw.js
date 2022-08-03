@@ -27,15 +27,15 @@ self.addEventListener('message', (event) => {
 self.__precacheManifest = [
   {
     "url": "index.html",
-    "revision": "ad00828d027327031976f908f6ec488f"
+    "revision": "aa87b231a543c03dc85f77cda9e40789"
   },
   {
     "url": "app/main.css",
-    "revision": "d2e34a7f40a0c76b8c4f609cc2ed4395"
+    "revision": "178b73d9131f56f77db547953ea083c7"
   },
   {
     "url": "app/main.js",
-    "revision": "ea4ec1a055adeff3fd5d40b7f944cebc"
+    "revision": "80fd369622bdd5781e933e3b48192ddc"
   },
   {
     "url": "build/index.esm.js",
