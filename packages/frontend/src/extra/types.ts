@@ -118,6 +118,7 @@ export interface Room {
   players: PlayerData[];
   scores: Scores;
   turn: Color;
+  currentGameId: string;
 }
 
 export interface UnfinishedRoom {
@@ -128,6 +129,7 @@ export interface UnfinishedRoom {
   publicBoard?: BoardData;
   scores?: Scores;
   turn: Color;
+  currentGameId?: string;
 }
 
 export type RecursivePartial<T> = {

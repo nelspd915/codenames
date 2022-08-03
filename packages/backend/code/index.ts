@@ -8,17 +8,19 @@ import {
   RecursivePartial,
   PlayerData,
   Scores,
-  BoardData
+  BoardData,
+  CellData
 } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
 import { BLACK_WORDS, GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, merge, shuffle } from "lodash";
-import { Collection, Db } from "mongodb";
+import { Collection, Db, DeleteResult } from "mongodb";
 import * as dotenv from "dotenv";
 import Queue from "queue-promise";
-import { Queues } from "./types";
+import { GameHistory, Queues } from "./types";
 import { setupMongoDatabase } from "./mongo";
+import { hashSync } from "bcryptjs";
 
 // Setup environment variables
 dotenv.config();
@@ -31,8 +33,10 @@ const io = setupServer();
 
 // Setup MongoDB database
 let rooms: Collection | undefined;
+let history: Collection | undefined;
 setupMongoDatabase().then((db: Db | undefined) => {
   rooms = db?.collection("rooms");
+  history = db?.collection("history");
 });
 
 /**
@@ -50,10 +54,84 @@ const mongoGetRoom = async (roomCode: string): Promise<Room | null | undefined> 
  * @param data
  */
 const mongoUpdateRoom = async (roomCode: string, data: any): Promise<void> => {
-  const currentRoom = (await mongoGetRoom(roomCode)) ?? {};
-  const newRoom = merge(currentRoom, data) as Room;
-  updateGame(newRoom);
-  await rooms?.replaceOne({ code: roomCode }, newRoom, { upsert: true });
+  const currentRoom = await mongoGetRoom(roomCode);
+  if (currentRoom) {
+    const newRoom = merge(currentRoom, data) as Room;
+    updateGame(newRoom);
+    await rooms?.replaceOne({ code: roomCode }, newRoom, { upsert: true });
+  } else {
+    throw "Error: could not find room in database when attempting to update.";
+  }
+};
+
+/**
+ * Adds new game history entry.
+ * @param room
+ */
+const mongoHistoryAddGame = async (room: Room): Promise<void> => {
+  const gameHistory: GameHistory = {
+    gameId: room.currentGameId,
+    roomCode: room.code,
+    roomHost: room.host,
+    board: room.masterBoard,
+    startingPlayers: room.players,
+    startingScores: room.scores,
+    turns: []
+  };
+  await history?.insertOne(gameHistory);
+};
+
+/**
+ * Adds new game history entry.
+ * @param room
+ */
+const mongoHistoryEndGame = async (room: Room, endingScores: Scores): Promise<void> => {
+  const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+  if (gameHistory) {
+    gameHistory.endingPlayers = room.players;
+    gameHistory.endingScores = endingScores;
+    gameHistory.winner = findWinner(endingScores, room.turn);
+    await history?.replaceOne({ gameId: room.currentGameId }, gameHistory);
+  } else {
+    throw "Error: could not find gameHistory in database when attempting to end this game.";
+  }
+};
+
+/**
+ * Gets a game history entry.
+ * @param gameId
+ */
+const mongoHistoryGetGame = async (gameId: string): Promise<GameHistory | null | undefined> => {
+  return (await history?.findOne({ gameId: gameId })) as GameHistory | null | undefined;
+};
+
+/**
+ * Deletes a game history entry.
+ * @param gameId
+ */
+const mongoHistoryDeleteGame = async (gameId: string): Promise<DeleteResult | undefined> => {
+  return await history?.deleteOne({ gameId: gameId });
+};
+
+/**
+ * Updates game history for last turn taken.
+ * @param room
+ * @param username
+ * @param cell
+ * @param turn
+ */
+const mongoHistoryAddTurn = async (room: Room, cell: CellData, username: string, turn: Color): Promise<void> => {
+  const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+  if (gameHistory) {
+    gameHistory.turns.push({
+      cell,
+      username,
+      turn
+    });
+    await history?.replaceOne({ gameId: room.currentGameId }, gameHistory, { upsert: true });
+  } else {
+    throw "Error: could not find gameHistory in database when attempting to log this turn.";
+  }
 };
 
 /**
@@ -108,7 +186,7 @@ const updateGame = (room: Room | null | undefined): void => {
 };
 
 /**
- * Updates scores for the board.
+ * Finds scores for the board.
  * @param board
  */
 const findScores = (board: BoardData): Scores => {
@@ -120,6 +198,28 @@ const findScores = (board: BoardData): Scores => {
   });
 
   return scores;
+};
+
+/**
+ * Finds winner based on the scores and current turn.
+ * @param scores
+ * @param turn
+ */
+const findWinner = (scores: Scores, turn: Color): Team => {
+  let winner: Team = Color.Gray;
+  if (scores[Color.Black] !== BLACK_WORDS) {
+    if (turn === Color.Blue) {
+      winner = Color.Red;
+    } else if (turn === Color.Red) {
+      winner = Color.Blue;
+    }
+  } else if (scores[Color.Blue] === 0) {
+    winner = Color.Blue;
+  } else if (scores[Color.Red]) {
+    winner = Color.Red;
+  }
+
+  return winner;
 };
 
 /**
@@ -183,6 +283,8 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
       const cellColor = room.masterBoard[cellIndex].color as Color;
       const scores = findScores(room.masterBoard);
       if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
+        await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, room.turn);
+
         // Update scores
         scores[cellColor] -= 1;
         data.scores = scores;
@@ -195,6 +297,7 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
             data.masterBoard[i] = merge(room.masterBoard[i], { mode: Mode.Endgame });
           }
           data.publicBoard = cloneDeep(data.masterBoard);
+          await mongoHistoryEndGame(room, scores);
         } else {
           // Whether current turn is now over
           const turnOver = cellColor != room.turn;
@@ -236,7 +339,14 @@ const resetRoom = async (unfinishedRoom: UnfinishedRoom): Promise<void> => {
     player.spoiled = false;
   });
 
+  // Add current game ID by hashing the room
+  newRoom.currentGameId = hashSync(JSON.stringify(newRoom), 2);
+
+  // Update room
   await mongoUpdateRoom(newRoom.code, newRoom);
+
+  // Add entry for game history
+  await mongoHistoryAddGame(newRoom as Room);
 };
 
 // Setting up a connection to a client
@@ -370,6 +480,12 @@ io.on("connection", (socket) => {
     getQueue(roomCode).enqueue(async () => {
       const room = await mongoGetRoom(roomCode);
       if (room) {
+        // Delete previous game history if it never finished
+        const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+        if (!gameHistory?.winner) {
+          await mongoHistoryDeleteGame(room.currentGameId);
+        }
+
         const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
         spymasterSockets.forEach((spymaster) => {
           spymaster.leave(roomCode + SPYMASTER_SUFFIX);
