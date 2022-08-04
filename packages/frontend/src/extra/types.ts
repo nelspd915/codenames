@@ -45,6 +45,7 @@ export interface PlayerData {
   mode?: Mode;
   spoiled?: boolean;
   team?: Team;
+  connected?: boolean;
 }
 
 /**
