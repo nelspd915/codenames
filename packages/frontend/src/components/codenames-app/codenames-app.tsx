@@ -152,7 +152,7 @@ export class CodenamesApp {
    * Request to end the turn.
    */
   private endTurn = (): void => {
-    this.socket.emit("leaveRoom", this.roomCode, this.username);
+    this.socket.emit("endTurn", this.roomCode);
   };
 
   /**

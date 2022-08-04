@@ -37,6 +37,9 @@ let history: Collection | undefined;
 setupMongoDatabase().then((db: Db | undefined) => {
   rooms = db?.collection("rooms");
   history = db?.collection("history");
+
+  // Upon server start, remove all players from all rooms.
+  rooms?.updateMany({}, { $set: { players: [] } });
 });
 
 /**
@@ -368,15 +371,15 @@ io.on("connection", (socket) => {
           spoiled: false,
           team: Color.Gray
         };
-      }
 
-      if ((player?.mode ?? Mode.Normal) === Mode.Spymaster) {
-        socket.join(roomCode + SPYMASTER_SUFFIX);
-      } else {
+        socket.data.roomCode = roomCode;
+        socket.data.username = username;
         socket.join(roomCode + GUESSER_SUFFIX);
+        socket.emit("validJoin", true);
+        await mongoUpdateRoom(roomCode, data);
       }
-
-      await mongoUpdateRoom(roomCode, data);
+    } else {
+      socket.emit("validJoin", false);
     }
   };
 
@@ -385,17 +388,23 @@ io.on("connection", (socket) => {
    * @param roomCode
    * @param username
    */
-   const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+  const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
     const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
     const room = await mongoGetRoom(roomCode);
     if (room) {
       const playerIndex = room.players.findIndex((player) => player.username === username);
       const player = room.players[playerIndex];
+      data.players = room.players;
       if (player !== undefined) {
-        player.mode === Mode.Spymaster ? socket.leave(roomCode + SPYMASTER_SUFFIX) : socket.leave(roomCode + GUESSER_SUFFIX);
+        player.mode === Mode.Spymaster
+          ? socket.leave(roomCode + SPYMASTER_SUFFIX)
+          : socket.leave(roomCode + GUESSER_SUFFIX);
         data.players.splice(playerIndex, 1);
-        console.log(data.players);
+        await rooms?.updateOne({ code: roomCode }, { $set: { players: data.players } });
       }
+
+      socket.data.roomCode = undefined;
+      socket.data.username = undefined;
       await mongoUpdateRoom(roomCode, data);
     }
   };
@@ -544,6 +553,10 @@ io.on("connection", (socket) => {
   socket.on("endTurn", endTurn);
   socket.on("randomizeTeams", randomizeTeams);
   socket.on("updateChat", updateChat);
+
+  socket.on("disconnect", () => {
+    leaveRoom(socket.data.roomCode, socket.data.username);
+  });
 });
 
 io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any }) => {
