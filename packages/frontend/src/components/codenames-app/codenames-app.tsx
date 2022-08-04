@@ -138,7 +138,7 @@ export class CodenamesApp {
    * Request to start a new game.
    */
   private newGame = (): void => {
-    this.socket.emit("newGame", this.roomCode);
+    this.socket.emit("newGame", this.roomCode, this.username);
   };
 
   /**
