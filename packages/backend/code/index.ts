@@ -37,6 +37,9 @@ let history: Collection | undefined;
 setupMongoDatabase().then((db: Db | undefined) => {
   rooms = db?.collection("rooms");
   history = db?.collection("history");
+
+  // Upon server start, remove all players from all rooms.
+  rooms?.updateMany({}, { $set: { players: [] } });
 });
 
 /**
@@ -367,21 +370,51 @@ io.on("connection", (socket) => {
     const room = await mongoGetRoom(roomCode);
     if (room) {
       const player = room.players.find((player) => player.username === username);
-      if (player === undefined) {
-        data.players[room.players.length] = {
-          username: username,
-          mode: Mode.Normal,
-          spoiled: false,
-          team: Color.Gray
+      // Check if username currently in use and connected, in use and disconncted, or not in use.
+      if (player?.connected) {
+        socket.emit("validJoin", false);
+      } else {
+        if (player) {
+          data.players[room.players.length] = {
+            connected: true
+          };
+        } else {
+          data.players[room.players.length] = {
+            username: username,
+            mode: Mode.Normal,
+            spoiled: false,
+            team: Color.Gray,
+            connected: true
+          };
+        }
+        socket.data.roomCode = roomCode;
+        socket.data.username = username;
+        socket.join(roomCode + GUESSER_SUFFIX);
+        socket.emit("validJoin", false);
+        await mongoUpdateRoom(roomCode, data);
+      }
+    }
+  };
+
+  /**
+   * Leaves a room.
+   * @param roomCode
+   * @param username
+   */
+  const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+    const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
+    const room = await mongoGetRoom(roomCode);
+    if (room) {
+      const playerIndex = room.players.findIndex((player) => player.username === username);
+      const player = room.players[playerIndex];
+      if (player !== undefined) {
+        data.players[playerIndex] = {
+          connected: false
         };
       }
 
-      if ((player?.mode ?? Mode.Normal) === Mode.Spymaster) {
-        socket.join(roomCode + SPYMASTER_SUFFIX);
-      } else {
-        socket.join(roomCode + GUESSER_SUFFIX);
-      }
-
+      socket.data.roomCode = undefined;
+      socket.data.username = undefined;
       await mongoUpdateRoom(roomCode, data);
     }
   };
@@ -416,7 +449,7 @@ io.on("connection", (socket) => {
     getQueue(roomCode).enqueue(async () => {
       const data: RecursivePartial<Room> & { players: RecursivePartial<PlayerData> } = { players: [] };
       const room = await mongoGetRoom(roomCode);
-      if (room) {
+      if (room && socket.data.username === username) {
         const playerIndex = room.players.findIndex((player) => player.username === username);
         if (room.players[playerIndex] !== undefined) {
           data.players[playerIndex] = { mode: Mode.Spymaster, spoiled: true };
@@ -462,10 +495,10 @@ io.on("connection", (socket) => {
    * Creates new game for room.
    * @param roomCode
    */
-  const newGame = async (roomCode: string): Promise<void> => {
+  const newGame = async (roomCode: string, username: string): Promise<void> => {
     getQueue(roomCode).enqueue(async () => {
       const room = await mongoGetRoom(roomCode);
-      if (room) {
+      if (room && socket.data.username === username) {
         // Delete previous game history if it never finished
         const gameHistory = await mongoHistoryGetGame(room.currentGameId);
         if (!gameHistory?.winner) {
@@ -524,11 +557,16 @@ io.on("connection", (socket) => {
   socket.on("becomeGuesser", becomeGuesser);
   socket.on("newGame", newGame);
   socket.on("enterRoom", enterRoom);
+  socket.on("leaveRoom", leaveRoom);
   socket.on("revealCell", revealCell);
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
   socket.on("randomizeTeams", randomizeTeams);
   socket.on("updateChat", updateChat);
+
+  socket.on("disconnect", () => {
+    leaveRoom(socket.data.roomCode, socket.data.username);
+  });
 });
 
 io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any }) => {
