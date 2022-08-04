@@ -76,7 +76,12 @@ span {
     font-weight: bold;
   }
 
-  &.revealed, &.endgame {
+  &.endgame {
+    background: #999999;
+    outline: 5px solid #000000;
+  }
+
+  &.revealed {
     background: #000000;
     color: #ffffff;
     outline: 0;
