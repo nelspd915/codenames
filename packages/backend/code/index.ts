@@ -226,14 +226,20 @@ const findWinner = (scores: Scores, turn: Color): Team => {
  * Ends a team's turn.
  * @param roomCode
  */
-const endTurn = async (roomCode: string): Promise<void> => {
-  getQueue(roomCode).enqueue(async () => {
+const endTurn = async (roomCode: string, useQueue = true): Promise<void> => {
+  const callback = async () => {
     const room = await mongoGetRoom(roomCode);
     if (room) {
       const turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
       await mongoUpdateRoom(roomCode, { turn });
     }
-  });
+  };
+
+  if (useQueue) {
+    getQueue(roomCode).enqueue(callback);
+  } else {
+    await callback();
+  }
 };
 
 /**
@@ -303,7 +309,7 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
           const turnOver = cellColor != room.turn;
 
           if (turnOver) {
-            await endTurn(roomCode);
+            await endTurn(roomCode, false);
           }
         }
 
