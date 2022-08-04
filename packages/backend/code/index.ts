@@ -495,7 +495,7 @@ io.on("connection", (socket) => {
           spymaster.join(roomCode + GUESSER_SUFFIX);
         });
 
-        // Remove all disconnect players
+        // Remove all disconnected players
         room.players = room.players.filter((player) => player.connected === true);
 
         // Reset game
