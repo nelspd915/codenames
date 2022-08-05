@@ -75,6 +75,7 @@ const mongoHistoryAddGame = async (room: Room): Promise<InsertOneResult<Document
 const mongoHistoryEndGame = async (room: Room): Promise<Document | UpdateResult | undefined> => {
   const gameHistory = await mongoHistoryGetGame(room.currentGameId);
   if (gameHistory) {
+    gameHistory.board = room.masterBoard;
     gameHistory.endingPlayers = room.players;
     gameHistory.endingScores = room.scores;
     gameHistory.winner = findWinner(room);
