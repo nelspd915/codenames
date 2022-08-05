@@ -132,7 +132,3 @@ export interface UnfinishedRoom {
   turn: Color;
   currentGameId?: string;
 }
-
-export type RecursivePartial<T> = {
-  [P in keyof T]?: RecursivePartial<T[P]>;
-};
