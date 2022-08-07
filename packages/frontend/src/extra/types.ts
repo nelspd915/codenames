@@ -59,12 +59,10 @@ export type Scores = {
  * Game data.
  */
 export interface GameData {
-  code?: string;
   board: BoardData;
   players: PlayerData[];
   scores: Scores;
   turn: Color;
-  winner?: Team;
 }
 
 /**
