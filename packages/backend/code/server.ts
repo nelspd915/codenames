@@ -2,12 +2,11 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import { users } from ".";
-import { User } from "codenames-frontend";
+import { users } from "./index";
+import { hashSync, compareSync } from "bcryptjs";
+import { User } from "./types";
 
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-require("dotenv").config();
+let jwt = require("jsonwebtoken");
 
 /**
  * Sets up server environment and returns the socket IO.
@@ -48,31 +47,29 @@ export function setupServer(): Server {
     });
   });
 
-  app.post("/register", async (req, res) => {
+  app.post("/register", async (req, res): Promise<void> => {
     const username = req.body.username;
-    const hashedPassword = await bcrypt.hash(req.body.passwordOne, 10);
-    const user = users.find(user => user.username === username);
+    const hashedPassword = hashSync(req.body.passwordOne, 10);
+    const user = (await users?.findOne({ username: username })) as User | null | undefined;
     const samePass = req.body.passwordOne === req.body.passwordTwo;
 
-    if (user === undefined) {
+    if (user === null) {
       if (samePass) {
         const newUser: User = {
           username: username,
           password: hashedPassword,
-          verified: true,
-          matchHistory: []
+          verified: true
         };
-        users.push(newUser);
+        await users?.insertOne(newUser);
         res.status(201).send("success");
       } else {
         res.status(401).send("Passwords do not match");
       }
-    } else if (user.verified) {
+    } else if (user?.verified) {
       res.status(401).send("User with this name already exists");
     } else {
       if (samePass) {
-        user.verified = true;
-        user.password = hashedPassword;
+        users?.updateOne({ username: username }, { $set: { verified: true, password: hashedPassword } });
         res.status(201).send("success");
       } else {
         res.status(401).send("Passwords do not match");
@@ -80,15 +77,15 @@ export function setupServer(): Server {
     }
   });
 
-  app.post("/login", async (req, res) => {
-    const user = users.find(user => user.username === req.body.username);
+  app.post("/login", async (req, res): Promise<void> => {
+    const user = (await users?.findOne({ username: req.body.username })) as User | null | undefined;
 
-    if (user !== undefined && user.verified) {
-      if (await bcrypt.compare(req.body.password, user.password)) {
-        const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET as string, {
+    if (user !== null) {
+      if (compareSync(req.body.password, user?.password as string)) {
+        const accessToken = jwt.sign({ username: user?.username }, process.env.ACCESS_TOKEN_SECRET as string, {
           expiresIn: "15m"
         });
-        const refreshToken = jwt.sign({ username: user.username }, process.env.REFRESH_TOKEN_SECRET as string, {
+        const refreshToken = jwt.sign({ username: user?.username }, process.env.REFRESH_TOKEN_SECRET as string, {
           expiresIn: "30d"
         });
         res.json({ accessToken: accessToken, refreshToken: refreshToken });
@@ -103,12 +100,12 @@ export function setupServer(): Server {
   app.post("/refresh", (req, res) => {
     const refreshToken = req.body.refreshToken;
     if (refreshToken === undefined) {
-      return res.sendStatus(401);
+      res.sendStatus(401);
     }
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, user: any) => {
       if (err) {
-        return res.sendStatus(403);
+        res.sendStatus(403);
       }
       const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET as string, {
         expiresIn: "15m"
@@ -116,25 +113,6 @@ export function setupServer(): Server {
       res.json({ accessToken: accessToken });
     });
   });
-
-  app.get("/winrate", (req, res) => {
-    const user = users.find((user) => req.body.username === user.username);
-    if (user !== undefined) {
-      let wins = 0;
-      let losses = 0;
-      user.matchHistory.forEach((match) => {
-        const player = match.players.find((player) => user.username === player.username);
-        if (player?.team === match.winner) {
-          wins += 1;
-        } else {
-          losses += 1;
-        }
-      });
-      return res.json({ winrate: (wins / (wins + losses) * 100)});
-    } else {
-      return res.status(403).send("User does not exist");
-    }
-  })
 
   // Open server to listen for requests
   server.listen(EXPRESS_PORT, () => console.log(`server live on http://localhost:${EXPRESS_PORT}`));

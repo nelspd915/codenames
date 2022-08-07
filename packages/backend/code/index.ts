@@ -1,21 +1,168 @@
-import { Color, Mode, GameData, Room, Rooms, UnfinishedRoom, Team, User } from "codenames-frontend";
+import { Color, Mode, GameData, Room, UnfinishedRoom, Team, Scores, BoardData, CellData } from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
-import { GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
+import { BLACK_WORDS, GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, shuffle } from "lodash";
+import { Collection, Db, DeleteResult, UpdateResult, Document, InsertOneResult } from "mongodb";
+import * as dotenv from "dotenv";
+import Queue from "queue-promise";
+import { GameHistory, Queues } from "./types";
+import { setupMongoDatabase } from "./mongo";
+import { hashSync } from "bcryptjs";
 
-// Setup server
+// Setup environment variables
+dotenv.config();
+
+// Setup promise queues
+const queues: Queues = {};
+
+// Setup MongoDB database
+let rooms: Collection | undefined;
+let history: Collection | undefined;
+export let users: Collection | undefined;
+setupMongoDatabase().then((db: Db | undefined) => {
+  rooms = db?.collection("rooms");
+  history = db?.collection("history");
+  users = db?.collection("users");
+
+  // Upon server start, remove all players from all rooms.
+  rooms?.updateMany({}, { $set: { players: [] } });
+});
+
+// Setup IO server
 const io = setupServer();
 
-// Initialize storage
-const rooms: Rooms = {};
-export const users: User[] = [];
+/**
+ * Gets a room from the mongo database.
+ * @param roomCode
+ */
+const mongoGetRoom = async (roomCode: string): Promise<Room> => {
+  const room = (await rooms?.findOne({ code: roomCode })) as Room | null | undefined;
+  if (room) {
+    return room;
+  } else {
+    throw "Error: could not find room when attempting to get it from the database.";
+  }
+};
 
 /**
- * Broadcasts a game update for entire room.
+ * Updates a room on the mongo database.
  * @param room
  */
-const updateGameForRoom = (room: Room): void => {
+const mongoUpdateRoom = async (room: Room): Promise<Document | UpdateResult | undefined> => {
+  return await rooms?.replaceOne({ code: room.code }, room, { upsert: true });
+};
+
+/**
+ * Adds new game history entry.
+ * @param room
+ */
+const mongoHistoryAddGame = async (room: Room): Promise<InsertOneResult<Document> | undefined> => {
+  const gameHistory: GameHistory = {
+    gameId: room.currentGameId,
+    roomCode: room.code,
+    roomHost: room.host,
+    board: room.masterBoard,
+    startingPlayers: room.players,
+    startingScores: room.scores,
+    turns: []
+  };
+  return await history?.insertOne(gameHistory);
+};
+
+/**
+ * Adds new game history entry.
+ * @param room
+ */
+const mongoHistoryEndGame = async (room: Room): Promise<Document | UpdateResult | undefined> => {
+  const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+  if (gameHistory) {
+    gameHistory.board = room.masterBoard;
+    gameHistory.endingPlayers = room.players;
+    gameHistory.endingScores = room.scores;
+    gameHistory.winner = findWinner(room);
+    return await history?.replaceOne({ gameId: room.currentGameId }, gameHistory);
+  } else {
+    throw "Error: could not find gameHistory in database when attempting to end this game.";
+  }
+};
+
+/**
+ * Gets a game history entry.
+ * @param gameId
+ */
+const mongoHistoryGetGame = async (gameId: string): Promise<GameHistory | null | undefined> => {
+  return (await history?.findOne({ gameId: gameId })) as GameHistory | null | undefined;
+};
+
+/**
+ * Deletes a game history entry.
+ * @param gameId
+ */
+const mongoHistoryDeleteGame = async (gameId: string): Promise<DeleteResult | undefined> => {
+  return await history?.deleteOne({ gameId: gameId });
+};
+
+/**
+ * Updates game history for last turn taken.
+ * @param room
+ * @param username
+ * @param cell
+ * @param turn
+ */
+const mongoHistoryAddTurn = async (
+  room: Room,
+  cell: CellData,
+  username: string,
+  turn: Color
+): Promise<Document | UpdateResult | undefined> => {
+  const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+  if (gameHistory) {
+    gameHistory.turns.push({
+      cell,
+      username,
+      turn
+    });
+    return await history?.replaceOne({ gameId: room.currentGameId }, gameHistory, { upsert: true });
+  } else {
+    throw "Error: could not find gameHistory in database when attempting to log this turn.";
+  }
+};
+
+/**
+ * Gets the promise queue for a specified room code.
+ * @param roomCode
+ */
+const getQueue = (roomCode: string): Queue => {
+  if (queues[roomCode] === undefined) {
+    queues[roomCode] = new Queue({
+      concurrent: 1,
+      interval: 0
+    });
+  }
+
+  return queues[roomCode];
+};
+
+/**
+ * Updates chat for the room.
+ * @param roomCode
+ * @param message
+ * @param username
+ * @param team
+ */
+const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
+  getQueue(roomCode).enqueue(async () => {
+    io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
+    io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
+  });
+};
+
+/**
+ * Updates game data for clients.
+ * @param room
+ */
+const updateGame = (room: Room): void => {
   const gameData: GameData = {
     board: room.publicBoard,
     players: room.players,
@@ -32,98 +179,81 @@ const updateGameForRoom = (room: Room): void => {
 };
 
 /**
- * Updates match history for players in a room, if no user exists in DB creates new user.
- * @param room
- * @param winner
+ * Finds scores for the board.
+ * @param board
  */
-const updateHistory = (room: Room, winner: Team): void => {
-  const gameData: GameData = {
-    code: room.code,
-    board: room.masterBoard,
-    players: room.players,
-    scores: room.scores,
-    turn: room.turn,
-    winner: winner
-  };
-
-  // Add endgame data to match history of each user unless username is claimed.
-  room.players.forEach(player => {
-    if (player.team === Color.Blue || player.team === Color.Red) {
-      const user = users.find(user => (player.username = user.username));
-      if (user === undefined) {
-        const newUser: User = {
-          username: player.username as string,
-          matchHistory: []
-        };
-        newUser.matchHistory.push(gameData);
-        users.push(newUser);
-      } else {
-        if (!user.verified) {
-          user.matchHistory.push(gameData);
-        }
-      }
-    }
-  });
-};
-
-/**
- * Updates chat for the room.
- * @param roomCode
- * @param message
- * @param username
- * @param team
- */
-const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
-  io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
-  io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
-};
-
-/**
- * Updates scores for the room.
- * @param room
- */
-const updateScores = (room: Room): void => {
-  room.scores = { blue: 0, red: 0, gray: 0, black: 0 };
-  room.masterBoard.forEach(cell => {
+const findScores = (board: BoardData): Scores => {
+  const scores = { blue: 0, red: 0, gray: 0, black: 0 };
+  board.forEach((cell) => {
     if (cell.revealed === false) {
-      room.scores[cell.color as Color] += 1;
+      scores[cell.color as Color] += 1;
     }
   });
+
+  return scores;
+};
+
+/**
+ * Finds winner for a room.
+ * @param room
+ */
+const findWinner = (room: Room): Team => {
+  const { scores, turn } = room;
+  let winner: Team = Color.Gray;
+  if (scores[Color.Black] !== BLACK_WORDS) {
+    if (turn === Color.Blue) {
+      winner = Color.Red;
+    } else if (turn === Color.Red) {
+      winner = Color.Blue;
+    }
+  } else if (scores[Color.Blue] === 0) {
+    winner = Color.Blue;
+  } else if (scores[Color.Red] === 0) {
+    winner = Color.Red;
+  }
+
+  return winner;
 };
 
 /**
  * Ends a team's turn.
  * @param roomCode
  */
-const endTurn = (roomCode: string): void => {
-  const room = rooms[roomCode];
-  room.turn = room.turn === Color.Blue ? (room.turn = Color.Red) : (room.turn = Color.Blue);
-  updateGameForRoom(rooms[roomCode]);
+const endTurn = async (roomCode: string): Promise<void> => {
+  getQueue(roomCode).enqueue(async () => {
+    const room = await mongoGetRoom(roomCode);
+    room.turn = room.turn === Color.Blue ? Color.Red : Color.Blue;
+    updateGame(room);
+    await mongoUpdateRoom(room);
+  });
 };
 
 /**
- * Randomize teams in a room.
+ * Randomizes teams in a room.
  * @param roomCode
  */
-const randomizeTeams = (roomCode: string): void => {
-  const room = rooms[roomCode];
-  room.players = shuffle(room.players);
+const randomizeTeams = async (roomCode: string): Promise<void> => {
+  getQueue(roomCode).enqueue(async () => {
+    const room = await mongoGetRoom(roomCode);
+    room.players = shuffle(room.players);
 
-  // Determine initial team color
-  let evenTeam: Team = Color.Red;
-  let oddTeam: Team = Color.Blue;
+    // Determine initial team color
+    let evenTeam: Team = Color.Red;
+    let oddTeam: Team = Color.Blue;
 
-  if (Math.random() < 0.5) {
-    oddTeam = Color.Red;
-    evenTeam = Color.Blue;
-  }
+    if (Math.random() < 0.5) {
+      oddTeam = Color.Red;
+      evenTeam = Color.Blue;
+    }
 
-  // Assign new teams to players
-  for (let i = 0; i < room.players.length; i++) {
-    room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
-  }
+    // Assign new teams to players
+    for (let i = 0; i < room.players.length; i++) {
+      room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
+    }
 
-  updateGameForRoom(room);
+    updateGame(room);
+    await mongoUpdateRoom(room);
+  });
 };
 
 /**
@@ -132,145 +262,249 @@ const randomizeTeams = (roomCode: string): void => {
  * @param cellIndex
  */
 const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
-  const room = rooms[roomCode];
-  const player = room.players.find(player => player.username === username);
-  const cellColor = room.masterBoard[cellIndex].color as Color;
-  if (player?.team === room.turn) {
-    room.publicBoard[cellIndex].color = cellColor;
-    room.publicBoard[cellIndex].revealed = true;
-    room.masterBoard[cellIndex].revealed = true;
-    updateScores(room);
+  getQueue(roomCode).enqueue(async () => {
+    const room = await mongoGetRoom(roomCode);
+    const player = room.players.find((player) => player.username === username);
+    const origTurn = room.turn;
+    let gameOver: boolean = false;
 
-    // Whether the game is now over
-    const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
+    if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
+      const cellColor = room.masterBoard[cellIndex].color as Color;
+      const scores = findScores(room.masterBoard);
 
-    if (gameOver) {
-      room.masterBoard.forEach(cell => {
-        cell.mode = Mode.Endgame;
-      });
-      room.publicBoard = room.masterBoard;
+      // Update scores
+      scores[cellColor] -= 1;
+      room.scores = scores;
 
-      // Determine winning team and add match to player match history.
-      let winner = Color.Gray;
-      if (room.scores[Color.Black] === 0) {
-        winner = room.turn === Color.Red ? (Color.Blue as Team) : (Color.Red as Team);
+      // Whether the game is now over
+      gameOver = scores[Color.Blue] === 0 || scores[Color.Red] === 0 || cellColor === Color.Black;
+
+      if (gameOver) {
+        for (let i = 0; i < room.masterBoard.length; i++) {
+          room.masterBoard[i].mode = Mode.Endgame;
+        }
+        room.publicBoard = cloneDeep(room.masterBoard);
       } else {
-        winner = room.scores[Color.Red] === 0 ? (Color.Red as Team) : (Color.Blue as Team);
-      }
-      updateHistory(room, winner);
-    } else {
-      // Whether current turn is now over
-      const turnOver = cellColor != room.turn;
+        // Whether current turn is now over
+        const turnOver = cellColor != room.turn;
 
-      if (turnOver) {
-        endTurn(roomCode);
+        if (turnOver) {
+          room.turn = player.team === Color.Blue ? Color.Red : Color.Blue;
+        }
       }
+
+      // Update cell on public board
+      room.publicBoard[cellIndex].color = cellColor;
+      room.publicBoard[cellIndex].revealed = true;
+
+      // Update cell on master board
+      room.masterBoard[cellIndex].revealed = true;
     }
-  }
-  updateGameForRoom(room);
+
+    // Update game for clients
+    updateGame(room);
+
+    // Update database
+    await mongoUpdateRoom(room);
+    await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, origTurn);
+    if (gameOver) {
+      await mongoHistoryEndGame(room);
+    }
+  });
 };
 
 /**
- * Reset a room by populating new game data.
- * @param partialRoom
+ * Reset the game data for a room.
+ * @param currentRoom
  */
-const resetRoom = (partialRoom: UnfinishedRoom): Room => {
-  const newRoom = cloneDeep(partialRoom);
+const resetGame = async (currentRoom: UnfinishedRoom | Room): Promise<void> => {
+  const newRoom = cloneDeep(currentRoom);
   newRoom.scores = { ...STARTING_SCORES };
   newRoom.turn = Color.Blue;
   newRoom.masterBoard = generateMasterBoard(STARTING_SCORES);
   newRoom.publicBoard = generatePublicBoard(newRoom.masterBoard);
-  newRoom.players.forEach(player => {
+  newRoom.players.forEach((player) => {
     player.mode = Mode.Normal;
     player.spoiled = false;
   });
-  return newRoom as Room;
+
+  // Add current game ID by hashing the room
+  newRoom.currentGameId = hashSync(JSON.stringify(newRoom), 2);
+
+  // Update game for clients
+  updateGame(newRoom as Room);
+
+  // Update room
+  await mongoUpdateRoom(newRoom as Room);
+
+  // Add entry for game history
+  await mongoHistoryAddGame(newRoom as Room);
 };
 
 // Setting up a connection to a client
-io.on("connection", socket => {
-  // Callback function to join a room
-  const joinRoom = (roomCode: string, username: string) => {
-    const room = rooms[roomCode];
-    const player = room.players.find(player => player.username === username);
-    if (player === undefined) {
-      room.players.push({
-        username: username,
-        mode: Mode.Normal,
-        spoiled: false,
-        team: Color.Gray
-      });
-    }
+io.on("connection", (socket) => {
+  /**
+   * Joins a room.
+   * @param roomCode
+   * @param username
+   */
+  const joinRoom = async (roomCode: string, username: string): Promise<void> => {
+    const room = await mongoGetRoom(roomCode);
+    const player = room.players.find((player) => player.username === username);
 
-    if (player?.mode === Mode.Spymaster) {
-      socket.join(roomCode + SPYMASTER_SUFFIX);
+    if (player?.connected) {
+      // Reject join if username is currently in use already (it exists and is connected)
+      socket.emit("validJoin", false);
     } else {
-      socket.join(roomCode + GUESSER_SUFFIX);
-    }
+      // When username is not connected...
+      if (player) {
+        // If player exists, set them as "connected"
+        player.connected = true;
+      } else {
+        // If player does not exist, make the new player
+        room.players.push({
+          username: username,
+          mode: Mode.Normal,
+          spoiled: false,
+          team: Color.Gray,
+          connected: true
+        });
+      }
 
-    updateGameForRoom(room);
+      // Add socket data
+      socket.data.roomCode = roomCode;
+      socket.data.username = username;
+
+      // Since username was not in use already, allow join
+      socket.join(roomCode + GUESSER_SUFFIX);
+      socket.emit("validJoin", false);
+
+      updateGame(room);
+      await mongoUpdateRoom(room);
+    }
   };
 
-  // Callback function to create a new room
-  const createRoom = (roomCode: string, host: string): void => {
+  /**
+   * Leaves a room.
+   * @param roomCode
+   * @param username
+   */
+  const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+    const room = await mongoGetRoom(roomCode);
+    const player = room.players.find((player) => player.username === username);
+    if (player !== undefined) {
+      player.connected = false;
+    }
+
+    // Remove socket data
+    delete socket.data.roomCode;
+    delete socket.data.username;
+
+    updateGame(room);
+    await mongoUpdateRoom(room);
+  };
+
+  /**
+   * Creates a new room.
+   * @param roomCode
+   * @param host
+   */
+  const createRoom = async (roomCode: string, host: string): Promise<void> => {
     const unfinishedRoom: UnfinishedRoom = {
       code: roomCode,
       host: host,
       players: [],
       turn: Color.Blue
     };
-    rooms[roomCode] = resetRoom(unfinishedRoom);
-    joinRoom(roomCode, host);
+
+    await resetGame(unfinishedRoom);
+    await joinRoom(roomCode, host);
+
+    // Create queue for the new room
+    getQueue(roomCode);
   };
 
-  // Callback function to become a spymaster
-  const becomeSpymaster = (roomCode: string, username: string, suppressUpdate = false): void => {
-    socket.leave(roomCode + GUESSER_SUFFIX);
-    socket.join(roomCode + SPYMASTER_SUFFIX);
-    const room = rooms[roomCode];
-    const player = room.players.find(player => player.username === username);
-    if (player !== undefined) {
-      player.mode = Mode.Spymaster;
-      player.spoiled = true;
-    }
+  /**
+   * Become a spymaster.
+   * @param roomCode
+   * @param username
+   * @param suppressUpdate
+   */
+  const becomeSpymaster = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      if (socket.data.username === username) {
+        const player = room.players.find((player) => player.username === username);
+        if (player !== undefined) {
+          player.mode = Mode.Spymaster;
+          player.spoiled = true;
+        }
 
-    if (suppressUpdate === false) {
-      updateGameForRoom(room);
-    }
+        // Move player's socket from guesser to spymaster
+        socket.leave(roomCode + GUESSER_SUFFIX);
+        socket.join(roomCode + SPYMASTER_SUFFIX);
+
+        if (suppressUpdate === false) {
+          updateGame(room);
+          await mongoUpdateRoom(room);
+        }
+      }
+    });
   };
 
   /**
    * Become a guesser.
    * @param roomCode
    * @param username
+   * @param suppressUpdate
    */
-  const becomeGuesser = (roomCode: string, username: string, suppressUpdate = false): void => {
-    socket.leave(roomCode + SPYMASTER_SUFFIX);
-    socket.join(roomCode + GUESSER_SUFFIX);
-    const room = rooms[roomCode];
-    const player = room.players.find(player => player.username === username);
-    if (player !== undefined) {
-      player.mode = Mode.Normal;
-    }
+  const becomeGuesser = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      const player = room.players.find((player) => player.username === username);
+      if (player !== undefined) {
+        player.mode = Mode.Normal;
+      }
 
-    if (suppressUpdate === false) {
-      updateGameForRoom(room);
-    }
+      // Move player's socket from spymaster to guesser
+      socket.leave(roomCode + SPYMASTER_SUFFIX);
+      socket.join(roomCode + GUESSER_SUFFIX);
+
+      if (suppressUpdate === false) {
+        updateGame(room);
+        await mongoUpdateRoom(room);
+      }
+    });
   };
 
   /**
    * Creates new game for room.
    * @param roomCode
    */
-  const newGame = async (roomCode: string): Promise<void> => {
-    rooms[roomCode] = resetRoom(rooms[roomCode]);
-    const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
-    spymasterSockets.forEach(spymaster => {
-      spymaster.leave(roomCode + SPYMASTER_SUFFIX);
-      spymaster.join(roomCode + GUESSER_SUFFIX);
-    });
+  const newGame = async (roomCode: string, username: string): Promise<void> => {
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      if (socket.data.username === username) {
+        // Delete previous game history if it never finished
+        const gameHistory = await mongoHistoryGetGame(room.currentGameId);
+        if (!gameHistory?.winner) {
+          await mongoHistoryDeleteGame(room.currentGameId);
+        }
 
-    updateGameForRoom(rooms[roomCode]);
+        // Move all spymasters back to guesser
+        const spymasterSockets = await io.in(roomCode + SPYMASTER_SUFFIX).fetchSockets();
+        spymasterSockets.forEach((spymaster) => {
+          spymaster.leave(roomCode + SPYMASTER_SUFFIX);
+          spymaster.join(roomCode + GUESSER_SUFFIX);
+        });
+
+        // Remove all disconnected players
+        room.players = room.players.filter((player) => player.connected === true);
+
+        // Reset game
+        await resetGame(room);
+      }
+    });
   };
 
   /**
@@ -278,14 +512,15 @@ io.on("connection", socket => {
    * @param roomCode
    * @param username
    */
-  const enterRoom = (roomCode: string, username: string): void => {
-    if (rooms[roomCode] === undefined) {
-      createRoom(roomCode, username);
-    }
-
-    joinRoom(roomCode, username);
-
-    updateGameForRoom(rooms[roomCode]);
+  const enterRoom = async (roomCode: string, username: string): Promise<void> => {
+    getQueue(roomCode).enqueue(async () => {
+      const roomExists = (await rooms?.findOne({ code: roomCode })) ? true : false;
+      if (roomExists) {
+        await joinRoom(roomCode, username);
+      } else {
+        await createRoom(roomCode, username);
+      }
+    });
   };
 
   /**
@@ -294,13 +529,27 @@ io.on("connection", socket => {
    * @param username
    * @param team
    */
-  const joinTeam = (roomCode: string, username: string, team: Team): void => {
-    const room = rooms[roomCode];
-    const player = room.players.find(player => player.username === username);
-    if (player !== undefined) {
-      player.team = team;
+  const joinTeam = async (roomCode: string, username: string, team: Team): Promise<void> => {
+    getQueue(roomCode).enqueue(async () => {
+      const room = await mongoGetRoom(roomCode);
+      const player = room.players.find((player) => player.username === username);
+      if (player !== undefined) {
+        player.team = team;
+      }
+
+      updateGame(room);
+      await mongoUpdateRoom(room);
+    });
+  };
+
+  /**
+   * Disconnects a client.
+   */
+  const disconnect = async (): Promise<void> => {
+    const roomExists = (await rooms?.findOne({ code: socket.data.roomCode })) ? true : false;
+    if (roomExists) {
+      leaveRoom(socket.data.roomCode, socket.data.username);
     }
-    updateGameForRoom(rooms[roomCode]);
   };
 
   // Add server listeners with callback functions
@@ -308,11 +557,13 @@ io.on("connection", socket => {
   socket.on("becomeGuesser", becomeGuesser);
   socket.on("newGame", newGame);
   socket.on("enterRoom", enterRoom);
+  socket.on("leaveRoom", leaveRoom);
   socket.on("revealCell", revealCell);
   socket.on("joinTeam", joinTeam);
   socket.on("endTurn", endTurn);
   socket.on("randomizeTeams", randomizeTeams);
   socket.on("updateChat", updateChat);
+  socket.on("disconnect", disconnect);
 });
 
 io.engine.on("connection_error", (err: { req: any; code: any; message: any; context: any }) => {

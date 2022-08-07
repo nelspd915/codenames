@@ -44,7 +44,8 @@ export class CodenamesApp {
    */
   connectedCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
-    const url = urlParams.get("dev") === "true" ? DEV_URL : PROD_URL;
+    const devParam = urlParams.get("dev");
+    const url = devParam === "true" ? DEV_URL : PROD_URL;
 
     // Pull previous room code from local storage if it exists
     const cachedRoomCode = window.localStorage.getItem("codenamesRoomCode");
@@ -89,7 +90,7 @@ export class CodenamesApp {
             <codenames-game
               requests={this.requests}
               gameData={this.gameData}
-              userPlayer={this.gameData?.players?.find(player => player.username === this.username)}
+              userPlayer={this.gameData?.players?.find((player) => player.username === this.username)}
             ></codenames-game>
           )}
         </div>
@@ -137,7 +138,7 @@ export class CodenamesApp {
    * Request to start a new game.
    */
   private newGame = (): void => {
-    this.socket.emit("newGame", this.roomCode);
+    this.socket.emit("newGame", this.roomCode, this.username);
   };
 
   /**

@@ -45,6 +45,7 @@ export interface PlayerData {
   mode?: Mode;
   spoiled?: boolean;
   team?: Team;
+  connected?: boolean;
 }
 
 /**
@@ -120,6 +121,7 @@ export interface Room {
   players: PlayerData[];
   scores: Scores;
   turn: Color;
+  currentGameId: string;
 }
 
 export interface UnfinishedRoom {
@@ -130,11 +132,5 @@ export interface UnfinishedRoom {
   publicBoard?: BoardData;
   scores?: Scores;
   turn: Color;
-}
-
-export interface User {
-  username: string;
-  password?: string;
-  verified?: boolean;
-  matchHistory: GameData[];
+  currentGameId?: string;
 }
