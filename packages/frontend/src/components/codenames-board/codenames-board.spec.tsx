@@ -6,7 +6,7 @@ describe("codenames-board", () => {
   it("renders", async () => {
     const page = await newSpecPage({
       components: [CodenamesBoard],
-      template: () => <codenames-board requests={{}}></codenames-board>
+      template: () => <codenames-board server={{}}></codenames-board>
     });
     expect(page.root).toBeTruthy();
   });

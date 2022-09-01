@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Watch } from "@stencil/core";
 import { isEqual } from "lodash";
-import { Color, GameData, Mode, PlayerData, Requests } from "../../extra/types";
+import { Color, GameData, Mode, PlayerData, Server } from "../../extra/types";
 
 @Component({
   tag: "codenames-game",
@@ -9,9 +9,9 @@ import { Color, GameData, Mode, PlayerData, Requests } from "../../extra/types";
 })
 export class CodenamesGame {
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  @Prop() requests: Requests;
+  @Prop() server: Server;
 
   /**
    * Game data used to populate values on the board and UI.
@@ -58,12 +58,12 @@ export class CodenamesGame {
   render(): void {
     return (
       <Host>
-        <codenames-panel requests={this.requests} panelTeam={Color.Blue} players={this.gameData?.players}>
+        <codenames-panel server={this.server} panelTeam={Color.Blue} players={this.gameData?.players}>
           <codenames-button
             class={this.userPlayer?.team !== Color.Blue ? "" : "hidden"}
             slot="list-button"
             color={Color.Blue}
-            onClick={() => this.requests.joinTeam(Color.Blue)}
+            onClick={() => this.server.joinTeam(Color.Blue)}
           >
             <span>Join {Color.Blue}</span>
           </codenames-button>
@@ -74,10 +74,10 @@ export class CodenamesGame {
           >
             <span>Spymaster 👁</span>
           </codenames-button>
-          <codenames-button slot="footer-button" onClick={this.requests.randomizeTeams}>
+          <codenames-button slot="footer-button" onClick={this.server.randomizeTeams}>
             <span>Randomize teams ⚄</span>
           </codenames-button>
-          <codenames-button slot="footer-button" onClick={this.requests.newGame}>
+          <codenames-button slot="footer-button" onClick={this.server.newGame}>
             <span>New game →</span>
           </codenames-button>
         </codenames-panel>
@@ -85,25 +85,25 @@ export class CodenamesGame {
         <div>
           <codenames-scores scores={this.gameData?.scores} turn={this.gameData?.turn}></codenames-scores>
           <codenames-board
-            requests={this.requests}
+            server={this.server}
             boardData={this.gameData?.board}
             canGuess={this.canGuess}
           ></codenames-board>
         </div>
 
-        <codenames-panel requests={this.requests} panelTeam={Color.Red} players={this.gameData?.players}>
+        <codenames-panel server={this.server} panelTeam={Color.Red} players={this.gameData?.players}>
           <codenames-button
             class={this.userPlayer?.team !== Color.Red ? "" : "hidden"}
             slot="list-button"
             color={Color.Red}
-            onClick={() => this.requests.joinTeam(Color.Red)}
+            onClick={() => this.server.joinTeam(Color.Red)}
           >
             <span>Join {Color.Red}</span>
           </codenames-button>
           <codenames-button
             class={this.canGuess ? "" : "hidden"}
             slot="footer-button"
-            onClick={() => this.requests.endTurn()}
+            onClick={() => this.server.endTurn()}
           >
             <span>End turn ✓</span>
           </codenames-button>
@@ -117,9 +117,9 @@ export class CodenamesGame {
    */
   private spymasterToggle = (): void => {
     if (this.userPlayer?.mode === Mode.Spymaster) {
-      this.requests.becomeGuesser();
+      this.server.becomeGuesser();
     } else {
-      this.requests.becomeSpymaster();
+      this.server.becomeSpymaster();
     }
   };
 

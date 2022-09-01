@@ -1,5 +1,5 @@
-import { Component, Host, h, Prop } from "@stencil/core";
-import { BoardData, Requests } from "../../extra/types";
+import { Component, Host, h, Prop, State } from "@stencil/core";
+import { BoardData, Server } from "../../extra/types";
 
 @Component({
   tag: "codenames-board",
@@ -8,9 +8,9 @@ import { BoardData, Requests } from "../../extra/types";
 })
 export class CodenamesBoard {
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  @Prop() requests: Requests;
+  @Prop() server: Server;
 
   /**
    * Board data used to generate the cells.
@@ -23,6 +23,11 @@ export class CodenamesBoard {
   @Prop() canGuess: boolean = false;
 
   /**
+   * Index of the cell currently loading.
+   */
+  @State() private loadingCellIndex: number = -1;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-board` component.
    */
   render(): void {
@@ -31,13 +36,14 @@ export class CodenamesBoard {
         {this.boardData?.map((cellData, i) => {
           return (
             <codenames-cell
-              requests={this.requests}
+              server={this.server}
               index={i}
               word={cellData.word}
               color={cellData.color}
               mode={cellData.mode}
               revealed={cellData.revealed}
               canGuess={this.canGuess}
+              loading={this.loadingCellIndex === i}
             ></codenames-cell>
           );
         }) ?? null}

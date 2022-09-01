@@ -6,7 +6,7 @@ describe("codenames-game", () => {
   it("renders", async () => {
     const page = await newSpecPage({
       components: [CodenamesGame],
-      template: () => <codenames-game requests={{}}></codenames-game>
+      template: () => <codenames-game server={{}}></codenames-game>
     });
     expect(page.root).toBeTruthy();
   });

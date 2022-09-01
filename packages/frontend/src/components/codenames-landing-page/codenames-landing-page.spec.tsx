@@ -6,7 +6,7 @@ describe("codenames-landing-page", () => {
   it("renders", async () => {
     const page = await newSpecPage({
       components: [CodenamesLandingPage],
-      template: () => <codenames-landing-page requests={{}}></codenames-landing-page>
+      template: () => <codenames-landing-page server={{}}></codenames-landing-page>
     });
     expect(page.root).toBeTruthy();
   });

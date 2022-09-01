@@ -7,7 +7,7 @@ describe("codenames-cell", () => {
   it("renders", async () => {
     const { root } = await newSpecPage({
       components: [CodenamesCell],
-      template: () => <codenames-cell requests={{}} word="ivory" color={Color.Blue}></codenames-cell>
+      template: () => <codenames-cell server={{}} word="ivory" color={Color.Blue}></codenames-cell>
     });
     expect(root).toBeTruthy();
     expect(root.tagName).toBe("CODENAMES-CELL");
