@@ -6,7 +6,7 @@ import { users } from "./index";
 import { hashSync, compareSync } from "bcryptjs";
 import { User } from "./types";
 
-let jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 /**
  * Sets up server environment and returns the socket IO.
