@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, State } from "@stencil/core";
+import { Component, Host, h, Prop } from "@stencil/core";
 import { BoardData, Server } from "../../extra/types";
 
 @Component({
@@ -25,12 +25,12 @@ export class CodenamesBoard {
   /**
    * Index of the cell currently loading.
    */
-  @State() private loadingCellIndex: number = -1;
+  @Prop() loadingCellIndex: number = -1;
 
   /**
    * Stencil lifecycle method `render` for `codenames-board` component.
    */
-  render(): void {
+  render(): HTMLCodenamesBoardElement {
     return (
       <Host>
         {this.boardData?.map((cellData, i) => {

@@ -19,6 +19,10 @@ export namespace Components {
          */
         "canGuess": boolean;
         /**
+          * Index of the cell currently loading.
+         */
+        "loadingCellIndex": number;
+        /**
           * Library of server utilities.
          */
         "server": Server;
@@ -201,6 +205,10 @@ declare namespace LocalJSX {
           * Whether it is currently the user's turn to guess.
          */
         "canGuess"?: boolean;
+        /**
+          * Index of the cell currently loading.
+         */
+        "loadingCellIndex"?: number;
         /**
           * Library of server utilities.
          */

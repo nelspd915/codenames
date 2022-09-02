@@ -23,12 +23,8 @@ export class CodenamesGame {
    */
   @Watch("gameData")
   gameDataChanged(newData: GameData, oldData: GameData): void {
-    if (isEqual(newData?.board, oldData?.board) === false) {
-      setTimeout(() => {
-        this.canGuess = this.isUsersTurn();
-      }, 300);
-    } else if (newData?.turn !== oldData?.turn) {
-      this.canGuess = this.isUsersTurn();
+    if (newData?.turn !== oldData?.turn) {
+      this.isUsersTurn = this.checkIsUsersTurn();
     }
   }
 
@@ -43,19 +39,56 @@ export class CodenamesGame {
   @Watch("userPlayer")
   userPlayerChanged(newPlayer: GameData, oldPlayer: GameData): void {
     if (isEqual(newPlayer, oldPlayer) === false) {
-      this.canGuess = this.isUsersTurn();
+      this.isUsersTurn = this.checkIsUsersTurn();
     }
   }
 
   /**
    * Whether it is currently the user's turn to guess.
    */
-  @State() private canGuess: boolean = false;
+  @State() private isUsersTurn: boolean = false;
+
+  /**
+   * Index of cell currently loading.
+   */
+  @State() private loadingCellIndex: number = -1;
+
+  /**
+   * Index of cell currently loading.
+   */
+  @State() private revealUpdate: boolean = true;
+
+  /**
+   * Stencil lifecycle method `componentWillLoad` for `codenames-game` component.
+   */
+  componentWillLoad(): void {
+    this.server.socket.on("loadingCell", (cellIndex: number) => {
+      if (cellIndex >= 0) {
+        this.loadingCellIndex = cellIndex;
+      } else {
+        setTimeout(() => {
+          this.loadingCellIndex = cellIndex;
+          this.revealUpdate = true;
+        }, 300);
+      }
+    });
+  }
+
+  /**
+   * Stencil lifecycle method `componentShouldUpdate` for `codenames-game` component.
+   */
+  componentShouldUpdate(): boolean {
+    return this.revealUpdate === true;
+  }
 
   /**
    * Stencil lifecycle method `render` for `codenames-game` component.
    */
-  render(): void {
+  render(): HTMLCodenamesGameElement {
+    // if a cell is loading, prevent any further updates from being revealed
+    if (this.loadingCellIndex >= 0) {
+      this.revealUpdate = false;
+    }
     return (
       <Host>
         <codenames-panel server={this.server} panelTeam={Color.Blue} players={this.gameData?.players}>
@@ -87,7 +120,8 @@ export class CodenamesGame {
           <codenames-board
             server={this.server}
             boardData={this.gameData?.board}
-            canGuess={this.canGuess}
+            canGuess={this.isUsersTurn && this.loadingCellIndex < 0}
+            loadingCellIndex={this.loadingCellIndex}
           ></codenames-board>
         </div>
 
@@ -101,7 +135,7 @@ export class CodenamesGame {
             <span>Join {Color.Red}</span>
           </codenames-button>
           <codenames-button
-            class={this.canGuess ? "" : "hidden"}
+            class={this.isUsersTurn ? "" : "hidden"}
             slot="footer-button"
             onClick={() => this.server.endTurn()}
           >
@@ -126,7 +160,7 @@ export class CodenamesGame {
   /**
    * Finds whether it is currently the user's turn to guess.
    */
-  private isUsersTurn(): boolean {
+  private checkIsUsersTurn(): boolean {
     return (
       this.gameData?.turn === this.userPlayer?.team &&
       this.userPlayer?.mode === Mode.Normal &&

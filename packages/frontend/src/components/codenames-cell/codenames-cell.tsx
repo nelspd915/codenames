@@ -1,4 +1,4 @@
-import { Component, Prop, h, State, Watch } from "@stencil/core";
+import { Component, Prop, h } from "@stencil/core";
 import { Color, Mode, Server } from "../../extra/types";
 
 @Component({
@@ -34,20 +34,7 @@ export class CodenamesCell {
   /**
    * Whether cell is currently loading.
    */
-  @Prop() loading?: boolean = false;
-
-  /**
-   * Watcher for `revealed` prop.
-   */
-  @Watch("mode")
-  modeChanged(newValue: Mode): void {
-    if (newValue === Mode.Endgame) {
-      this.loadingEndgame = true;
-      setTimeout(() => {
-        this.loadingEndgame = false;
-      }, 300);
-    }
-  }
+  @Prop({ reflect: true }) loading?: boolean = false;
 
   /**
    * Whether the cell is revealed.
@@ -60,21 +47,27 @@ export class CodenamesCell {
   @Prop() canGuess: boolean = false;
 
   /**
-   * Whether loading endgame.
-   */
-  @State() private loadingEndgame: boolean = false;
-
-  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
-  render(): void {
+  render(): HTMLCodenamesCellElement {
+    const classList: string[] = [];
+
+    if (!this.loading) {
+      classList.push(this.color);
+      classList.push(this.mode);
+      if (this.revealed) {
+        classList.push("revealed");
+      }
+    }
+
+    if (!this.canGuess) {
+      classList.push("no-guess");
+    }
+
+    const className = classList.join(" ");
+
     return (
-      <div
-        class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${
-          this.revealed && !this.loading ? "revealed" : ""
-        } ${this.canGuess === false ? "no-guess" : ""}`}
-        onClick={this.handleRevealCell}
-      >
+      <div class={className} onClick={this.handleRevealCell}>
         {this.loading ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );
@@ -87,9 +80,13 @@ export class CodenamesCell {
     if (this.canGuess && this.revealed === false) {
       this.loading = true;
       this.server.revealCell(this.index);
+
+      // give up loading if takes too long
       setTimeout(() => {
-        this.loading = false;
-      }, 500);
+        if (this.loading) {
+          this.loading = false;
+        }
+      }, 3000);
     }
   };
 }

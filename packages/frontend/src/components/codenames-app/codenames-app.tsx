@@ -78,7 +78,7 @@ export class CodenamesApp {
   /**
    * Stencil lifecycle method `render` for `codenames-app` component.
    */
-  render(): void {
+  render(): HTMLCodenamesAppElement {
     return (
       <Host>
         <div class="app-container">
