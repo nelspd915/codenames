@@ -3,12 +3,10 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 
-
 /**
  * Sets up server environment and returns the socket IO.
  */
 export function setupServer(): Server {
-  
   // Initialize and configure server
   const app = express();
   const server = http.createServer(app);
@@ -17,8 +15,8 @@ export function setupServer(): Server {
   // Initialize web sockets with socket.io
   const io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3333", "https://nelspd915.github.io"],
-    },
+      origin: ["http://localhost:3333", "https://nelspd915.github.io", "https://codenames.dev"]
+    }
   });
 
   // Initialize middleware for server
@@ -26,9 +24,7 @@ export function setupServer(): Server {
   app.use(cors());
 
   // Open server to listen for requests
-  server.listen(EXPRESS_PORT, () =>
-    console.log(`server live on http://localhost:${EXPRESS_PORT}`)
-  );
+  server.listen(EXPRESS_PORT, () => console.log(`server live on http://localhost:${EXPRESS_PORT}`));
 
   return io;
 }
