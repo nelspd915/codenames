@@ -18,7 +18,7 @@ export const config: Config = {
     },
     {
       type: "www",
-      baseUrl: "/codenames",
+      baseUrl: "/",
       copy: [
         {
           src: "app/",
