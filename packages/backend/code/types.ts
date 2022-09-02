@@ -26,3 +26,9 @@ export type GameHistory = {
   winner?: Team;
   turns: TurnHistory[];
 };
+
+export interface User {
+  username: string;
+  password: string;
+  verified: boolean;
+}

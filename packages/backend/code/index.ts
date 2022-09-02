@@ -16,19 +16,21 @@ dotenv.config();
 // Setup promise queues
 const queues: Queues = {};
 
-// Setup IO server
-const io = setupServer();
-
 // Setup MongoDB database
 let rooms: Collection | undefined;
 let history: Collection | undefined;
+export let users: Collection | undefined;
 setupMongoDatabase().then((db: Db | undefined) => {
   rooms = db?.collection("rooms");
   history = db?.collection("history");
+  users = db?.collection("users");
 
   // Upon server start, remove all players from all rooms.
   rooms?.updateMany({}, { $set: { players: [] } });
 });
+
+// Setup IO server
+const io = setupServer();
 
 /**
  * Gets a room from the mongo database.

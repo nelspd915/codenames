@@ -17,6 +17,7 @@
     "backend": "turbo run --filter=*backend*"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.9",
     "eslint-config-custom": "*",
     "prettier": "latest",
     "turbo": "latest"
