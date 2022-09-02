@@ -23,6 +23,10 @@ export const config: Config = {
         {
           src: "app/",
           dest: "app/"
+        },
+        {
+          src: "CNAME",
+          dest: "CNAME"
         }
       ]
     }
