@@ -1,5 +1,5 @@
-import { Component, Prop, h, State, Watch } from "@stencil/core";
-import { Color, Mode, Requests } from "../../extra/types";
+import { Component, Prop, h } from "@stencil/core";
+import { Color, Mode, Server } from "../../extra/types";
 
 @Component({
   tag: "codenames-cell",
@@ -8,9 +8,9 @@ import { Color, Mode, Requests } from "../../extra/types";
 })
 export class CodenamesCell {
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  @Prop() requests: Requests;
+  @Prop() server: Server;
   /**
    * Index of the cell.
    */
@@ -32,17 +32,9 @@ export class CodenamesCell {
   @Prop() mode?: Mode = Mode.Normal;
 
   /**
-   * Watcher for `revealed` prop.
+   * Whether cell is currently loading.
    */
-  @Watch("mode")
-  modeChanged(newValue: Mode): void {
-    if (newValue === Mode.Endgame) {
-      this.loadingEndgame = true;
-      setTimeout(() => {
-        this.loadingEndgame = false;
-      }, 300);
-    }
-  }
+  @Prop({ reflect: true }) loading?: boolean = false;
 
   /**
    * Whether the cell is revealed.
@@ -50,45 +42,33 @@ export class CodenamesCell {
   @Prop() revealed?: boolean = false;
 
   /**
-   * Watcher for `revealed` prop.
-   */
-  @Watch("revealed")
-  revealedChanged(newValue: boolean, oldValue: boolean): void {
-    if (newValue === true && oldValue === false) {
-      this.showSpinner = true;
-      setTimeout(() => {
-        this.showSpinner = false;
-      }, 300);
-    }
-  }
-
-  /**
    * Whether it is currently the user's turn to guess.
    */
   @Prop() canGuess: boolean = false;
 
   /**
-   * Whether to show loading spinner.
-   */
-  @State() private showSpinner: boolean = false;
-
-  /**
-   * Whether loading endgame.
-   */
-  @State() private loadingEndgame: boolean = false;
-
-  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
-  render(): void {
+  render(): HTMLCodenamesCellElement {
+    const classList: string[] = [];
+
+    if (!this.loading) {
+      classList.push(this.color);
+      classList.push(this.mode);
+      if (this.revealed) {
+        classList.push("revealed");
+      }
+    }
+
+    if (!this.canGuess) {
+      classList.push("no-guess");
+    }
+
+    const className = classList.join(" ");
+
     return (
-      <div
-        class={`${this.color} ${!this.loadingEndgame ? this.mode : ""} ${
-          this.revealed && !this.showSpinner ? "revealed" : ""
-        } ${this.canGuess === false ? "no-guess" : ""}`}
-        onClick={this.handleRevealCell}
-      >
-        {this.showSpinner ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
+      <div class={className} onClick={this.handleRevealCell}>
+        {this.loading ? <codenames-spinner></codenames-spinner> : <span>{this.word.toUpperCase()}</span>}
       </div>
     );
   }
@@ -98,11 +78,15 @@ export class CodenamesCell {
    */
   private handleRevealCell = async (): Promise<void> => {
     if (this.canGuess && this.revealed === false) {
-      this.showSpinner = true;
-      this.requests.revealCell(this.index);
+      this.loading = true;
+      this.server.revealCell(this.index);
+
+      // give up loading if takes too long
       setTimeout(() => {
-        this.showSpinner = false;
-      }, 500);
+        if (this.loading) {
+          this.loading = false;
+        }
+      }, 3000);
     }
   };
 }

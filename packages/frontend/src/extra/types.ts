@@ -1,3 +1,4 @@
+import { Socket } from "socket.io-client";
 // @ts-ignore
 import { CodenamesApp } from "../components/codenames-app/codenames-app";
 
@@ -66,9 +67,13 @@ export interface GameData {
 }
 
 /**
- * Library of requests that can be made to the server.
+ * Library of server utilities.
  */
-export interface Requests {
+export interface Server {
+  /**
+   * @see {@link CodenamesApp.socket}
+   */
+  socket?: Socket;
   /**
    * @see {@link CodenamesApp.revealCell}
    */

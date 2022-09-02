@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { BoardData, Color, GameData, Mode, PlayerData, Requests, Scores } from "./extra/types";
+import { BoardData, Color, GameData, Mode, PlayerData, Scores, Server } from "./extra/types";
 export namespace Components {
     interface CodenamesApp {
     }
@@ -19,9 +19,13 @@ export namespace Components {
          */
         "canGuess": boolean;
         /**
-          * Library of requests that can be made to the server.
+          * Index of the cell currently loading.
          */
-        "requests": Requests;
+        "loadingCellIndex": number;
+        /**
+          * Library of server utilities.
+         */
+        "server": Server;
     }
     interface CodenamesButton {
         /**
@@ -47,17 +51,21 @@ export namespace Components {
          */
         "index": number;
         /**
+          * Whether cell is currently loading.
+         */
+        "loading"?: boolean;
+        /**
           * Cell display mode.
          */
         "mode"?: Mode;
         /**
-          * Library of requests that can be made to the server.
-         */
-        "requests": Requests;
-        /**
           * Whether the cell is revealed.
          */
         "revealed"?: boolean;
+        /**
+          * Library of server utilities.
+         */
+        "server": Server;
         /**
           * Word shown in cell.
          */
@@ -69,9 +77,9 @@ export namespace Components {
          */
         "gameData"?: GameData;
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
-        "requests": Requests;
+        "server": Server;
         /**
           * Player data for the user.
          */
@@ -79,13 +87,13 @@ export namespace Components {
     }
     interface CodenamesLandingPage {
         /**
-          * Library of requests that can be made to the server.
-         */
-        "requests": Requests;
-        /**
           * Room code currently entered.
          */
         "roomCode"?: string;
+        /**
+          * Library of server utilities.
+         */
+        "server": Server;
         /**
           * Username currently entered.
          */
@@ -93,7 +101,7 @@ export namespace Components {
     }
     interface CodenamesPanel {
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
         "panelTeam": Color;
         /**
@@ -101,9 +109,9 @@ export namespace Components {
          */
         "players"?: PlayerData[];
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
-        "requests": Requests;
+        "server": Server;
     }
     interface CodenamesScores {
         /**
@@ -198,9 +206,13 @@ declare namespace LocalJSX {
          */
         "canGuess"?: boolean;
         /**
-          * Library of requests that can be made to the server.
+          * Index of the cell currently loading.
          */
-        "requests"?: Requests;
+        "loadingCellIndex"?: number;
+        /**
+          * Library of server utilities.
+         */
+        "server"?: Server;
     }
     interface CodenamesButton {
         /**
@@ -226,17 +238,21 @@ declare namespace LocalJSX {
          */
         "index"?: number;
         /**
+          * Whether cell is currently loading.
+         */
+        "loading"?: boolean;
+        /**
           * Cell display mode.
          */
         "mode"?: Mode;
         /**
-          * Library of requests that can be made to the server.
-         */
-        "requests"?: Requests;
-        /**
           * Whether the cell is revealed.
          */
         "revealed"?: boolean;
+        /**
+          * Library of server utilities.
+         */
+        "server"?: Server;
         /**
           * Word shown in cell.
          */
@@ -248,9 +264,9 @@ declare namespace LocalJSX {
          */
         "gameData"?: GameData;
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
-        "requests"?: Requests;
+        "server"?: Server;
         /**
           * Player data for the user.
          */
@@ -258,13 +274,13 @@ declare namespace LocalJSX {
     }
     interface CodenamesLandingPage {
         /**
-          * Library of requests that can be made to the server.
-         */
-        "requests"?: Requests;
-        /**
           * Room code currently entered.
          */
         "roomCode"?: string;
+        /**
+          * Library of server utilities.
+         */
+        "server"?: Server;
         /**
           * Username currently entered.
          */
@@ -272,7 +288,7 @@ declare namespace LocalJSX {
     }
     interface CodenamesPanel {
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
         "panelTeam"?: Color;
         /**
@@ -280,9 +296,9 @@ declare namespace LocalJSX {
          */
         "players"?: PlayerData[];
         /**
-          * Library of requests that can be made to the server.
+          * Library of server utilities.
          */
-        "requests"?: Requests;
+        "server"?: Server;
     }
     interface CodenamesScores {
         /**

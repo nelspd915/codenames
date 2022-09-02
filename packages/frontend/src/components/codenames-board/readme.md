@@ -7,11 +7,12 @@
 
 ## Properties
 
-| Property    | Attribute   | Description                                         | Type         | Default     |
-| ----------- | ----------- | --------------------------------------------------- | ------------ | ----------- |
-| `boardData` | --          | Board data used to generate the cells.              | `CellData[]` | `undefined` |
-| `canGuess`  | `can-guess` | Whether it is currently the user's turn to guess.   | `boolean`    | `false`     |
-| `requests`  | --          | Library of requests that can be made to the server. | `Requests`   | `undefined` |
+| Property           | Attribute            | Description                                       | Type         | Default     |
+| ------------------ | -------------------- | ------------------------------------------------- | ------------ | ----------- |
+| `boardData`        | --                   | Board data used to generate the cells.            | `CellData[]` | `undefined` |
+| `canGuess`         | `can-guess`          | Whether it is currently the user's turn to guess. | `boolean`    | `false`     |
+| `loadingCellIndex` | `loading-cell-index` | Index of the cell currently loading.              | `number`     | `-1`        |
+| `server`           | --                   | Library of server utilities.                      | `Server`     | `undefined` |
 
 
 ## Dependencies

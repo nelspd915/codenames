@@ -1,5 +1,5 @@
 import { Component, Host, h, Prop } from "@stencil/core";
-import { Color, Mode, PlayerData, Requests } from "../../extra/types";
+import { Color, Mode, PlayerData, Server } from "../../extra/types";
 
 @Component({
   tag: "codenames-panel",
@@ -8,12 +8,12 @@ import { Color, Mode, PlayerData, Requests } from "../../extra/types";
 })
 export class CodenamesPanel {
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  @Prop() requests: Requests;
+  @Prop() server: Server;
 
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
   @Prop() panelTeam: Color;
 
@@ -29,7 +29,7 @@ export class CodenamesPanel {
     return (
       <Host class={this.panelTeam}>
         <div class="player-list">
-          {this.players?.map(player => {
+          {this.players?.map((player) => {
             return this.isOnTeam(player) ? this.getNameElement(player) : null;
           })}
           <div class="list-button-container">

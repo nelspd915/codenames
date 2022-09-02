@@ -8,7 +8,7 @@
 | Property     | Attribute | Description                                            | Type         | Default     |
 | ------------ | --------- | ------------------------------------------------------ | ------------ | ----------- |
 | `gameData`   | --        | Game data used to populate values on the board and UI. | `GameData`   | `undefined` |
-| `requests`   | --        | Library of requests that can be made to the server.    | `Requests`   | `undefined` |
+| `server`     | --        | Library of server utilities.                           | `Server`     | `undefined` |
 | `userPlayer` | --        | Player data for the user.                              | `PlayerData` | `undefined` |
 
 

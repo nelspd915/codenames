@@ -7,11 +7,11 @@
 
 ## Properties
 
-| Property   | Attribute   | Description                                         | Type       | Default     |
-| ---------- | ----------- | --------------------------------------------------- | ---------- | ----------- |
-| `requests` | --          | Library of requests that can be made to the server. | `Requests` | `undefined` |
-| `roomCode` | `room-code` | Room code currently entered.                        | `string`   | `""`        |
-| `username` | `username`  | Username currently entered.                         | `string`   | `""`        |
+| Property   | Attribute   | Description                  | Type     | Default     |
+| ---------- | ----------- | ---------------------------- | -------- | ----------- |
+| `roomCode` | `room-code` | Room code currently entered. | `string` | `""`        |
+| `server`   | --          | Library of server utilities. | `Server` | `undefined` |
+| `username` | `username`  | Username currently entered.  | `string` | `""`        |
 
 
 ## Dependencies

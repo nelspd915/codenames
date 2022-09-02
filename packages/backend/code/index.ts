@@ -179,6 +179,16 @@ const updateGame = (room: Room): void => {
 };
 
 /**
+ * Sets the currently loading cell.
+ * @param roomCode
+ * @param cellIndex
+ */
+const setLoadingCell = (roomCode: string, cellIndex: number): void => {
+  io.to(roomCode + GUESSER_SUFFIX).emit("loadingCell", cellIndex);
+  io.to(roomCode + SPYMASTER_SUFFIX).emit("loadingCell", cellIndex);
+};
+
+/**
  * Finds scores for the board.
  * @param board
  */
@@ -262,13 +272,21 @@ const randomizeTeams = async (roomCode: string): Promise<void> => {
  * @param cellIndex
  */
 const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
+  // Set the loading cell immediately
+  setLoadingCell(roomCode, cellIndex);
+
   getQueue(roomCode).enqueue(async () => {
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
     const origTurn = room.turn;
     let gameOver: boolean = false;
 
-    if (player?.team === room.turn && room.scores[Color.Black] === BLACK_WORDS) {
+    if (
+      player?.team === room.turn &&
+      room.scores[Color.Black] === BLACK_WORDS &&
+      room.scores[Color.Blue] !== 0 &&
+      room.scores[Color.Red] !== 0
+    ) {
       const cellColor = room.masterBoard[cellIndex].color as Color;
       const scores = findScores(room.masterBoard);
 
@@ -299,16 +317,19 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
 
       // Update cell on master board
       room.masterBoard[cellIndex].revealed = true;
-    }
 
-    // Update game for clients
-    updateGame(room);
+      // Update game for clients
+      updateGame(room);
 
-    // Update database
-    await mongoUpdateRoom(room);
-    await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, origTurn);
-    if (gameOver) {
-      await mongoHistoryEndGame(room);
+      // Clear the loading cell
+      setLoadingCell(roomCode, -1);
+
+      // Update database
+      await mongoUpdateRoom(room);
+      await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, origTurn);
+      if (gameOver) {
+        await mongoHistoryEndGame(room);
+      }
     }
   });
 };

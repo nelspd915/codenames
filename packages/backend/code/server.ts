@@ -21,7 +21,7 @@ export function setupServer(): Server {
   // Initialize web sockets with socket.io
   const io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3333", "https://nelspd915.github.io"]
+      origin: ["http://localhost:3333", "https://nelspd915.github.io", "https://codenames.dev"]
     }
   });
 
@@ -29,7 +29,7 @@ export function setupServer(): Server {
   app.use(express.json());
   app.use(
     cors({
-      origin: ["http://localhost:3333", "https://nelspd915.github.io"]
+      origin: ["http://localhost:3333", "https://nelspd915.github.io", "https://codenames.dev"]
     })
   );
 
