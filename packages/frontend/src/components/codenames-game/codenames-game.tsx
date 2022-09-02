@@ -1,5 +1,4 @@
-import { Component, Host, h, Prop, State, Watch } from "@stencil/core";
-import { isEqual } from "lodash";
+import { Component, Host, h, Prop, State } from "@stencil/core";
 import { Color, GameData, Mode, PlayerData, Server } from "../../extra/types";
 
 @Component({
@@ -19,34 +18,9 @@ export class CodenamesGame {
   @Prop() gameData?: GameData;
 
   /**
-   * Watcher for game data. Ensures "End turn" button doesn't spoil result before loader finishes.
-   */
-  @Watch("gameData")
-  gameDataChanged(newData: GameData, oldData: GameData): void {
-    if (newData?.turn !== oldData?.turn) {
-      this.isUsersTurn = this.checkIsUsersTurn();
-    }
-  }
-
-  /**
    * Player data for the user.
    */
   @Prop() userPlayer?: PlayerData;
-
-  /**
-   * Watcher for user player.
-   */
-  @Watch("userPlayer")
-  userPlayerChanged(newPlayer: GameData, oldPlayer: GameData): void {
-    if (isEqual(newPlayer, oldPlayer) === false) {
-      this.isUsersTurn = this.checkIsUsersTurn();
-    }
-  }
-
-  /**
-   * Whether it is currently the user's turn to guess.
-   */
-  @State() private isUsersTurn: boolean = false;
 
   /**
    * Index of cell currently loading.
@@ -89,6 +63,10 @@ export class CodenamesGame {
     if (this.loadingCellIndex >= 0) {
       this.revealUpdate = false;
     }
+    const isUsersTurn =
+      this.gameData?.turn === this.userPlayer?.team &&
+      this.userPlayer?.mode === Mode.Normal &&
+      this.gameData?.board?.[0]?.mode !== Mode.Endgame;
     return (
       <Host>
         <codenames-panel server={this.server} panelTeam={Color.Blue} players={this.gameData?.players}>
@@ -120,7 +98,7 @@ export class CodenamesGame {
           <codenames-board
             server={this.server}
             boardData={this.gameData?.board}
-            canGuess={this.isUsersTurn && this.loadingCellIndex < 0}
+            canGuess={isUsersTurn && this.loadingCellIndex < 0}
             loadingCellIndex={this.loadingCellIndex}
           ></codenames-board>
         </div>
@@ -135,7 +113,7 @@ export class CodenamesGame {
             <span>Join {Color.Red}</span>
           </codenames-button>
           <codenames-button
-            class={this.isUsersTurn ? "" : "hidden"}
+            class={isUsersTurn ? "" : "hidden"}
             slot="footer-button"
             onClick={() => this.server.endTurn()}
           >
@@ -156,15 +134,4 @@ export class CodenamesGame {
       this.server.becomeSpymaster();
     }
   };
-
-  /**
-   * Finds whether it is currently the user's turn to guess.
-   */
-  private checkIsUsersTurn(): boolean {
-    return (
-      this.gameData?.turn === this.userPlayer?.team &&
-      this.userPlayer?.mode === Mode.Normal &&
-      this.gameData?.board?.[0]?.mode !== Mode.Endgame
-    );
-  }
 }
