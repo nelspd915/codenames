@@ -1,5 +1,5 @@
 import { Component, Host, h, State } from "@stencil/core";
-import { Color, GameData, Requests } from "../../extra/types";
+import { Color, GameData, Server } from "../../extra/types";
 import { io, Socket } from "socket.io-client";
 import { PROD_URL, DEV_URL } from "../../extra/constants";
 
@@ -35,9 +35,9 @@ export class CodenamesApp {
   private socket: Socket;
 
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  private requests: Requests = {};
+  private server: Server = {};
 
   /**
    * Stencil lifecycle method `connectedCallback` for `codenames-app` component.
@@ -55,8 +55,15 @@ export class CodenamesApp {
     const cachedUsername = window.localStorage.getItem("codenamesUsername");
     this.username = cachedUsername ?? "";
 
-    // Setup requests collection
-    this.requests = {
+    this.socket = io(url);
+
+    this.socket.on("updateGame", (gameData: GameData) => {
+      this.gameData = gameData;
+    });
+
+    // Setup server utilities
+    this.server = {
+      socket: this.socket,
       revealCell: this.revealCell,
       enterRoom: this.enterRoom,
       becomeSpymaster: this.becomeSpymaster,
@@ -66,29 +73,24 @@ export class CodenamesApp {
       endTurn: this.endTurn,
       randomizeTeams: this.randomizeTeams
     };
-
-    this.socket = io(url);
-    this.socket.on("updateGame", (gameData: GameData) => {
-      this.gameData = gameData;
-    });
   }
 
   /**
    * Stencil lifecycle method `render` for `codenames-app` component.
    */
-  render(): void {
+  render(): HTMLCodenamesAppElement {
     return (
       <Host>
         <div class="app-container">
           {this.showLandingPage ? (
             <codenames-landing-page
-              requests={this.requests}
+              server={this.server}
               roomCode={this.roomCode}
               username={this.username}
             ></codenames-landing-page>
           ) : (
             <codenames-game
-              requests={this.requests}
+              server={this.server}
               gameData={this.gameData}
               userPlayer={this.gameData?.players?.find((player) => player.username === this.username)}
             ></codenames-game>

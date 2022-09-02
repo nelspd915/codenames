@@ -5,11 +5,11 @@
 
 ## Properties
 
-| Property    | Attribute    | Description                                         | Type                                                   | Default     |
-| ----------- | ------------ | --------------------------------------------------- | ------------------------------------------------------ | ----------- |
-| `panelTeam` | `panel-team` | Library of requests that can be made to the server. | `Color.Black \| Color.Blue \| Color.Gray \| Color.Red` | `undefined` |
-| `players`   | --           | All players in the game.                            | `PlayerData[]`                                         | `undefined` |
-| `requests`  | --           | Library of requests that can be made to the server. | `Requests`                                             | `undefined` |
+| Property    | Attribute    | Description                  | Type                                                   | Default     |
+| ----------- | ------------ | ---------------------------- | ------------------------------------------------------ | ----------- |
+| `panelTeam` | `panel-team` | Library of server utilities. | `Color.Black \| Color.Blue \| Color.Gray \| Color.Red` | `undefined` |
+| `players`   | --           | All players in the game.     | `PlayerData[]`                                         | `undefined` |
+| `server`    | --           | Library of server utilities. | `Server`                                               | `undefined` |
 
 
 ## Dependencies

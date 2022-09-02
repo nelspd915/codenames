@@ -1,5 +1,5 @@
 import { Component, Host, h, Prop, State } from "@stencil/core";
-import { Requests } from "../../extra/types";
+import { Server } from "../../extra/types";
 
 @Component({
   tag: "codenames-landing-page",
@@ -8,9 +8,9 @@ import { Requests } from "../../extra/types";
 })
 export class CodenamesLandingPage {
   /**
-   * Library of requests that can be made to the server.
+   * Library of server utilities.
    */
-  @Prop() requests: Requests;
+  @Prop() server: Server;
 
   /**
    * Username currently entered.
@@ -50,7 +50,7 @@ export class CodenamesLandingPage {
             value={this.username}
             required={true}
             maxLength={10}
-            ref={element => {
+            ref={(element) => {
               this.usernameInput = element;
             }}
           />
@@ -61,7 +61,7 @@ export class CodenamesLandingPage {
             value={this.roomCode}
             required={true}
             maxLength={10}
-            ref={element => {
+            ref={(element) => {
               this.roomCodeInput = element;
             }}
           />
@@ -80,7 +80,7 @@ export class CodenamesLandingPage {
     this.roomCode = this.roomCodeInput.value;
 
     if (this.username !== "" && this.roomCode !== "") {
-      this.requests.enterRoom(this.roomCode, this.username);
+      this.server.enterRoom(this.roomCode, this.username);
     } else {
       this.message = "Please fill out both fields.";
     }
