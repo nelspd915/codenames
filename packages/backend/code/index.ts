@@ -409,7 +409,7 @@ io.on("connection", (socket) => {
    * @param username
    */
   const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
-    console.log("Socket disconnected: ", socket.data);
+    console.log("Socket left room: ", socket.data);
 
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
@@ -566,7 +566,9 @@ io.on("connection", (socket) => {
   /**
    * Disconnects a client.
    */
-  const disconnect = async (): Promise<void> => {
+  const disconnect = async (reason: any): Promise<void> => {
+    console.log("Socket disconnected: ", socket.data);
+    console.log("Disconnect reason", reason);
     const roomExists = (await rooms?.findOne({ code: socket.data.roomCode })) ? true : false;
     if (roomExists) {
       leaveRoom(socket.data.roomCode, socket.data.username);
