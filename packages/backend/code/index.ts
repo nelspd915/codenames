@@ -278,24 +278,29 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
   getQueue(roomCode).enqueue(async () => {
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
-    const origTurn = room.turn;
-    let gameOver: boolean = false;
 
     if (
       player?.team === room.turn &&
       room.scores[Color.Black] === BLACK_WORDS &&
       room.scores[Color.Blue] !== 0 &&
-      room.scores[Color.Red] !== 0
+      room.scores[Color.Red] !== 0 &&
+      room.publicBoard[cellIndex].revealed === false
     ) {
+      const origTurn = room.turn;
       const cellColor = room.masterBoard[cellIndex].color as Color;
-      const scores = findScores(room.masterBoard);
+
+      // Update cell on public board
+      room.publicBoard[cellIndex].color = cellColor;
+      room.publicBoard[cellIndex].revealed = true;
+
+      // Update cell on master board
+      room.masterBoard[cellIndex].revealed = true;
 
       // Update scores
-      scores[cellColor] -= 1;
-      room.scores = scores;
+      room.scores = findScores(room.masterBoard);
 
       // Whether the game is now over
-      gameOver = scores[Color.Blue] === 0 || scores[Color.Red] === 0 || cellColor === Color.Black;
+      const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
 
       if (gameOver) {
         for (let i = 0; i < room.masterBoard.length; i++) {
@@ -310,13 +315,6 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
           room.turn = player.team === Color.Blue ? Color.Red : Color.Blue;
         }
       }
-
-      // Update cell on public board
-      room.publicBoard[cellIndex].color = cellColor;
-      room.publicBoard[cellIndex].revealed = true;
-
-      // Update cell on master board
-      room.masterBoard[cellIndex].revealed = true;
 
       // Update game for clients
       updateGame(room);
@@ -411,6 +409,8 @@ io.on("connection", (socket) => {
    * @param username
    */
   const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+    console.log("Socket disconnected: ", socket.data);
+
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
     if (player !== undefined) {
