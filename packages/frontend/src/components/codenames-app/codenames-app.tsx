@@ -55,7 +55,9 @@ export class CodenamesApp {
     const cachedUsername = window.localStorage.getItem("codenamesUsername");
     this.username = cachedUsername ?? "";
 
-    this.socket = io(url);
+    // setting `transports` and `upgrade` here is an attempt to fix sockets disconnected randomly
+    // see discussion: https://stackoverflow.com/questions/40991599/socket-io-automatically-disconnects-socket
+    this.socket = io(url, { transports: ["websocket"], upgrade: false });
 
     this.socket.on("updateGame", (gameData: GameData) => {
       this.gameData = gameData;
