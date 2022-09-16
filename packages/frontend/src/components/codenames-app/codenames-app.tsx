@@ -61,6 +61,10 @@ export class CodenamesApp {
       this.gameData = gameData;
     });
 
+    this.socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
     // Setup server utilities
     this.server = {
       socket: this.socket,
