@@ -22,10 +22,7 @@ export function setupServer(): Server {
   const io = new Server(server, {
     cors: {
       origin: ["http://localhost:3333", "https://nelspd915.github.io", "https://codenames.dev"]
-    },
-    // setting this is an attempt to fix sockets disconnected randomly
-    // see discussion: https://stackoverflow.com/questions/40991599/socket-io-automatically-disconnects-socket
-    transports: ["websocket"]
+    }
   });
 
   // Initialize middleware for server

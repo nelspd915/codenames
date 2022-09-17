@@ -47,6 +47,11 @@ export class CodenamesCell {
   @Prop() canGuess: boolean = false;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-cell` component.
    */
   render(): HTMLCodenamesCellElement {
@@ -60,7 +65,7 @@ export class CodenamesCell {
       }
     }
 
-    if (!this.canGuess) {
+    if (!this.canGuess || !this.socketIsConnected) {
       classList.push("no-guess");
     }
 
@@ -77,7 +82,7 @@ export class CodenamesCell {
    * Sends request to reveal this cell on the board.
    */
   private handleRevealCell = async (): Promise<void> => {
-    if (this.canGuess && this.revealed === false) {
+    if (this.canGuess && this.revealed === false && this.socketIsConnected) {
       this.loading = true;
       this.server.revealCell(this.index);
 

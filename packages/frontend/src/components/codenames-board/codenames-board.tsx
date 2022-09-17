@@ -28,6 +28,11 @@ export class CodenamesBoard {
   @Prop() loadingCellIndex: number = -1;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-board` component.
    */
   render(): HTMLCodenamesBoardElement {
@@ -37,6 +42,7 @@ export class CodenamesBoard {
           return (
             <codenames-cell
               server={this.server}
+              socketIsConnected={this.socketIsConnected}
               index={i}
               word={cellData.word}
               color={cellData.color}
