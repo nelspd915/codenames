@@ -229,9 +229,12 @@ const findWinner = (room: Room): Team => {
  * Ends a team's turn.
  * @param roomCode
  */
-const endTurn = async (roomCode: string): Promise<void> => {
+const endTurn = async (roomCode: string, username: string): Promise<void> => {
   getQueue(roomCode).enqueue(async () => {
     const room = await mongoGetRoom(roomCode);
+
+    console.log(`\n'${roomCode}' --- '${username}' ENDED TURN for '${room.turn}'.`);
+
     room.turn = room.turn === Color.Blue ? Color.Red : Color.Blue;
     updateGame(room);
     await mongoUpdateRoom(room);
@@ -242,8 +245,10 @@ const endTurn = async (roomCode: string): Promise<void> => {
  * Randomizes teams in a room.
  * @param roomCode
  */
-const randomizeTeams = async (roomCode: string): Promise<void> => {
+const randomizeTeams = async (roomCode: string, username: string): Promise<void> => {
   getQueue(roomCode).enqueue(async () => {
+    console.log(`\n'${roomCode}' --- '${username}' RANDOMIZED teams.`);
+
     const room = await mongoGetRoom(roomCode);
     room.players = shuffle(room.players);
 
@@ -278,6 +283,8 @@ const revealCell = (roomCode: string, cellIndex: number, username: string): void
   getQueue(roomCode).enqueue(async () => {
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
+
+    console.log(`\n'${roomCode}' --- '${username}' REVEALED cell '${room.publicBoard[cellIndex].word.toUpperCase()}'.`);
 
     if (
       player?.team === room.turn &&
@@ -409,7 +416,7 @@ io.on("connection", (socket) => {
    * @param username
    */
   const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
-    console.log("Socket left room: ", socket.data);
+    console.log(`\n'${roomCode}' --- '${username}' LEFT the room.`);
 
     const room = await mongoGetRoom(roomCode);
     const player = room.players.find((player) => player.username === username);
@@ -431,6 +438,8 @@ io.on("connection", (socket) => {
    * @param host
    */
   const createRoom = async (roomCode: string, host: string): Promise<void> => {
+    console.log(`\n'${roomCode}' --- '${host}' CREATED this new room.`);
+
     const unfinishedRoom: UnfinishedRoom = {
       code: roomCode,
       host: host,
@@ -456,6 +465,9 @@ io.on("connection", (socket) => {
       const room = await mongoGetRoom(roomCode);
       if (socket.data.username === username) {
         const player = room.players.find((player) => player.username === username);
+
+        console.log(`\n'${roomCode}' --- '${username}' became SPYMASTER for '${player?.team}'.`);
+
         if (player !== undefined) {
           player.mode = Mode.Spymaster;
           player.spoiled = true;
@@ -483,6 +495,9 @@ io.on("connection", (socket) => {
     getQueue(roomCode).enqueue(async () => {
       const room = await mongoGetRoom(roomCode);
       const player = room.players.find((player) => player.username === username);
+
+      console.log(`\n'${roomCode}' --- '${username}' became GUESSER for '${player?.team}'.`);
+
       if (player !== undefined) {
         player.mode = Mode.Normal;
       }
@@ -504,6 +519,8 @@ io.on("connection", (socket) => {
    */
   const newGame = async (roomCode: string, username: string): Promise<void> => {
     getQueue(roomCode).enqueue(async () => {
+      console.log(`\n'${roomCode}' --- '${username}' started a NEW GAME.`);
+
       const room = await mongoGetRoom(roomCode);
       if (socket.data.username === username) {
         // Delete previous game history if it never finished
@@ -535,6 +552,8 @@ io.on("connection", (socket) => {
    */
   const enterRoom = async (roomCode: string, username: string): Promise<void> => {
     getQueue(roomCode).enqueue(async () => {
+      console.log(`\n'${roomCode}' --- '${username}' ENTERED the room.`);
+
       const roomExists = (await rooms?.findOne({ code: roomCode })) ? true : false;
       if (roomExists) {
         await joinRoom(roomCode, username);
@@ -554,6 +573,9 @@ io.on("connection", (socket) => {
     getQueue(roomCode).enqueue(async () => {
       const room = await mongoGetRoom(roomCode);
       const player = room.players.find((player) => player.username === username);
+
+      console.log(`\n'${roomCode}' --- '${username}' JOINED team '${team}'.`);
+
       if (player !== undefined) {
         player.team = team;
       }
@@ -567,8 +589,10 @@ io.on("connection", (socket) => {
    * Disconnects a client.
    */
   const disconnect = async (reason: any): Promise<void> => {
-    console.log("Socket disconnected: ", socket.data);
-    console.log("Disconnect reason", reason);
+    console.log(
+      `\nDISCONNECTED following socket with reason ${JSON.stringify(reason)}: ${JSON.stringify(socket.data)}`
+    );
+
     const roomExists = (await rooms?.findOne({ code: socket.data.roomCode })) ? true : false;
     if (roomExists) {
       leaveRoom(socket.data.roomCode, socket.data.username);
