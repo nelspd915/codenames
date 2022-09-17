@@ -63,8 +63,8 @@ export class CodenamesApp {
       this.gameData = gameData;
     });
 
-    this.socket.on("disconnect", () => {
-      console.log("Socket disconnected");
+    this.socket.on("disconnect", (reason: any) => {
+      console.log("DISCONNECTED socket because: ", reason);
     });
 
     // Setup server utilities
@@ -160,13 +160,13 @@ export class CodenamesApp {
    * Request to end the turn.
    */
   private endTurn = (): void => {
-    this.socket.emit("endTurn", this.roomCode);
+    this.socket.emit("endTurn", this.roomCode, this.username);
   };
 
   /**
    * Request to randomize teams.
    */
   private randomizeTeams = (): void => {
-    this.socket.emit("randomizeTeams", this.roomCode);
+    this.socket.emit("randomizeTeams", this.roomCode, this.username);
   };
 }
