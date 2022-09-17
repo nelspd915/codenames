@@ -5,11 +5,12 @@
 
 ## Properties
 
-| Property     | Attribute | Description                                            | Type         | Default     |
-| ------------ | --------- | ------------------------------------------------------ | ------------ | ----------- |
-| `gameData`   | --        | Game data used to populate values on the board and UI. | `GameData`   | `undefined` |
-| `server`     | --        | Library of server utilities.                           | `Server`     | `undefined` |
-| `userPlayer` | --        | Player data for the user.                              | `PlayerData` | `undefined` |
+| Property            | Attribute             | Description                                            | Type         | Default     |
+| ------------------- | --------------------- | ------------------------------------------------------ | ------------ | ----------- |
+| `gameData`          | --                    | Game data used to populate values on the board and UI. | `GameData`   | `undefined` |
+| `server`            | --                    | Library of server utilities.                           | `Server`     | `undefined` |
+| `socketIsConnected` | `socket-is-connected` | Whether the socket is connected.                       | `boolean`    | `false`     |
+| `userPlayer`        | --                    | Player data for the user.                              | `PlayerData` | `undefined` |
 
 
 ## Dependencies

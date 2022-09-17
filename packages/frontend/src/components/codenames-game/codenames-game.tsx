@@ -23,6 +23,11 @@ export class CodenamesGame {
   @Prop() userPlayer?: PlayerData;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Index of cell currently loading.
    */
   @State() private loadingCellIndex: number = -1;
@@ -97,6 +102,7 @@ export class CodenamesGame {
           <codenames-scores scores={this.gameData?.scores} turn={this.gameData?.turn}></codenames-scores>
           <codenames-board
             server={this.server}
+            socketIsConnected={this.socketIsConnected}
             boardData={this.gameData?.board}
             canGuess={isUsersTurn && this.loadingCellIndex < 0}
             loadingCellIndex={this.loadingCellIndex}

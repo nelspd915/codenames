@@ -30,6 +30,11 @@ export class CodenamesApp {
   @State() private showLandingPage: boolean = true;
 
   /**
+   * Whether the socket is connected.
+   */
+  @State() private socketIsConnected: boolean = false;
+
+  /**
    * Socket connection with the server.
    */
   private socket: Socket;
@@ -55,15 +60,23 @@ export class CodenamesApp {
     const cachedUsername = window.localStorage.getItem("codenamesUsername");
     this.username = cachedUsername ?? "";
 
-    // setting `transports` and `upgrade` here is an attempt to fix sockets disconnected randomly
-    // see discussion: https://stackoverflow.com/questions/40991599/socket-io-automatically-disconnects-socket
-    this.socket = io(url, { transports: ["websocket"], upgrade: false });
+    this.socket = io(url);
+
+    this.socket.on("connect", () => {
+      this.socketIsConnected = this.socket.connected;
+    });
 
     this.socket.on("updateGame", (gameData: GameData) => {
       this.gameData = gameData;
+      console.log("gameData", this.gameData);
+    });
+
+    this.socket.io.on("reconnect", () => {
+      this.reconnectOldSocket();
     });
 
     this.socket.on("disconnect", (reason: any) => {
+      this.socketIsConnected = this.socket.connected;
       console.log("DISCONNECTED socket because: ", reason);
     });
 
@@ -97,6 +110,7 @@ export class CodenamesApp {
           ) : (
             <codenames-game
               server={this.server}
+              socketIsConnected={this.socketIsConnected}
               gameData={this.gameData}
               userPlayer={this.gameData?.players?.find((player) => player.username === this.username)}
             ></codenames-game>
@@ -107,11 +121,20 @@ export class CodenamesApp {
   }
 
   /**
+   * Request to reconnect existing socket.
+   */
+  private reconnectOldSocket = (): void => {
+    this.socket.emit("reconnectOldSocket", this.roomCode, this.username);
+  };
+
+  /**
    * Request to reveal a cell.
    * @param cellIndex
    */
   private revealCell = (cellIndex: number): void => {
-    this.socket.emit("revealCell", this.roomCode, cellIndex, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("revealCell", this.roomCode, cellIndex, this.username);
+    }
   };
 
   /**
@@ -120,53 +143,67 @@ export class CodenamesApp {
    * @param username
    */
   private enterRoom = (roomCode: string, username: string): void => {
-    this.roomCode = roomCode;
-    this.username = username;
-    window.localStorage.setItem("codenamesRoomCode", this.roomCode);
-    window.localStorage.setItem("codenamesUsername", this.username);
-    this.socket.emit("enterRoom", this.roomCode, this.username);
-    this.showLandingPage = false;
+    if (this.socketIsConnected) {
+      this.roomCode = roomCode;
+      this.username = username;
+      window.localStorage.setItem("codenamesRoomCode", this.roomCode);
+      window.localStorage.setItem("codenamesUsername", this.username);
+      this.socket.emit("enterRoom", this.roomCode, this.username);
+      this.showLandingPage = false;
+    }
   };
 
   /**
    * Request to become a spymaster.
    */
   private becomeSpymaster = (): void => {
-    this.socket.emit("becomeSpymaster", this.roomCode, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("becomeSpymaster", this.roomCode, this.username);
+    }
   };
 
   /**
    * Request to become a spymaster.
    */
   private becomeGuesser = (): void => {
-    this.socket.emit("becomeGuesser", this.roomCode, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("becomeGuesser", this.roomCode, this.username);
+    }
   };
 
   /**
    * Request to start a new game.
    */
   private newGame = (): void => {
-    this.socket.emit("newGame", this.roomCode, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("newGame", this.roomCode, this.username);
+    }
   };
 
   /**
    * Request to join a team.
    */
   private joinTeam = (color: Color): void => {
-    this.socket.emit("joinTeam", this.roomCode, this.username, color);
+    if (this.socketIsConnected) {
+      this.socket.emit("joinTeam", this.roomCode, this.username, color);
+    }
   };
 
   /**
    * Request to end the turn.
    */
   private endTurn = (): void => {
-    this.socket.emit("endTurn", this.roomCode, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("endTurn", this.roomCode, this.username);
+    }
   };
 
   /**
    * Request to randomize teams.
    */
   private randomizeTeams = (): void => {
-    this.socket.emit("randomizeTeams", this.roomCode, this.username);
+    if (this.socketIsConnected) {
+      this.socket.emit("randomizeTeams", this.roomCode, this.username);
+    }
   };
 }

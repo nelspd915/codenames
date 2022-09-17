@@ -26,6 +26,10 @@ export namespace Components {
           * Library of server utilities.
          */
         "server": Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
     }
     interface CodenamesButton {
         /**
@@ -67,6 +71,10 @@ export namespace Components {
          */
         "server": Server;
         /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
+        /**
           * Word shown in cell.
          */
         "word": string;
@@ -80,6 +88,10 @@ export namespace Components {
           * Library of server utilities.
          */
         "server": Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
         /**
           * Player data for the user.
          */
@@ -213,6 +225,10 @@ declare namespace LocalJSX {
           * Library of server utilities.
          */
         "server"?: Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
     }
     interface CodenamesButton {
         /**
@@ -254,6 +270,10 @@ declare namespace LocalJSX {
          */
         "server"?: Server;
         /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
+        /**
           * Word shown in cell.
          */
         "word"?: string;
@@ -267,6 +287,10 @@ declare namespace LocalJSX {
           * Library of server utilities.
          */
         "server"?: Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
         /**
           * Player data for the user.
          */
