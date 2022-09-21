@@ -594,15 +594,13 @@ setupMongoDatabase().then((db: Db | undefined) => {
      * Reconnects a previous socket instance.
      */
     const reconnectOldSocket = async (roomCode: string, username: string): Promise<void> => {
-      console.log(`\nRECONNECT '${username}' to '${roomCode}'`);
+      getQueue(roomCode).enqueue(async () => {
+        console.log(`\nRECONNECT '${username}' to '${roomCode}'`);
 
-      if (socket.data.roomCode !== roomCode) {
-        joinRoom(roomCode, username);
-      }
-
-      const room = await mongoGetRoom(roomCode);
-      updateGame(room);
-      await mongoUpdateRoom(room);
+        if (socket.data.roomCode !== roomCode) {
+          await joinRoom(roomCode, username);
+        }
+      });
     };
 
     /**
