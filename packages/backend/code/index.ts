@@ -456,7 +456,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
       await joinRoom(roomCode, host);
 
       // Create queue for the new room
-      getQueue(roomCode);
+      getQueue(roomCode); //
     };
 
     /**
