@@ -376,45 +376,43 @@ setupMongoDatabase().then((db: Db | undefined) => {
      * @param username
      */
     const joinRoom = async (roomCode: string, username: string): Promise<void> => {
-      getQueue(roomCode).enqueue(async () => {
-        const room = await mongoGetRoom(roomCode);
-        const player = room.players.find((player) => player.username === username);
+      const room = await mongoGetRoom(roomCode);
+      const player = room.players.find((player) => player.username === username);
 
-        if (player?.connected) {
-          // Reject join if username is currently in use already (it exists and is connected)
-          socket.emit("validJoin", false);
+      if (player?.connected) {
+        // Reject join if username is currently in use already (it exists and is connected)
+        socket.emit("validJoin", false);
+      } else {
+        // When username is not connected...
+        if (player) {
+          // If player exists, set them as "connected"
+          player.connected = true;
         } else {
-          // When username is not connected...
-          if (player) {
-            // If player exists, set them as "connected"
-            player.connected = true;
-          } else {
-            // If player does not exist, make the new player
-            room.players.push({
-              username: username,
-              mode: Mode.Normal,
-              spoiled: false,
-              team: Color.Gray,
-              connected: true
-            });
-          }
-
-          // Add socket data
-          socket.data.roomCode = roomCode;
-          socket.data.username = username;
-
-          // Since username was not in use already, allow join
-          if (player?.mode === Mode.Spymaster) {
-            socket.join(roomCode + SPYMASTER_SUFFIX);
-          } else {
-            socket.join(roomCode + GUESSER_SUFFIX);
-          }
-          socket.emit("validJoin", true);
-
-          updateGame(room);
-          await mongoUpdateRoom(room);
+          // If player does not exist, make the new player
+          room.players.push({
+            username: username,
+            mode: Mode.Normal,
+            spoiled: false,
+            team: Color.Gray,
+            connected: true
+          });
         }
-      });
+
+        // Add socket data
+        socket.data.roomCode = roomCode;
+        socket.data.username = username;
+
+        // Since username was not in use already, allow join
+        if (player?.mode === Mode.Spymaster) {
+          socket.join(roomCode + SPYMASTER_SUFFIX);
+        } else {
+          socket.join(roomCode + GUESSER_SUFFIX);
+        }
+        socket.emit("validJoin", true);
+
+        updateGame(room);
+        await mongoUpdateRoom(room);
+      }
     };
 
     /**
@@ -596,11 +594,13 @@ setupMongoDatabase().then((db: Db | undefined) => {
      * Reconnects a previous socket instance.
      */
     const reconnectOldSocket = async (roomCode: string, username: string): Promise<void> => {
-      console.log(`\nRECONNECT '${username}' to '${roomCode}'`);
+      getQueue(roomCode).enqueue(async () => {
+        console.log(`\nRECONNECT '${username}' to '${roomCode}'`);
 
-      if (socket.data.roomCode !== roomCode) {
-        joinRoom(roomCode, username);
-      }
+        if (socket.data.roomCode !== roomCode) {
+          await joinRoom(roomCode, username);
+        }
+      });
     };
 
     /**
