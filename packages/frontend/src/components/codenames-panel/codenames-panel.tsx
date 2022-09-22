@@ -66,8 +66,10 @@ export class CodenamesPanel {
       iconClass = "spoiled-icon";
     }
 
+    const color = player.connected ? this.panelTeam : Color.Gray;
+
     return (
-      <div class={`player-name ${this.panelTeam}`}>
+      <div class={`player-name ${color}`}>
         <div class="player-name-text">
           {`${player.username}`}
           <div class={`player-icon ${iconClass}`}>{icon}</div>
