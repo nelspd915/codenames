@@ -471,20 +471,20 @@ setupMongoDatabase().then((db: Db | undefined) => {
         if (socket.data.username === username) {
           const player = room.players.find((player) => player.username === username);
 
-          console.log(`\n'${roomCode}' --- '${username}' became SPYMASTER for '${player?.team}'.`);
+          if (player?.team !== undefined && [Color.Blue, Color.Red].includes(player.team)) {
+            console.log(`\n'${roomCode}' --- '${username}' became SPYMASTER for '${player.team}'.`);
 
-          if (player !== undefined) {
             player.mode = Mode.Spymaster;
             player.spoiled = true;
-          }
 
-          // Move player's socket from guesser to spymaster
-          socket.leave(roomCode + GUESSER_SUFFIX);
-          socket.join(roomCode + SPYMASTER_SUFFIX);
+            // Move player's socket from guesser to spymaster
+            socket.leave(roomCode + GUESSER_SUFFIX);
+            socket.join(roomCode + SPYMASTER_SUFFIX);
 
-          if (suppressUpdate === false) {
-            updateGame(room);
-            await mongoUpdateRoom(room);
+            if (suppressUpdate === false) {
+              updateGame(room);
+              await mongoUpdateRoom(room);
+            }
           }
         }
       });
@@ -501,19 +501,19 @@ setupMongoDatabase().then((db: Db | undefined) => {
         const room = await mongoGetRoom(roomCode);
         const player = room.players.find((player) => player.username === username);
 
-        console.log(`\n'${roomCode}' --- '${username}' became GUESSER for '${player?.team}'.`);
+        if (player?.team !== undefined && [Color.Blue, Color.Red].includes(player.team)) {
+          console.log(`\n'${roomCode}' --- '${username}' became GUESSER for '${player.team}'.`);
 
-        if (player !== undefined) {
           player.mode = Mode.Normal;
-        }
 
-        // Move player's socket from spymaster to guesser
-        socket.leave(roomCode + SPYMASTER_SUFFIX);
-        socket.join(roomCode + GUESSER_SUFFIX);
+          // Move player's socket from spymaster to guesser
+          socket.leave(roomCode + SPYMASTER_SUFFIX);
+          socket.join(roomCode + GUESSER_SUFFIX);
 
-        if (suppressUpdate === false) {
-          updateGame(room);
-          await mongoUpdateRoom(room);
+          if (suppressUpdate === false) {
+            updateGame(room);
+            await mongoUpdateRoom(room);
+          }
         }
       });
     };
