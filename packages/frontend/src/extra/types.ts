@@ -110,6 +110,10 @@ export interface Server {
    * @see {@link CodenamesApp.randomizeTeams}
    */
   randomizeTeams?: () => void;
+  /**
+   * @see {@link CodenamesApp.leaveRoom}
+   */
+  leaveRoom?: () => void;
 }
 
 export type Rooms = {
