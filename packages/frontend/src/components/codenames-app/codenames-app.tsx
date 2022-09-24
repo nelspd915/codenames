@@ -90,7 +90,8 @@ export class CodenamesApp {
       newGame: this.newGame,
       joinTeam: this.joinTeam,
       endTurn: this.endTurn,
-      randomizeTeams: this.randomizeTeams
+      randomizeTeams: this.randomizeTeams,
+      leaveRoom: this.leaveRoom
     };
   }
 
@@ -208,6 +209,16 @@ export class CodenamesApp {
   private randomizeTeams = (): void => {
     if (this.socketIsConnected) {
       this.socket.emit("randomizeTeams");
+    }
+  };
+
+  /**
+   * Leave room.
+   */
+   private leaveRoom = (): void => {
+    if (this.socketIsConnected) {
+      this.showLandingPage = true;
+      this.socket.emit("leaveRoom");
     }
   };
 }

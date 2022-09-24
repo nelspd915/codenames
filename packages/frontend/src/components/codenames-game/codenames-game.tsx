@@ -143,6 +143,9 @@ export class CodenamesGame {
           >
             <span>End turn ✓</span>
           </codenames-button>
+          <codenames-button slot="footer-button" hoverCursor={this.socketIsConnected} onClick={this.server.leaveRoom}>
+            <span>Leave room ⤷</span>
+          </codenames-button>
         </codenames-panel>
       </Host>
     );
