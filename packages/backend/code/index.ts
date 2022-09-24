@@ -426,8 +426,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
     /**
      * Creates a new room.
      */
-    const createRoom = async (): Promise<void> => {
-      const { roomCode, username } = socket.data;
+    const createRoom = async (roomCode: string, username: string): Promise<void> => {
       console.log(`\n'${roomCode}' --- '${username}' CREATED this new room.`);
 
       const unfinishedRoom: UnfinishedRoom = {
@@ -540,7 +539,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
         if (roomExists) {
           await joinRoom(roomCode, username);
         } else {
-          await createRoom();
+          await createRoom(roomCode, username);
         }
       });
     };
