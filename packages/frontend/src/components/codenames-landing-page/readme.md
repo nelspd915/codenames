@@ -7,11 +7,12 @@
 
 ## Properties
 
-| Property   | Attribute   | Description                  | Type     | Default     |
-| ---------- | ----------- | ---------------------------- | -------- | ----------- |
-| `roomCode` | `room-code` | Room code currently entered. | `string` | `""`        |
-| `server`   | --          | Library of server utilities. | `Server` | `undefined` |
-| `username` | `username`  | Username currently entered.  | `string` | `""`        |
+| Property            | Attribute             | Description                      | Type      | Default     |
+| ------------------- | --------------------- | -------------------------------- | --------- | ----------- |
+| `roomCode`          | `room-code`           | Room code currently entered.     | `string`  | `""`        |
+| `server`            | --                    | Library of server utilities.     | `Server`  | `undefined` |
+| `socketIsConnected` | `socket-is-connected` | Whether the socket is connected. | `boolean` | `false`     |
+| `username`          | `username`            | Username currently entered.      | `string`  | `""`        |
 
 
 ## Dependencies

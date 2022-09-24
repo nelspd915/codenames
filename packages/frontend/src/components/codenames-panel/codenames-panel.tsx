@@ -13,6 +13,11 @@ export class CodenamesPanel {
   @Prop() server: Server;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Library of server utilities.
    */
   @Prop() panelTeam: Color;
