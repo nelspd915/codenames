@@ -74,11 +74,17 @@ export class CodenamesGame {
       this.gameData?.board?.[0]?.mode !== Mode.Endgame;
     return (
       <Host>
-        <codenames-panel server={this.server} panelTeam={Color.Blue} players={this.gameData?.players}>
+        <codenames-panel
+          server={this.server}
+          socketIsConnected={this.socketIsConnected}
+          panelTeam={Color.Blue}
+          players={this.gameData?.players}
+        >
           <codenames-button
             class={this.userPlayer?.team !== Color.Blue ? "" : "hidden"}
             slot="list-button"
             color={Color.Blue}
+            hoverCursor={this.socketIsConnected}
             onClick={() => this.server.joinTeam(Color.Blue)}
           >
             <span>Join {Color.Blue}</span>
@@ -86,14 +92,19 @@ export class CodenamesGame {
           <codenames-button
             slot="footer-button"
             on={this.userPlayer?.mode === Mode.Spymaster}
+            hoverCursor={this.socketIsConnected}
             onClick={this.spymasterToggle}
           >
             <span>Spymaster 👁</span>
           </codenames-button>
-          <codenames-button slot="footer-button" onClick={this.server.randomizeTeams}>
+          <codenames-button
+            slot="footer-button"
+            hoverCursor={this.socketIsConnected}
+            onClick={this.server.randomizeTeams}
+          >
             <span>Randomize teams ⚄</span>
           </codenames-button>
-          <codenames-button slot="footer-button" onClick={this.server.newGame}>
+          <codenames-button slot="footer-button" hoverCursor={this.socketIsConnected} onClick={this.server.newGame}>
             <span>New game →</span>
           </codenames-button>
         </codenames-panel>
@@ -109,11 +120,17 @@ export class CodenamesGame {
           ></codenames-board>
         </div>
 
-        <codenames-panel server={this.server} panelTeam={Color.Red} players={this.gameData?.players}>
+        <codenames-panel
+          server={this.server}
+          socketIsConnected={this.socketIsConnected}
+          panelTeam={Color.Red}
+          players={this.gameData?.players}
+        >
           <codenames-button
             class={this.userPlayer?.team !== Color.Red ? "" : "hidden"}
             slot="list-button"
             color={Color.Red}
+            hoverCursor={this.socketIsConnected}
             onClick={() => this.server.joinTeam(Color.Red)}
           >
             <span>Join {Color.Red}</span>
@@ -121,6 +138,7 @@ export class CodenamesGame {
           <codenames-button
             class={isUsersTurn ? "" : "hidden"}
             slot="footer-button"
+            hoverCursor={this.socketIsConnected}
             onClick={() => this.server.endTurn()}
           >
             <span>End turn ✓</span>

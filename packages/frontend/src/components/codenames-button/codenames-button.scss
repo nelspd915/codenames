@@ -14,21 +14,28 @@
   color: #4a4a4a;
 
   &:hover {
-    color: #FFF;
+    color: #fff;
     background-color: #7d7d7d;
     border-color: #4a4a4a;
   }
 
   &:active {
-    color: #FFF;
+    color: #fff;
     background-color: #4a4a4a;
     border-color: #000;
   }
-  
+
   &.on {
-    color: #FFF;
+    color: #fff;
     background-color: #4a4a4a;
     border-color: #000;
+  }
+
+  &.no-hover {
+    cursor: default;
+    border: #4a4a4a solid 2px;
+    color: #4a4a4a;
+    background-color: #fff;
   }
 
   &.blue {
@@ -36,43 +43,58 @@
     border-color: #4183cc;
 
     &:hover {
-      color: #FFF;
+      color: #fff;
       background-color: #72aff5;
       border-color: #4183cc;
     }
-  
-    &:active, &.on {
-      color: #FFF;
+
+    &:active,
+    &.on {
+      color: #fff;
       background-color: #4183cc;
       border-color: #124f95;
     }
-  
+
+    &.no-hover {
+      cursor: default;
+      color: #4183cc;
+      border-color: #4183cc;
+      background-color: #fff;
+    }
   }
-  
+
   &.red {
     color: #d13030;
     border-color: #d13030;
 
     &:hover {
-      color: #FFF;
+      color: #fff;
       background-color: #f77d7d;
       border-color: #d13030;
     }
-  
-    &:active, &.on {
-      color: #FFF;
+
+    &:active,
+    &.on {
+      color: #fff;
       background-color: #d13030;
       border-color: #9f1010;
+    }
+
+    &.no-hover {
+      cursor: default;
+      color: #d13030;
+      border-color: #d13030;
+      background-color: #fff;
     }
   }
 
   // No text selection
   -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 

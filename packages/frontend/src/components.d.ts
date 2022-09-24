@@ -37,6 +37,10 @@ export namespace Components {
          */
         "color"?: Color;
         /**
+          * Whether the cursor should change on hover.
+         */
+        "hoverCursor"?: boolean;
+        /**
           * Whether button is on.
          */
         "on"?: boolean;
@@ -107,6 +111,10 @@ export namespace Components {
          */
         "server": Server;
         /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
+        /**
           * Username currently entered.
          */
         "username"?: string;
@@ -124,6 +132,10 @@ export namespace Components {
           * Library of server utilities.
          */
         "server": Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
     }
     interface CodenamesScores {
         /**
@@ -236,6 +248,10 @@ declare namespace LocalJSX {
          */
         "color"?: Color;
         /**
+          * Whether the cursor should change on hover.
+         */
+        "hoverCursor"?: boolean;
+        /**
           * Whether button is on.
          */
         "on"?: boolean;
@@ -306,6 +322,10 @@ declare namespace LocalJSX {
          */
         "server"?: Server;
         /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
+        /**
           * Username currently entered.
          */
         "username"?: string;
@@ -323,6 +343,10 @@ declare namespace LocalJSX {
           * Library of server utilities.
          */
         "server"?: Server;
+        /**
+          * Whether the socket is connected.
+         */
+        "socketIsConnected"?: boolean;
     }
     interface CodenamesScores {
         /**

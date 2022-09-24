@@ -5,10 +5,11 @@
 
 ## Properties
 
-| Property | Attribute | Description           | Type                                                   | Default     |
-| -------- | --------- | --------------------- | ------------------------------------------------------ | ----------- |
-| `color`  | `color`   | Button color.         | `Color.Black \| Color.Blue \| Color.Gray \| Color.Red` | `undefined` |
-| `on`     | `on`      | Whether button is on. | `boolean`                                              | `undefined` |
+| Property      | Attribute      | Description                                | Type                                                   | Default     |
+| ------------- | -------------- | ------------------------------------------ | ------------------------------------------------------ | ----------- |
+| `color`       | `color`        | Button color.                              | `Color.Black \| Color.Blue \| Color.Gray \| Color.Red` | `undefined` |
+| `hoverCursor` | `hover-cursor` | Whether the cursor should change on hover. | `boolean`                                              | `undefined` |
+| `on`          | `on`           | Whether button is on.                      | `boolean`                                              | `undefined` |
 
 
 ## Dependencies

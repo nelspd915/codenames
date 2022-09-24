@@ -18,11 +18,21 @@ export class CodenamesButton {
   @Prop() on?: boolean;
 
   /**
+   * Whether the cursor should change on hover.
+   */
+  @Prop() hoverCursor?: boolean;
+
+  /**
    * Stencil lifecycle method `render` for `codenames-button` component.
    */
   render() {
+    const classList = ["button-container"];
+    if (this.color) classList.push(this.color);
+    if (this.on) classList.push("on");
+    if (this.hoverCursor === false) classList.push("no-hover");
+
     return (
-      <div class={`button-container ${this.color ?? ""} ${this.on ? "on" : ""}`}>
+      <div class={classList.join(" ")}>
         <div class="content">
           <slot></slot>
         </div>

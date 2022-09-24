@@ -104,6 +104,7 @@ export class CodenamesApp {
           {this.showLandingPage ? (
             <codenames-landing-page
               server={this.server}
+              socketIsConnected={this.socketIsConnected}
               roomCode={this.roomCode}
               username={this.username}
             ></codenames-landing-page>
@@ -115,6 +116,9 @@ export class CodenamesApp {
               userPlayer={this.gameData?.players?.find((player) => player.username === this.username)}
             ></codenames-game>
           )}
+        </div>
+        <div class="loader" hidden={this.socketIsConnected}>
+          <div class="loader-bar"></div>
         </div>
       </Host>
     );
@@ -133,7 +137,7 @@ export class CodenamesApp {
    */
   private revealCell = (cellIndex: number): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("revealCell", this.roomCode, cellIndex, this.username);
+      this.socket.emit("revealCell", cellIndex);
     }
   };
 
@@ -158,7 +162,7 @@ export class CodenamesApp {
    */
   private becomeSpymaster = (): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("becomeSpymaster", this.roomCode, this.username);
+      this.socket.emit("becomeSpymaster");
     }
   };
 
@@ -167,7 +171,7 @@ export class CodenamesApp {
    */
   private becomeGuesser = (): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("becomeGuesser", this.roomCode, this.username);
+      this.socket.emit("becomeGuesser");
     }
   };
 
@@ -176,7 +180,7 @@ export class CodenamesApp {
    */
   private newGame = (): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("newGame", this.roomCode, this.username);
+      this.socket.emit("newGame");
     }
   };
 
@@ -185,7 +189,7 @@ export class CodenamesApp {
    */
   private joinTeam = (color: Color): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("joinTeam", this.roomCode, this.username, color);
+      this.socket.emit("joinTeam", color);
     }
   };
 
@@ -194,7 +198,7 @@ export class CodenamesApp {
    */
   private endTurn = (): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("endTurn", this.roomCode, this.username);
+      this.socket.emit("endTurn");
     }
   };
 
@@ -203,7 +207,7 @@ export class CodenamesApp {
    */
   private randomizeTeams = (): void => {
     if (this.socketIsConnected) {
-      this.socket.emit("randomizeTeams", this.roomCode, this.username);
+      this.socket.emit("randomizeTeams");
     }
   };
 }

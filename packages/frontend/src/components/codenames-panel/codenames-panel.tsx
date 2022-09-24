@@ -13,6 +13,11 @@ export class CodenamesPanel {
   @Prop() server: Server;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Library of server utilities.
    */
   @Prop() panelTeam: Color;
@@ -66,7 +71,7 @@ export class CodenamesPanel {
       iconClass = "spoiled-icon";
     }
 
-    const color = player.connected ? this.panelTeam : Color.Gray;
+    const color = player.connected && this.socketIsConnected ? this.panelTeam : Color.Gray;
 
     return (
       <div class={`player-name ${color}`}>

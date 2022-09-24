@@ -144,20 +144,6 @@ setupMongoDatabase().then((db: Db | undefined) => {
   };
 
   /**
-   * Updates chat for the room.
-   * @param roomCode
-   * @param message
-   * @param username
-   * @param team
-   */
-  const updateChat = (roomCode: string, message: string, username: string, team: Team): void => {
-    getQueue(roomCode).enqueue(async () => {
-      io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, team);
-      io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, team);
-    });
-  };
-
-  /**
    * Updates game data for clients.
    * @param room
    */
@@ -225,126 +211,10 @@ setupMongoDatabase().then((db: Db | undefined) => {
   };
 
   /**
-   * Ends a team's turn.
-   * @param roomCode
-   */
-  const endTurn = async (roomCode: string, username: string): Promise<void> => {
-    getQueue(roomCode).enqueue(async () => {
-      const room = await mongoGetRoom(roomCode);
-
-      console.log(`\n'${roomCode}' --- '${username}' ENDED TURN for '${room.turn}'.`);
-
-      room.turn = room.turn === Color.Blue ? Color.Red : Color.Blue;
-      updateGame(room);
-      await mongoUpdateRoom(room);
-    });
-  };
-
-  /**
-   * Randomizes teams in a room.
-   * @param roomCode
-   */
-  const randomizeTeams = async (roomCode: string, username: string): Promise<void> => {
-    getQueue(roomCode).enqueue(async () => {
-      console.log(`\n'${roomCode}' --- '${username}' RANDOMIZED teams.`);
-
-      const room = await mongoGetRoom(roomCode);
-      room.players = shuffle(room.players);
-
-      // Determine initial team color
-      let evenTeam: Team = Color.Red;
-      let oddTeam: Team = Color.Blue;
-
-      if (Math.random() < 0.5) {
-        oddTeam = Color.Red;
-        evenTeam = Color.Blue;
-      }
-
-      // Assign new teams to players
-      for (let i = 0; i < room.players.length; i++) {
-        room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
-      }
-
-      updateGame(room);
-      await mongoUpdateRoom(room);
-    });
-  };
-
-  /**
-   * Reveals a cell on the public board.
-   * @param roomCode
-   * @param cellIndex
-   */
-  const revealCell = (roomCode: string, cellIndex: number, username: string): void => {
-    // Set the loading cell immediately
-    setLoadingCell(roomCode, cellIndex);
-
-    getQueue(roomCode).enqueue(async () => {
-      const room = await mongoGetRoom(roomCode);
-      const player = room.players.find((player) => player.username === username);
-
-      console.log(
-        `\n'${roomCode}' --- '${username}' REVEALED cell '${room.publicBoard[cellIndex].word.toUpperCase()}'.`
-      );
-
-      if (
-        player?.team === room.turn &&
-        room.scores[Color.Black] === BLACK_WORDS &&
-        room.scores[Color.Blue] !== 0 &&
-        room.scores[Color.Red] !== 0 &&
-        room.publicBoard[cellIndex].revealed === false
-      ) {
-        const origTurn = room.turn;
-        const cellColor = room.masterBoard[cellIndex].color as Color;
-
-        // Update cell on public board
-        room.publicBoard[cellIndex].color = cellColor;
-        room.publicBoard[cellIndex].revealed = true;
-
-        // Update cell on master board
-        room.masterBoard[cellIndex].revealed = true;
-
-        // Update scores
-        room.scores = findScores(room.masterBoard);
-
-        // Whether the game is now over
-        const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
-
-        if (gameOver) {
-          for (let i = 0; i < room.masterBoard.length; i++) {
-            room.masterBoard[i].mode = Mode.Endgame;
-          }
-          room.publicBoard = cloneDeep(room.masterBoard);
-        } else {
-          // Whether current turn is now over
-          const turnOver = cellColor != room.turn;
-
-          if (turnOver) {
-            room.turn = player.team === Color.Blue ? Color.Red : Color.Blue;
-          }
-        }
-
-        // Update game for clients
-        updateGame(room);
-
-        // Update database
-        await mongoUpdateRoom(room);
-        await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, origTurn);
-        if (gameOver) {
-          await mongoHistoryEndGame(room);
-        }
-      }
-
-      // Clear the loading cell
-      setLoadingCell(roomCode, -1);
-    });
-  };
-
-  /**
-   * Reset the game data for a room.
+   * Sets up game data for a room.
    * @param currentRoom
    */
-  const resetGame = async (currentRoom: UnfinishedRoom | Room): Promise<void> => {
+  const setupGame = async (currentRoom: UnfinishedRoom | Room): Promise<void> => {
     const newRoom = cloneDeep(currentRoom);
     newRoom.scores = { ...STARTING_SCORES };
     newRoom.turn = Color.Blue;
@@ -370,6 +240,123 @@ setupMongoDatabase().then((db: Db | undefined) => {
 
   // Setting up a connection to a client
   io.on("connection", (socket) => {
+    /**
+     * Reveals a cell on the public board.
+     * @param cellIndex
+     */
+    const revealCell = (cellIndex: number): void => {
+      const { roomCode, username } = socket.data;
+
+      // Set the loading cell immediately
+      setLoadingCell(roomCode, cellIndex);
+
+      getQueue(roomCode).enqueue(async () => {
+        const room = await mongoGetRoom(roomCode);
+        const player = room.players.find((player) => player.username === username);
+
+        console.log(
+          `\n'${roomCode}' --- '${username}' REVEALED cell '${room.publicBoard[cellIndex].word.toUpperCase()}'.`
+        );
+
+        if (
+          player?.team === room.turn &&
+          room.scores[Color.Black] === BLACK_WORDS &&
+          room.scores[Color.Blue] !== 0 &&
+          room.scores[Color.Red] !== 0 &&
+          room.publicBoard[cellIndex].revealed === false
+        ) {
+          const origTurn = room.turn;
+          const cellColor = room.masterBoard[cellIndex].color as Color;
+
+          // Update cell on public board
+          room.publicBoard[cellIndex].color = cellColor;
+          room.publicBoard[cellIndex].revealed = true;
+
+          // Update cell on master board
+          room.masterBoard[cellIndex].revealed = true;
+
+          // Update scores
+          room.scores = findScores(room.masterBoard);
+
+          // Whether the game is now over
+          const gameOver = room.scores[Color.Blue] === 0 || room.scores[Color.Red] === 0 || cellColor === Color.Black;
+
+          if (gameOver) {
+            for (let i = 0; i < room.masterBoard.length; i++) {
+              room.masterBoard[i].mode = Mode.Endgame;
+            }
+            room.publicBoard = cloneDeep(room.masterBoard);
+          } else {
+            // Whether current turn is now over
+            const turnOver = cellColor != room.turn;
+
+            if (turnOver) {
+              room.turn = player.team === Color.Blue ? Color.Red : Color.Blue;
+            }
+          }
+
+          // Update game for clients
+          updateGame(room);
+
+          // Update database
+          await mongoUpdateRoom(room);
+          await mongoHistoryAddTurn(room, room.masterBoard[cellIndex], username, origTurn);
+          if (gameOver) {
+            await mongoHistoryEndGame(room);
+          }
+        }
+
+        // Clear the loading cell
+        setLoadingCell(roomCode, -1);
+      });
+    };
+
+    /**
+     * Ends a team's turn.
+     */
+    const endTurn = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
+      getQueue(roomCode).enqueue(async () => {
+        const room = await mongoGetRoom(roomCode);
+
+        console.log(`\n'${roomCode}' --- '${username}' ENDED TURN for '${room.turn}'.`);
+
+        room.turn = room.turn === Color.Blue ? Color.Red : Color.Blue;
+        updateGame(room);
+        await mongoUpdateRoom(room);
+      });
+    };
+
+    /**
+     * Randomizes teams in a room.
+     */
+    const randomizeTeams = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
+      getQueue(roomCode).enqueue(async () => {
+        console.log(`\n'${roomCode}' --- '${username}' RANDOMIZED teams.`);
+
+        const room = await mongoGetRoom(roomCode);
+        room.players = shuffle(room.players);
+
+        // Determine initial team color
+        let evenTeam: Team = Color.Red;
+        let oddTeam: Team = Color.Blue;
+
+        if (Math.random() < 0.5) {
+          oddTeam = Color.Red;
+          evenTeam = Color.Blue;
+        }
+
+        // Assign new teams to players
+        for (let i = 0; i < room.players.length; i++) {
+          room.players[i].team = i % 2 === 0 ? evenTeam : oddTeam;
+        }
+
+        updateGame(room);
+        await mongoUpdateRoom(room);
+      });
+    };
+
     /**
      * Joins a room.
      * @param roomCode
@@ -417,10 +404,9 @@ setupMongoDatabase().then((db: Db | undefined) => {
 
     /**
      * Leaves a room.
-     * @param roomCode
-     * @param username
      */
-    const leaveRoom = async (roomCode: string, username: string): Promise<void> => {
+    const leaveRoom = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
       console.log(`\n'${roomCode}' --- '${username}' LEFT the room.`);
 
       const room = await mongoGetRoom(roomCode);
@@ -439,33 +425,30 @@ setupMongoDatabase().then((db: Db | undefined) => {
 
     /**
      * Creates a new room.
-     * @param roomCode
-     * @param host
      */
-    const createRoom = async (roomCode: string, host: string): Promise<void> => {
-      console.log(`\n'${roomCode}' --- '${host}' CREATED this new room.`);
+    const createRoom = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
+      console.log(`\n'${roomCode}' --- '${username}' CREATED this new room.`);
 
       const unfinishedRoom: UnfinishedRoom = {
         code: roomCode,
-        host: host,
+        host: username,
         players: [],
         turn: Color.Blue
       };
 
-      await resetGame(unfinishedRoom);
-      await joinRoom(roomCode, host);
+      await setupGame(unfinishedRoom);
+      await joinRoom(roomCode, username);
 
       // Create queue for the new room
-      getQueue(roomCode); //
+      getQueue(roomCode);
     };
 
     /**
      * Become a spymaster.
-     * @param roomCode
-     * @param username
-     * @param suppressUpdate
      */
-    const becomeSpymaster = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
+    const becomeSpymaster = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
       getQueue(roomCode).enqueue(async () => {
         const room = await mongoGetRoom(roomCode);
         if (socket.data.username === username) {
@@ -481,10 +464,8 @@ setupMongoDatabase().then((db: Db | undefined) => {
             socket.leave(roomCode + GUESSER_SUFFIX);
             socket.join(roomCode + SPYMASTER_SUFFIX);
 
-            if (suppressUpdate === false) {
-              updateGame(room);
-              await mongoUpdateRoom(room);
-            }
+            updateGame(room);
+            await mongoUpdateRoom(room);
           }
         }
       });
@@ -492,11 +473,9 @@ setupMongoDatabase().then((db: Db | undefined) => {
 
     /**
      * Become a guesser.
-     * @param roomCode
-     * @param username
-     * @param suppressUpdate
      */
-    const becomeGuesser = async (roomCode: string, username: string, suppressUpdate = false): Promise<void> => {
+    const becomeGuesser = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
       getQueue(roomCode).enqueue(async () => {
         const room = await mongoGetRoom(roomCode);
         const player = room.players.find((player) => player.username === username);
@@ -510,19 +489,17 @@ setupMongoDatabase().then((db: Db | undefined) => {
           socket.leave(roomCode + SPYMASTER_SUFFIX);
           socket.join(roomCode + GUESSER_SUFFIX);
 
-          if (suppressUpdate === false) {
-            updateGame(room);
-            await mongoUpdateRoom(room);
-          }
+          updateGame(room);
+          await mongoUpdateRoom(room);
         }
       });
     };
 
     /**
      * Creates new game for room.
-     * @param roomCode
      */
-    const newGame = async (roomCode: string, username: string): Promise<void> => {
+    const newGame = async (): Promise<void> => {
+      const { roomCode, username } = socket.data;
       getQueue(roomCode).enqueue(async () => {
         console.log(`\n'${roomCode}' --- '${username}' started a NEW GAME.`);
 
@@ -545,7 +522,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
           room.players = room.players.filter((player) => player.connected === true);
 
           // Reset game
-          await resetGame(room);
+          await setupGame(room);
         }
       });
     };
@@ -563,18 +540,31 @@ setupMongoDatabase().then((db: Db | undefined) => {
         if (roomExists) {
           await joinRoom(roomCode, username);
         } else {
-          await createRoom(roomCode, username);
+          await createRoom();
         }
       });
     };
 
     /**
+     * Updates chat for the room.
+     * @param message
+     */
+    const updateChat = (message: string): void => {
+      const { roomCode, username } = socket.data;
+      getQueue(roomCode).enqueue(async () => {
+        const room = await mongoGetRoom(roomCode);
+        const player = room.players.find((player) => player.username === username);
+        io.to(roomCode + GUESSER_SUFFIX).emit("updateChat", message, username, player?.team);
+        io.to(roomCode + SPYMASTER_SUFFIX).emit("updateChat", message, username, player?.team);
+      });
+    };
+
+    /**
      * Joins a team.
-     * @param roomCode
-     * @param username
      * @param team
      */
-    const joinTeam = async (roomCode: string, username: string, team: Team): Promise<void> => {
+    const joinTeam = async (team: Team): Promise<void> => {
+      const { roomCode, username } = socket.data;
       getQueue(roomCode).enqueue(async () => {
         const room = await mongoGetRoom(roomCode);
         const player = room.players.find((player) => player.username === username);
@@ -613,7 +603,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
 
       const roomExists = (await rooms?.findOne({ code: socket.data.roomCode })) ? true : false;
       if (roomExists) {
-        leaveRoom(socket.data.roomCode, socket.data.username);
+        leaveRoom();
       }
     };
 

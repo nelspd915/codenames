@@ -13,6 +13,11 @@ export class CodenamesLandingPage {
   @Prop() server: Server;
 
   /**
+   * Whether the socket is connected.
+   */
+  @Prop() socketIsConnected?: boolean = false;
+
+  /**
    * Username currently entered.
    */
   @Prop() username?: string = "";
@@ -66,7 +71,9 @@ export class CodenamesLandingPage {
             }}
           />
         </div>
-        <codenames-button onClick={this.submitHandler}>Submit</codenames-button>
+        <codenames-button hoverCursor={this.socketIsConnected} onClick={this.submitHandler}>
+          Submit
+        </codenames-button>
         <div class="section message">{this.message}</div>
       </Host>
     );
