@@ -1,6 +1,19 @@
-import { Color, Mode, GameData, Room, UnfinishedRoom, Team, Scores, BoardData, CellData } from "codenames-frontend";
+import {
+  Color,
+  Mode,
+  GameData,
+  Room,
+  UnfinishedRoom,
+  Team,
+  Scores,
+  BoardData,
+  CellData,
+  BLACK_WORDS,
+  findWinner,
+  STARTING_SCORES
+} from "codenames-frontend";
 import { generateMasterBoard, generatePublicBoard } from "./utils";
-import { BLACK_WORDS, GUESSER_SUFFIX, SPYMASTER_SUFFIX, STARTING_SCORES } from "./constants";
+import { GUESSER_SUFFIX, SPYMASTER_SUFFIX } from "./constants";
 import { setupServer } from "./server";
 import { cloneDeep, shuffle } from "lodash";
 import { Collection, Db, DeleteResult, UpdateResult, Document, InsertOneResult } from "mongodb";
@@ -79,7 +92,7 @@ setupMongoDatabase().then((db: Db | undefined) => {
       gameHistory.board = room.masterBoard;
       gameHistory.endingPlayers = room.players;
       gameHistory.endingScores = room.scores;
-      gameHistory.winner = findWinner(room);
+      gameHistory.winner = findWinner(room.scores, room.turn);
       return await history?.replaceOne({ gameId: room.currentGameId }, gameHistory);
     } else {
       throw "Error: could not find gameHistory in database when attempting to end this game.";
@@ -186,28 +199,6 @@ setupMongoDatabase().then((db: Db | undefined) => {
     });
 
     return scores;
-  };
-
-  /**
-   * Finds winner for a room.
-   * @param room
-   */
-  const findWinner = (room: Room): Team => {
-    const { scores, turn } = room;
-    let winner: Team = Color.Gray;
-    if (scores[Color.Black] !== BLACK_WORDS) {
-      if (turn === Color.Blue) {
-        winner = Color.Red;
-      } else if (turn === Color.Red) {
-        winner = Color.Blue;
-      }
-    } else if (scores[Color.Blue] === 0) {
-      winner = Color.Blue;
-    } else if (scores[Color.Red] === 0) {
-      winner = Color.Red;
-    }
-
-    return winner;
   };
 
   /**
