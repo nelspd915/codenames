@@ -141,11 +141,11 @@ export namespace Components {
         /**
           * Scores to display.
          */
-        "scores": Scores;
+        "scores"?: Scores;
         /**
           * Team whose turn it is.
          */
-        "turn": Color;
+        "turn"?: Color;
     }
     interface CodenamesSpinner {
     }
