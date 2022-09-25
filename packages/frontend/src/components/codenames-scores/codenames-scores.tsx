@@ -11,12 +11,12 @@ export class CodenamesScores {
   /**
    * Scores to display.
    */
-  @Prop() scores?: Scores;
+  @Prop() scores: Scores;
 
   /**
    * Team whose turn it is.
    */
-  @Prop() turn?: Color;
+  @Prop() turn: Color;
 
   /**
    * Stencil lifecycle method `render` for `codenames-scores` component.
