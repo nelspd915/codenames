@@ -70,6 +70,13 @@ export interface GameData {
 }
 
 /**
+ * Statistics.
+ */
+export interface Statistics {
+  winrate?: number;
+}
+
+/**
  * Library of server utilities.
  */
 export interface Server {

@@ -31,9 +31,9 @@ Content-Type:  application/json
 }
 
 ###
-GET http://localhost:8080/winrate HTTP/1.1
+GET http://localhost:8080/statistics HTTP/1.1
 Content-Type:  application/json
 
 {
-  "username": "kobgore"
+  "username": "a"
 }

@@ -31,7 +31,7 @@ const queues: Queues = {};
 
 // Setup MongoDB database
 let rooms: Collection | undefined;
-let history: Collection | undefined;
+export let history: Collection | undefined;
 export let users: Collection | undefined;
 setupMongoDatabase().then((db: Db | undefined) => {
   rooms = db?.collection("rooms");
