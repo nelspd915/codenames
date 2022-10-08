@@ -7,6 +7,8 @@ import { hashSync, compareSync } from "bcryptjs";
 import { User } from "./types";
 
 import jwt from "jsonwebtoken";
+import { getGames, getWinRate } from "./api-utils";
+import { Statistics } from "codenames-frontend";
 
 /**
  * Sets up server environment and returns the socket IO.
@@ -112,6 +114,22 @@ export function setupServer(): Server {
       });
       res.json({ accessToken: accessToken });
     });
+  });
+
+  app.get("/statistics", async (req, res) => {
+    const username = req.body.username;
+    const games = (await getGames(username)) ?? [];
+    const stats: Statistics = {};
+
+    console.log(
+      games?.map((game) => {
+        return game.gameId;
+      })
+    );
+
+    stats.winrate = getWinRate(games, username);
+
+    res.json(stats);
   });
 
   // Open server to listen for requests
