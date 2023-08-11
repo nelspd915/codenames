@@ -2,11 +2,12 @@ import { BoardData, CellData, Color, Mode, Scores } from "codenames-frontend";
 import { shuffle, sampleSize } from "lodash";
 
 import words from "./data/words.json";
-import goodWords from "./data/good_words.json";
-import politicsWords from "./data/politics_words.json";
-import nickWords from "./data/nick_words.json";
+// import goodWords from "./data/good_words.json";
+// import politicsWords from "./data/politics_words.json";
+// import nickWords from "./data/nick_words.json";
 
-const allWords = words.concat(goodWords).concat(politicsWords).concat(nickWords);
+// const allWords = words.concat(goodWords).concat(politicsWords).concat(nickWords);
+const allWords = words;
 
 const addColoredCells = (board: BoardData, count: number, color: Color, words: string[]) => {
   for (let i = 0; i < count; i += 1) {
@@ -34,7 +35,7 @@ export const generateMasterBoard = (startingScores: Scores): BoardData => {
 };
 
 export const generatePublicBoard = (board: BoardData): BoardData => {
-  return board.map(masterCell => {
+  return board.map((masterCell) => {
     const publicCell: CellData = {
       word: masterCell.word,
       mode: Mode.Normal,
